@@ -1,0 +1,15 @@
+{
+  "name": "@th-suite/ui-kit",
+  "version": "0.1.0",
+  "description": "TH-Suite UI Components Library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "echo 'UI Kit build placeholder'"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

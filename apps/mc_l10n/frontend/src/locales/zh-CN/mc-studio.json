@@ -1,0 +1,505 @@
+{
+  "mcStudio": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "Minecraft 本地化工具",
+    "description": "专业的 Minecraft 本地化和翻译管理工具"
+  },
+  "welcome": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "您的 Minecraft 资源管理综合工具包",
+    "description": "使用专为模组和资源包创作者设计的强大工具来分析、提取和构建 Minecraft 资源。",
+    "quickActionsTitle": "快速操作",
+    "quickActions": {
+      "scan": {
+        "title": "扫描资源",
+        "description": "分析和清点 Minecraft 资源"
+      },
+      "extract": {
+        "title": "提取资源",
+        "description": "从 JAR 文件或压缩包中提取资源"
+      },
+      "build": {
+        "title": "构建资源",
+        "description": "打包和构建资源包"
+      },
+      "server": {
+        "title": "服务器交互",
+        "description": "管理服务器连接和状态"
+      }
+    },
+    "buttons": {
+      "scanDirectory": "扫描目录",
+      "scanArchive": "扫描压缩包"
+    },
+    "newProject": {
+      "title": "新建项目",
+      "description": "选择目录或压缩包开始创建新的本地化项目"
+    }
+  },
+  "features": {
+    "modpackProcessing": {
+      "title": "整合包处理",
+      "description": "自动提取 CurseForge/Modrinth 整合包的语言文件",
+      "actions": {
+        "extract": "提取语言文件",
+        "analyze": "分析整合包",
+        "process": "处理整合包"
+      }
+    },
+    "modLocalization": {
+      "title": "模组本地化",
+      "description": "批量处理模组语言文件的提取和翻译",
+      "actions": {
+        "scanMods": "扫描模组",
+        "extractTexts": "提取文本",
+        "translateBatch": "批量翻译"
+      }
+    },
+    "resourcePackSupport": {
+      "title": "资源包支持",
+      "description": "资源包文本内容的自动化翻译",
+      "actions": {
+        "loadPack": "加载资源包",
+        "extractTexts": "提取文本",
+        "applyTranslations": "应用翻译"
+      }
+    },
+    "versionAdaptation": {
+      "title": "版本适配",
+      "description": "支持 Java 版和基岩版的不同语言文件格式",
+      "versions": {
+        "java": "Java 版",
+        "bedrock": "基岩版",
+        "auto": "自动检测"
+      }
+    }
+  },
+  "workflow": {
+    "extraction": {
+      "status": {
+        "completed": "提取完成",
+        "failed": "提取失败"
+      }
+    },
+    "translation": {
+      "status": {
+        "checking": "正在检查 Trans-Hub 数据库...",
+        "submitting": "正在提交新文本...",
+        "translating": "翻译进行中...",
+        "downloading": "正在下载翻译...",
+        "completed": "翻译完成"
+      }
+    },
+    "synchronization": {
+      "status": {
+        "completed": "同步完成"
+      }
+    }
+  },
+  "settings": {
+    "paths": {
+      "title": "游戏路径",
+      "javaPath": "Java 版路径",
+      "bedrockPath": "基岩版路径",
+      "modsPath": "模组目录",
+      "resourcePacksPath": "资源包目录"
+    }
+  },
+  "export": {
+    "title": "导出语言包",
+    "description": "将 Minecraft 资源包、模组或自定义项目中的语言文件导出为不同格式。选择源目录，选择需要导出的语言，并以首选格式下载。",
+    "source": {
+      "title": "源目录",
+      "placeholder": "选择源目录..."
+    },
+    "output": {
+      "title": "输出设置",
+      "placeholder": "选择输出目录..."
+    },
+    "format": "导出格式",
+    "createZip": "创建 ZIP 压缩包",
+    "scan": "扫描语言文件",
+    "scanning": "扫描中...",
+    "files": {
+      "title": "语言文件"
+    },
+    "selection": {
+      "summary": "已选择 {{count}} 个文件，包含 {{keys}} 个键（{{size}}）"
+    },
+    "progress": {
+      "title": "导出进度",
+      "completed": "导出完成！已成功导出 {{exported}} 个文件。",
+      "error": "导出失败，请重试。"
+    },
+    "actions": {
+      "title": "准备好导出了吗？"
+    },
+    "start": "开始导出",
+    "exporting": "导出中...",
+    "openOutput": "打开输出文件夹",
+    "cancel": "取消导出",
+    "openOutputDirectory": "打开输出目录",
+    "exportCancelled": "导出已取消",
+    "exportProgress": "导出进度",
+    "filesExported": "已导出文件",
+    "filesFailed": "失败文件"
+  },
+  "server": {
+    "title": "服务器交互",
+    "status": {
+      "title": "服务器状态",
+      "healthy": "健康",
+      "unhealthy": "不健康",
+      "unreachable": "无法连接",
+      "checking": "检查中...",
+      "lastCheck": "最后检查",
+      "responseTime": "响应时间",
+      "serverVersion": "服务器版本",
+      "capabilities": "功能支持"
+    },
+    "languages": {
+       "title": "可用语言",
+       "available": "可用",
+       "partial": "部分可用",
+       "unavailable": "不可用",
+       "lastUpdated": "最后更新",
+       "fileCount": "文件数量",
+       "size": "大小",
+       "refresh": "刷新语言列表",
+       "loading": "获取语言信息中..."
+     },
+    "cache": {
+       "title": "缓存管理",
+       "type": "类型",
+       "size": "大小",
+       "entries": "条目数",
+       "hitRate": "命中率",
+       "clear": "清除缓存",
+       "refresh": "刷新缓存信息",
+       "loading": "获取缓存信息中..."
+     },
+    "actions": {
+       "checkStatus": "检查状态",
+       "refreshLanguages": "刷新语言",
+       "clearCache": "清除缓存",
+       "configure": "配置服务器",
+       "actions": "操作"
+     }
+  },
+  "transfer": {
+    "title": "上传下载",
+    "queue": {
+      "title": "传输队列",
+      "controls": "队列控制",
+      "start": "开始队列",
+      "pause": "暂停队列",
+      "clearCompleted": "清理已完成",
+      "retryFailed": "重试失败",
+      "started": "队列已开始",
+      "paused": "队列已暂停",
+      "clearedCompleted": "已清理完成项目",
+      "retriedFailed": "已重试失败项目"
+    },
+    "stats": {
+      "total": "总计",
+      "pending": "等待中",
+      "running": "进行中",
+      "completed": "已完成",
+      "failed": "失败"
+    },
+    "tabs": {
+      "all": "全部",
+      "uploads": "上传",
+      "downloads": "下载",
+      "active": "活跃",
+      "completed": "已完成"
+    },
+    "type": {
+      "upload": "上传",
+      "download": "下载"
+    },
+    "status": {
+      "pending": "等待中",
+      "running": "进行中",
+      "paused": "已暂停",
+      "completed": "已完成",
+      "failed": "失败",
+      "cancelled": "已取消"
+    },
+    "table": {
+      "type": "类型",
+      "name": "文件名",
+      "language": "语言",
+      "size": "大小",
+      "progress": "进度",
+      "status": "状态",
+      "speed": "速度",
+      "eta": "剩余时间",
+      "actions": "操作"
+    },
+    "actions": {
+      "pause": "暂停",
+      "resume": "继续",
+      "cancel": "取消",
+      "retry": "重试"
+    },
+    "batch": {
+      "noSelection": "请先选择项目",
+      "selected": "已选择 {{count}} 个项目",
+      "pause": "暂停选中",
+      "resume": "继续选中",
+      "cancel": "取消选中",
+      "actionCompleted": "批量操作已完成"
+    },
+    "empty": {
+      "title": "暂无传输任务",
+      "description": "开始上传或下载语言包以查看传输进度"
+    },
+    "settings": {
+      "title": "传输设置",
+      "maxConcurrent": "最大并发数",
+      "info": "调整最大并发传输数可以优化网络使用和系统性能。"
+    }
+  },
+  "common": {
+    "browse": "浏览",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "openInExplorer": "在资源管理器中打开",
+    "directorySelected": "目录已选择",
+    "failedToSelectDirectory": "选择目录失败",
+    "failedToOpenDirectory": "打开目录失败",
+    "exportProgress": "导出进度",
+    "exportComplete": "导出完成",
+    "exportFailed": "导出失败",
+    "exportCancelled": "导出已取消"
+  },
+  "build": {
+    "title": "构建项目",
+    "targets": {
+      "title": "构建目标",
+      "add": "添加目标",
+      "remove": "移除目标",
+      "empty": "暂无构建目标",
+      "types": {
+        "resourcepack": "资源包",
+        "datapack": "数据包",
+        "mod": "模组",
+        "plugin": "插件"
+      }
+    },
+    "options": {
+      "title": "构建选项",
+      "outputFormat": "输出格式",
+      "compressionLevel": "压缩级别",
+      "customName": "自定义名称",
+      "outputPath": "输出路径",
+      "includeMetadata": "包含元数据",
+      "validateStructure": "验证结构",
+      "optimizeAssets": "优化资源",
+      "generateManifest": "生成清单",
+      "formats": {
+        "zip": "ZIP 压缩包",
+        "folder": "文件夹"
+      },
+      "compression": {
+        "fast": "快速",
+        "best": "最佳"
+      },
+      "placeholders": {
+          "customName": "留空使用默认名称",
+          "outputPath": "选择输出目录"
+        },
+        "select": "选择"
+    },
+    "control": {
+      "title": "构建控制",
+      "start": "开始构建",
+      "stop": "停止构建",
+      "building": "正在构建",
+      "progress": "构建进度"
+    },
+    "results": {
+      "title": "构建结果",
+      "success": "构建成功",
+      "error": "构建失败",
+      "warning": "构建警告",
+      "output": "输出",
+      "size": "大小",
+      "duration": "耗时",
+      "openOutput": "打开输出目录"
+    },
+    "messages": {
+      "addTargetSuccess": "构建目标已添加",
+      "removeTargetSuccess": "构建目标已移除",
+      "buildComplete": "构建完成",
+      "buildFailed": "构建失败",
+      "buildStopped": "构建已停止",
+      "noTargets": "请先添加构建目标",
+      "selectOutputPath": "选择输出路径失败",
+      "addTargetFailed": "添加构建目标失败",
+      "unknownProjectType": "无法识别的项目类型",
+      "fileCorrupted": "文件损坏"
+    },
+    "dryRun": {
+      "title": "Dry-run 预览",
+      "description": "预览构建结果而不实际生成文件",
+      "start": "开始 Dry-run",
+      "results": "预览结果",
+      "fileList": "文件列表",
+      "estimatedSize": "预计大小",
+      "warnings": "警告信息",
+      "conflicts": "冲突检测"
+    },
+    "rollback": {
+      "title": "版本回滚",
+      "description": "回滚到之前的构建版本",
+      "selectVersion": "选择版本",
+      "rollback": "回滚",
+      "confirm": "确认回滚",
+      "success": "回滚成功",
+      "failed": "回滚失败"
+    }
+  },
+  "security": {
+    "title": "安全审计",
+    "description": "完整性校验结果，许可记录查看，审计日志展示",
+    "stats": {
+      "totalChecks": "总检查数",
+      "failedChecks": "失败检查",
+      "licenseRecords": "许可记录",
+      "auditLogs": "审计日志"
+    },
+    "tabs": {
+      "integrity": "完整性检查",
+      "licenses": "许可记录",
+      "audit": "审计日志"
+    },
+    "search": {
+      "placeholder": "搜索..."
+    },
+    "filters": {
+      "status": "状态",
+      "license": "许可类型",
+      "eventType": "事件类型",
+      "all": "全部",
+      "valid": "有效",
+      "invalid": "无效",
+      "build": "构建",
+      "upload": "上传",
+      "download": "下载"
+    },
+    "status": {
+      "valid": "有效",
+      "invalid": "无效"
+    },
+    "actions": {
+      "runCheck": "运行检查",
+      "viewDetails": "查看详情",
+      "viewLicense": "查看许可",
+      "viewLog": "查看日志",
+      "actions": "操作"
+    },
+    "integrity": {
+      "status": "状态",
+      "filePath": "文件路径",
+      "algorithm": "算法",
+      "fileSize": "文件大小",
+      "checkTime": "检查时间"
+    },
+    "license": {
+      "assetId": "资产ID",
+      "platform": "平台",
+      "type": "类型",
+      "permissions": "权限",
+      "recordedAt": "记录时间",
+      "url": "许可链接",
+      "commercial": "商业使用",
+      "modify": "修改",
+      "redistribute": "再分发",
+      "attribution": "署名要求"
+    },
+    "audit": {
+      "eventType": "事件类型",
+      "action": "操作",
+      "result": "结果",
+      "resource": "资源",
+      "timestamp": "时间戳",
+      "eventId": "事件ID",
+      "userId": "用户ID",
+      "ipAddress": "IP地址",
+      "details": "详细信息",
+      "anonymous": "匿名"
+    },
+    "dialogs": {
+      "auditDetails": "审计日志详情",
+      "licenseDetails": "许可记录详情"
+    },
+    "messages": {
+      "noProject": "请先选择一个项目",
+      "noData": "暂无数据",
+      "loadStatsFailed": "加载统计信息失败",
+      "loadIntegrityFailed": "加载完整性检查结果失败",
+      "loadLicensesFailed": "加载许可记录失败",
+      "loadAuditFailed": "加载审计日志失败",
+      "integrityCheckComplete": "完整性检查完成",
+      "integrityCheckFailed": "完整性检查失败"
+    }
+  },
+  "scan": {
+    "title": "项目扫描",
+    "selectPath": "选择路径",
+    "selectProjectPath": "选择项目路径",
+    "noPathSelected": "未选择路径",
+    "startScan": "开始扫描",
+    "scanning": "扫描中...",
+    "createProject": "创建项目",
+    "progress": "扫描进度",
+    "results": "扫描结果",
+    "completedIn": "扫描耗时",
+    "currentFile": "当前文件",
+    "processedFiles": "已处理文件",
+    "estimatedRemaining": "预计剩余时间",
+    "supportedLanguages": "支持的语言",
+    "warnings": "警告",
+    "errors": "错误",
+    "phase": {
+      "detectingProjectType": "检测项目类型",
+      "scanningModpack": "扫描组合包",
+      "scanningMods": "扫描模组",
+      "scanningLanguageResources": "扫描语言资源",
+      "generatingStatistics": "生成统计信息",
+      "validation": "验证",
+      "completed": "完成"
+    },
+    "tabs": {
+      "overview": "概览",
+      "modpack": "组合包",
+      "mods": "模组",
+      "languages": "语言"
+    },
+    "stats": {
+      "totalMods": "模组总数",
+      "languageFiles": "语言文件",
+      "translatableKeys": "可翻译键",
+      "supportedLanguages": "支持语言"
+    },
+    "modpack": {
+      "name": "名称",
+      "version": "版本",
+      "author": "作者",
+      "description": "描述",
+      "minecraftVersion": "Minecraft 版本",
+      "loader": "加载器",
+      "platform": "平台",
+      "notFound": "未找到组合包信息"
+    },
+    "mod": {
+      "authors": "作者"
+    },
+    "language": {
+      "keys": "键",
+      "source": "来源"
+    }
+  }
+}

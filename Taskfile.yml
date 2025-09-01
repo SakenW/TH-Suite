@@ -1,0 +1,146 @@
+﻿version: '3'
+
+vars:
+  PYTHON: poetry run python
+  PYTEST: poetry run pytest
+  RUFF: poetry run ruff
+  MYPY: poetry run mypy
+
+tasks:
+  install:
+    desc: Install all dependencies
+    cmds:
+      - poetry install
+      - cd apps/mc_l10n/frontend && pnpm install
+      - cd apps/rw_l10n/frontend && pnpm install
+
+  lint:
+    desc: Run linting for all components
+    cmds:
+      - task: lint:python
+      - task: lint:frontend
+
+  lint:python:
+    desc: Run Python linting
+    cmds:
+      - "{{.RUFF}} check ."
+      - "{{.MYPY}} packages apps"
+
+  lint:frontend:
+    desc: Run frontend linting
+    cmds:
+      - cd apps/mc_l10n/frontend && pnpm lint
+      - cd apps/rw_l10n/frontend && pnpm lint
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: test:python
+      - task: test:frontend
+
+  test:python:
+    desc: Run Python tests
+    cmds:
+      - "{{.PYTEST}} tests/"
+
+  test:frontend:
+    desc: Run frontend tests
+    cmds:
+      - cd apps/mc_l10n/frontend && pnpm test
+      - cd apps/rw_l10n/frontend && pnpm test
+
+  # 场景化测试
+  test:scenario:
+    desc: Run scenario tests
+    summary: |
+      Run scenario tests:
+        task test:scenario:mc-l10n-basic    # Run MC L10n basic scenario
+        task test:scenario:rw-l10n-basic    # Run RW Studio basic scenario
+        task test:scenario:all              # Run all scenarios
+      
+  test:scenario:mc_l10n_basic:
+    desc: Run MC L10n basic scenario
+    cmds:
+      - "{{.PYTHON}} tests/scenarios/shared/scripts/run_scenario.py tests/scenarios/mc_l10n_basic/manifest.yaml"
+
+  test:scenario:rw-l10n-basic:
+    desc: Run RW Studio basic scenario
+    cmds:
+      - echo "RW Studio scenario not implemented yet"
+
+  test:scenario:all:
+    desc: Run all scenarios
+    cmds:
+      - task: test:scenario:mc-l10n-basic
+      # - task: test:scenario:rw-l10n-basic  # TODO: Implement RW Studio scenario
+
+  test:mc:
+    desc: Run TH Suite MC L10n golden tests
+    cmds:
+      - "{{.PYTEST}} tests/golden/mc/"
+
+  test:rw:
+    desc: Run RW Studio golden tests
+    cmds:
+      - "{{.PYTEST}} tests/golden/rw/"
+
+  dev:mc:
+    desc: Start TH Suite MC L10n development servers
+    cmds:
+      - task: dev:mc:backend
+      - task: dev:mc:frontend
+
+  dev:mc:backend:
+    desc: Start TH Suite MC L10n backend
+    dir: apps/mc_l10n/backend
+    env:
+      PYTHONPATH: "{{.ROOT_DIR}}"
+    cmds:
+      - "{{.PYTHON}} main.py"
+
+  dev:mc:frontend:
+    desc: Start TH Suite MC L10n frontend
+    cmds:
+      - cd apps/mc_l10n/frontend && pnpm tauri dev
+
+  dev:rw:
+    desc: Start RW Studio development servers
+    cmds:
+      - task: dev:rw:backend
+      - task: dev:rw:frontend
+
+  dev:rw:backend:
+    desc: Start RW Studio backend
+    dir: apps/rw_l10n/backend
+    cmds:
+      - "{{.PYTHON}} main.py"
+
+  dev:rw:frontend:
+    desc: Start RW Studio frontend
+    cmds:
+      - cd apps/rw_l10n/frontend && pnpm tauri dev
+
+  build:mc:
+    desc: Build TH Suite MC L10n executable
+    cmds:
+      - cd apps/mc_l10n/frontend && pnpm tauri build
+
+  build:rw:
+    desc: Build RW Studio executable
+    cmds:
+      - cd apps/rw_l10n/frontend && pnpm tauri build
+
+  build:all:
+    desc: Build all executables
+    cmds:
+      - task: build:mc
+      - task: build:rw
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf apps/*/frontend/src-tauri/target
+      - rm -rf apps/*/frontend/dist
+      - rm -rf .pytest_cache
+      - rm -rf **/__pycache__
+      - rm -rf **/*.pyc

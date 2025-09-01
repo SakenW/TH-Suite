@@ -1,0 +1,7 @@
+{
+  "database_path": "../../backend/data/mc_l10n.db",
+  "data_dir": "../../backend/data",
+  "theme": "light",
+  "language": "zh-CN",
+  "auto_save": true
+}

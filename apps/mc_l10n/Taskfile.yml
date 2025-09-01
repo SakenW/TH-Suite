@@ -1,0 +1,186 @@
+﻿# TH Suite MC L10n Taskfile
+version: '3'
+
+vars:
+  APP_NAME: TH Suite MC L10n
+  BACKEND_DIR: backend
+  FRONTEND_DIR: frontend
+  PYTHON: poetry run python
+  PYTEST: poetry run pytest
+
+tasks:
+  # Development
+  dev:
+    desc: Start TH Suite MC L10n development (backend + frontend)
+    cmds:
+      - task: dev:parallel
+
+  dev:parallel:
+    desc: Start backend and frontend in parallel
+    cmds:
+      - |
+        echo "🎮 Starting {{.APP_NAME}} development..."
+        {{.PYTHON}} -m uvicorn {{.BACKEND_DIR}}.main:app --reload --port 8001 &
+        cd {{.FRONTEND_DIR}} && pnpm tauri dev &
+        wait
+
+  dev:backend:
+    desc: Start TH Suite MC L10n backend only
+    cmds:
+      - echo "🔧 Starting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} main.py
+
+  dev:frontend:
+    desc: Start TH Suite MC L10n frontend only
+    cmds:
+      - echo "🎨 Starting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm tauri dev
+
+  # Building
+  build:
+    desc: Build TH Suite MC L10n application
+    cmds:
+      - task: build:frontend
+
+  build:frontend:
+    desc: Build TH Suite MC L10n frontend
+    cmds:
+      - echo "🏗️ Building {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm tauri build
+
+  build:backend:
+    desc: Package TH Suite MC L10n backend
+    cmds:
+      - echo "📦 Packaging {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -m PyInstaller --onefile main.py
+
+  # Testing
+  test:
+    desc: Run TH Suite MC L10n tests
+    cmds:
+      - task: test:backend
+      - task: test:frontend
+
+  test:backend:
+    desc: Run TH Suite MC L10n backend tests
+    cmds:
+      - echo "🧪 Testing {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTEST}} tests/
+
+  test:frontend:
+    desc: Run TH Suite MC L10n frontend tests
+    cmds:
+      - echo "🧪 Testing {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm test
+
+  test:golden:
+    desc: Run TH Suite MC L10n golden tests
+    cmds:
+      - echo "🏆 Running {{.APP_NAME}} golden tests..."
+      - {{.PYTEST}} ../../tests/golden/mc/
+
+  # Linting and Formatting
+  lint:
+    desc: Lint TH Suite MC L10n code
+    cmds:
+      - task: lint:backend
+      - task: lint:frontend
+
+  lint:backend:
+    desc: Lint TH Suite MC L10n backend
+    cmds:
+      - echo "🔍 Linting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && poetry run ruff check .
+      - cd {{.BACKEND_DIR}} && poetry run mypy .
+
+  lint:frontend:
+    desc: Lint TH Suite MC L10n frontend
+    cmds:
+      - echo "🔍 Linting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm lint
+
+  format:
+    desc: Format TH Suite MC L10n code
+    cmds:
+      - task: format:backend
+      - task: format:frontend
+
+  format:backend:
+    desc: Format TH Suite MC L10n backend
+    cmds:
+      - echo "✨ Formatting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && poetry run ruff format .
+      - cd {{.BACKEND_DIR}} && poetry run isort .
+
+  format:frontend:
+    desc: Format TH Suite MC L10n frontend
+    cmds:
+      - echo "✨ Formatting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm format
+
+  # Installation
+  install:
+    desc: Install TH Suite MC L10n dependencies
+    cmds:
+      - task: install:backend
+      - task: install:frontend
+
+  install:backend:
+    desc: Install TH Suite MC L10n backend dependencies
+    cmds:
+      - echo "📦 Installing {{.APP_NAME}} backend dependencies..."
+      - cd {{.BACKEND_DIR}} && pip install -r requirements.txt
+
+  install:frontend:
+    desc: Install TH Suite MC L10n frontend dependencies
+    cmds:
+      - echo "📦 Installing {{.APP_NAME}} frontend dependencies..."
+      - cd {{.FRONTEND_DIR}} && pnpm install
+
+  # Cleaning
+  clean:
+    desc: Clean TH Suite MC L10n build artifacts
+    cmds:
+      - echo "🧹 Cleaning {{.APP_NAME}} artifacts..."
+      - rm -rf {{.FRONTEND_DIR}}/src-tauri/target
+      - rm -rf {{.FRONTEND_DIR}}/dist
+      - rm -rf {{.BACKEND_DIR}}/__pycache__
+      - rm -rf {{.BACKEND_DIR}}/**/__pycache__
+      - rm -rf {{.BACKEND_DIR}}/*.pyc
+      - rm -rf {{.BACKEND_DIR}}/dist
+      - rm -rf {{.BACKEND_DIR}}/build
+      - rm -rf {{.BACKEND_DIR}}/logs/*
+      - rm -rf {{.BACKEND_DIR}}/temp/*
+      - rm -rf {{.BACKEND_DIR}}/cache/*
+
+  # Utilities
+  status:
+    desc: Show TH Suite MC L10n status
+    cmds:
+      - |
+        echo "📊 {{.APP_NAME}} Status:"
+        echo "  Backend: $(cd {{.BACKEND_DIR}} && python --version 2>&1)"
+        echo "  Frontend: $(cd {{.FRONTEND_DIR}} && node --version)"
+        echo "  Tauri: $(cd {{.FRONTEND_DIR}} && pnpm tauri --version)"
+
+  health:
+    desc: Check TH Suite MC L10n health
+    cmds:
+      - |
+        echo "🏥 {{.APP_NAME}} Health Check:"
+        curl -f http://localhost:8001/api/system/health 2>/dev/null && echo "✅ Backend OK" || echo "❌ Backend DOWN"
+
+  logs:
+    desc: Show TH Suite MC L10n logs
+    cmds:
+      - |
+        echo "📋 {{.APP_NAME}} Logs:"
+        tail -n 50 {{.BACKEND_DIR}}/logs/*.log 2>/dev/null || echo "No logs found"
+
+  restart:
+    desc: Restart TH Suite MC L10n services
+    cmds:
+      - echo "🔄 Restarting {{.APP_NAME}}..."
+      - pkill -f "mc-studio" || true
+      - sleep 2
+      - task: dev:backend

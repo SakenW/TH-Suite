@@ -1,0 +1,160 @@
+﻿version: '3.8'
+
+services:
+  # MC Studio Backend - Minecraft 本地化工具后端
+  mc-l10n-backend:
+    build:
+      context: ./apps/mc-l10n/backend
+      dockerfile: Dockerfile
+    container_name: mc-l10n-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./apps/mc-l10n/backend/data:/app/data
+      - ./apps/mc-l10n/backend/logs:/app/logs
+      - ./apps/mc-l10n/backend/temp:/app/temp
+      - ./apps/mc-l10n/backend/cache:/app/cache
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+
+  # RW Studio Backend - Rusted Warfare 本地化工具后端
+  rw-studio-backend:
+    build:
+      context: ./apps/rw-studio/backend
+      dockerfile: Dockerfile
+    container_name: rw-studio-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/1
+    volumes:
+      - ./apps/rw-studio/backend/data:/app/data
+      - ./apps/rw-studio/backend/logs:/app/logs
+      - ./apps/rw-studio/backend/temp:/app/temp
+      - ./apps/rw-studio/backend/backups:/app/backups
+      - ./apps/rw-studio/backend/cache:/app/cache
+      # 挂载游戏目录（需要根据实际情况调整）
+      - "${RIMWORLD_PATH:-/opt/rimworld}:/opt/rimworld:ro"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: th-suite-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+
+  # Nginx Reverse Proxy (可选)
+  nginx:
+    image: nginx:alpine
+    container_name: th-suite-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - mc-l10n-backend
+      - rw-studio-backend
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+    profiles:
+      - production
+
+  # PostgreSQL Database (可选，用于生产环境)
+  postgres:
+    image: postgres:15-alpine
+    container_name: th-suite-postgres
+    environment:
+      - POSTGRES_DB=th_tools
+      - POSTGRES_USER=th_tools
+      - POSTGRES_PASSWORD=th_tools_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+    profiles:
+      - production
+
+  # Monitoring with Prometheus (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: th-suite-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+    profiles:
+      - monitoring
+
+  # Grafana Dashboard (可选)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: th-suite-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - th-suite-network
+    profiles:
+      - monitoring
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  th-suite-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

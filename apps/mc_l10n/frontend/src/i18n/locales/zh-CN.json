@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "Minecraft 本地化工具"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑"
+  }
+}

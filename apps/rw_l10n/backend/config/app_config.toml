@@ -1,0 +1,77 @@
+[app]
+name = "RW Studio Backend"
+version = "1.0.0"
+description = "Rusted Warfare 本地化工具后端服务"
+port = 8002
+host = "127.0.0.1"
+debug = true
+reload = true
+
+[logging]
+level = "INFO"
+format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+file = "logs/rw-studio.log"
+max_size = "10MB"
+backup_count = 5
+console = true
+
+[cors]
+allow_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "tauri://localhost",
+    "https://tauri.localhost"
+]
+allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+allow_headers = ["*"]
+allow_credentials = true
+
+[database]
+url = "sqlite:///./data/rw_studio.db"
+echo = false
+pool_size = 10
+max_overflow = 20
+
+[redis]
+url = "redis://localhost:6379/1"
+max_connections = 10
+retry_on_timeout = true
+
+[security]
+secret_key = "your-secret-key-here"
+algorithm = "HS256"
+access_token_expire_minutes = 30
+
+[steam]
+api_key = ""
+app_id = 294100  # RimWorld Steam App ID
+workshop_timeout = 30
+max_concurrent_downloads = 5
+
+[game]
+install_path = "C:/Program Files (x86)/Steam/steamapps/common/Rusted Warfare"
+mods_path = "~/Documents/RustedWarfare/mods"
+lang_path = "~/Documents/RustedWarfare/lang"
+config_path = "~/Documents/RustedWarfare/settings.txt"
+
+[performance]
+max_workers = 4
+task_timeout = 300
+memory_limit_mb = 1024
+cleanup_interval_minutes = 60
+
+[features]
+enable_steam_workshop = true
+enable_translation_memory = true
+enable_terminology_management = true
+enable_quality_assurance = true
+enable_batch_processing = true
+
+[storage]
+data_dir = "./data"
+translations_dir = "./data/translations"
+tm_dir = "./data/translation_memory"
+terminology_dir = "./data/terminology"
+logs_dir = "./logs"
+temp_dir = "./temp"
+cache_dir = "./cache"

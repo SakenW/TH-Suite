@@ -1,0 +1,54 @@
+[package]
+name = "th-suite-mc-l10n"
+version = "1.0.0"
+description = "TransHub Suite MC L10n - Minecraft Resource Pack and Data Pack Localization Tool"
+authors = ["TransHub Suite Team"]
+license = "MIT"
+repository = "https://github.com/your-repo/th-suite"
+default-run = "th-suite-mc-l10n"
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2.1.0", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.1.0", features = ["tray-icon", "image-ico", "image-png"] }
+tauri-plugin-shell = "2.0.1"
+tauri-plugin-dialog = "2.0.1"
+tauri-plugin-fs = "2.0.1"
+tauri-plugin-http = "2.0.1"
+tauri-plugin-notification = "2.0.1"
+tauri-plugin-process = "2.0.1"
+tauri-plugin-window-state = "2.0.1"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1.0", features = ["full"] }
+open = "5.0"
+log = "0.4"
+env_logger = "0.10"
+thiserror = "1.0"
+anyhow = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+urlencoding = "2.1"
+tauri-plugin-log = { version = "2.0.0", features = ["colored"] }
+
+[features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
+default = [ "custom-protocol" ]
+# this feature is used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
+custom-protocol = [ "tauri/custom-protocol" ]
+
+[profile.release]
+# 优化为单文件可执行程序
+opt-level = "z"     # 最大优化
+lto = true          # 链接时优化
+codegen-units = 1   # 减少代码生成单元
+panic = "abort"     # 减少二进制大小
+strip = true        # 移除调试符号

@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "Minecraft Localization Tool"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}

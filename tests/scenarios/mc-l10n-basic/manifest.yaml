@@ -1,0 +1,249 @@
+# MC L10n 基础场景定义
+# 定义了Minecraft模组本地化的完整工作流程
+
+# 场景元数据
+meta:
+  id: "mc-l10n-basic-v1"
+  name: "MC L10n 基础场景"
+  category: "integration"
+  description: "演示Minecraft模组本地化的完整工作流程"
+  version: "1.0.0"
+  author: "TH-Suite Team"
+  tags: ["minecraft", "localization", "integration"]
+
+# 依赖声明
+dependencies:
+  # 数据库依赖
+  database:
+    type: "sqlite"
+    schema: "test_mc_l10n"
+    cleanup: true
+    
+  # 网络依赖
+  network:
+    - host: "localhost"
+      port: 8000
+      protocol: "http"
+      
+  # 外部服务
+  services:
+    - name: "mc-l10n-backend"
+      required: true
+      startup_timeout: 30
+      
+  # 文件系统
+  filesystem:
+    temp_dir: ".artifacts/temp"
+    output_dir: ".artifacts/output"
+
+# 执行环境配置
+environment:
+  # 时区设置
+  timezone: "Asia/Shanghai"
+  
+  # 随机种子（确保可重复性）
+  random_seed: 42
+  
+  # 超时设置（秒）
+  timeouts:
+    default: 300
+    scan: 600
+    build: 900
+    
+  # 模式隔离
+  isolation:
+    database_schema: "test_mc_l10n_${SCENARIO_ID}"
+    temp_prefix: "mc_l10n_${SCENARIO_ID}_"
+
+# 变量定义（支持参数替换）
+variables:
+  # 项目路径
+  project_path: "tests/fixtures/mc-modpack"
+  
+  # 模组信息
+  mod_id: "example-mod"
+  mod_version: "1.0.0"
+  
+  # 语言设置
+  source_lang: "en_us"
+  target_lang: "zh_cn"
+  
+  # API端点
+  api_base: "http://localhost:8000/api/v1"
+
+# 执行步骤
+steps:
+  # 步骤1: 环境准备
+  - name: "环境准备"
+    id: "setup"
+    description: "初始化测试环境和数据库"
+    command: "python ${SCENARIO_DIR}/scripts/setup.py"
+    timeout: 60
+    continue_on_error: false
+    
+  # 步骤2: 导入测试数据
+  - name: "导入模组元数据"
+    id: "import_metadata"
+    description: "导入模组基本信息和配置"
+    command: >
+      python ${SCENARIO_DIR}/scripts/import_data.py 
+      --type metadata 
+      --file ${SCENARIO_DIR}/inputs/mod_metadata.jsonl
+    depends_on: ["setup"]
+    
+  # 步骤3: 扫描项目
+  - name: "扫描模组包"
+    id: "scan_project"
+    description: "扫描模组包结构和语言文件"
+    command: >
+      python ${SCENARIO_DIR}/scripts/scan_project.py 
+      --path ${project_path}
+    timeout: 300
+    depends_on: ["import_metadata"]
+    
+  # 步骤4: 提取语言条目
+  - name: "提取语言条目"
+    id: "extract_entries"
+    description: "从模组中提取需要翻译的文本"
+    command: >
+      python ${SCENARIO_DIR}/scripts/extract_entries.py 
+      --mod-id ${mod_id}
+    depends_on: ["scan_project"]
+    
+  # 步骤5: 处理翻译请求
+  - name: "处理翻译"
+    id: "process_translations"
+    description: "处理翻译请求和更新"
+    command: >
+      python ${SCENARIO_DIR}/scripts/process_translations.py 
+      --source ${source_lang} 
+      --target ${target_lang}
+    depends_on: ["extract_entries"]
+    
+  # 步骤6: 构建模组包
+  - name: "构建本地化包"
+    id: "build_package"
+    description: "构建包含翻译的模组包"
+    command: >
+      python ${SCENARIO_DIR}/scripts/build_package.py 
+      --mod-id ${mod_id} 
+      --version ${mod_version}
+    timeout: 600
+    depends_on: ["process_translations"]
+    
+  # 步骤7: 验证结果
+  - name: "验证构建结果"
+    id: "verify_results"
+    description: "验证构建产物的正确性"
+    command: >
+      python ${SCENARIO_DIR}/scripts/verify_results.py 
+      --package .artifacts/output/${mod_id}-${mod_version}.zip
+    depends_on: ["build_package"]
+    
+  # 步骤8: 性能监控
+  - name: "性能监控"
+    id: "monitor_performance"
+    description: "收集和记录性能指标"
+    command: "python ${SCENARIO_DIR}/scripts/monitor_performance.py"
+    depends_on: ["verify_results"]
+    
+  # 步骤9: 生成报告
+  - name: "生成测试报告"
+    id: "generate_report"
+    description: "生成完整的测试报告"
+    command: >
+      python ${SCENARIO_DIR}/scripts/generate_report.py 
+      --output .artifacts/report.html
+    depends_on: ["monitor_performance"]
+    
+  # 步骤10: 环境清理
+  - name: "环境清理"
+    id: "cleanup"
+    description: "清理测试数据和临时文件"
+    command: "python ${SCENARIO_DIR}/scripts/cleanup.py"
+    always_run: true  # 即使前面步骤失败也要运行
+
+# 断言验证
+assertions:
+  # 文件存在性验证
+  files:
+    - path: ".artifacts/output/${mod_id}-${mod_version}.zip"
+      description: "构建产物应该存在"
+      required: true
+      
+    - path: ".artifacts/logs/scan.log"
+      description: "扫描日志应该存在"
+      required: true
+      
+  # 数据库验证
+  database:
+    - query: "SELECT COUNT(*) FROM mods WHERE id = '${mod_id}'"
+      expected: 1
+      description: "模组应该被正确导入"
+      
+    - query: "SELECT COUNT(*) FROM language_entries WHERE mod_id = '${mod_id}'"
+      operator: ">"
+      expected: 0
+      description: "应该有语言条目被提取"
+      
+  # API响应验证
+  api:
+    - endpoint: "${api_base}/mods/${mod_id}"
+      method: "GET"
+      expected_status: 200
+      expected_fields: ["id", "name", "version"]
+      description: "模组API应该可访问"
+      
+  # 性能指标验证
+  performance:
+    - metric: "scan_duration"
+      operator: "<"
+      value: 300
+      description: "扫描时间应该在5分钟内"
+      
+    - metric: "memory_peak"
+      operator: "<"
+      value: 512
+      unit: "MB"
+      description: "内存峰值应该小于512MB"
+
+# 清理规则
+cleanup:
+  # 数据库清理
+  database:
+    drop_schema: true
+    
+  # 文件系统清理
+  filesystem:
+    remove_temp: true
+    remove_artifacts: false  # 保留产物用于检查
+    
+  # 服务清理
+  services:
+    stop_containers: false
+    
+  # 自定义清理脚本
+  custom_script: "${SCENARIO_DIR}/scripts/custom_cleanup.py"
+
+# 输出配置
+output:
+  # 日志配置
+  logging:
+    level: "INFO"
+    format: "json"
+    file: ".artifacts/logs/scenario.log"
+    
+  # 报告配置
+  reports:
+    - type: "html"
+      path: ".artifacts/report.html"
+      template: "default"
+      
+    - type: "json"
+      path: ".artifacts/results.json"
+      
+  # 性能报告
+  performance:
+    enabled: true
+    format: "prometheus"
+    path: ".artifacts/metrics.txt"

@@ -1,0 +1,212 @@
+# RW Studio Taskfile
+version: '3'
+
+vars:
+  APP_NAME: RW Studio
+  BACKEND_DIR: backend
+  FRONTEND_DIR: frontend
+  PYTHON: poetry run python
+  PYTEST: poetry run pytest
+
+tasks:
+  # Development
+  dev:
+    desc: Start RW Studio development (backend + frontend)
+    cmds:
+      - task: dev:parallel
+
+  dev:parallel:
+    desc: Start backend and frontend in parallel
+    cmds:
+      - |
+        echo "🏠 Starting {{.APP_NAME}} development..."
+        {{.PYTHON}} -m uvicorn {{.BACKEND_DIR}}.main:app --reload --port 8002 &
+        cd {{.FRONTEND_DIR}} && pnpm tauri dev &
+        wait
+
+  dev:backend:
+    desc: Start RW Studio backend only
+    cmds:
+      - echo "🔧 Starting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} main.py
+
+  dev:frontend:
+    desc: Start RW Studio frontend only
+    cmds:
+      - echo "🎨 Starting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm tauri dev
+
+  # Building
+  build:
+    desc: Build RW Studio application
+    cmds:
+      - task: build:frontend
+
+  build:frontend:
+    desc: Build RW Studio frontend
+    cmds:
+      - echo "🏗️ Building {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm tauri build
+
+  build:backend:
+    desc: Package RW Studio backend
+    cmds:
+      - echo "📦 Packaging {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -m PyInstaller --onefile main.py
+
+  # Testing
+  test:
+    desc: Run RW Studio tests
+    cmds:
+      - task: test:backend
+      - task: test:frontend
+
+  test:backend:
+    desc: Run RW Studio backend tests
+    cmds:
+      - echo "🧪 Testing {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && {{.PYTEST}} tests/
+
+  test:frontend:
+    desc: Run RW Studio frontend tests
+    cmds:
+      - echo "🧪 Testing {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm test
+
+  test:golden:
+    desc: Run RW Studio golden tests
+    cmds:
+      - echo "🏆 Running {{.APP_NAME}} golden tests..."
+      - {{.PYTEST}} ../../tests/golden/rw/
+
+  # Linting and Formatting
+  lint:
+    desc: Lint RW Studio code
+    cmds:
+      - task: lint:backend
+      - task: lint:frontend
+
+  lint:backend:
+    desc: Lint RW Studio backend
+    cmds:
+      - echo "🔍 Linting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && poetry run ruff check .
+      - cd {{.BACKEND_DIR}} && poetry run mypy .
+
+  lint:frontend:
+    desc: Lint RW Studio frontend
+    cmds:
+      - echo "🔍 Linting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm lint
+
+  format:
+    desc: Format RW Studio code
+    cmds:
+      - task: format:backend
+      - task: format:frontend
+
+  format:backend:
+    desc: Format RW Studio backend
+    cmds:
+      - echo "✨ Formatting {{.APP_NAME}} backend..."
+      - cd {{.BACKEND_DIR}} && poetry run ruff format .
+      - cd {{.BACKEND_DIR}} && poetry run isort .
+
+  format:frontend:
+    desc: Format RW Studio frontend
+    cmds:
+      - echo "✨ Formatting {{.APP_NAME}} frontend..."
+      - cd {{.FRONTEND_DIR}} && pnpm format
+
+  # Installation
+  install:
+    desc: Install RW Studio dependencies
+    cmds:
+      - task: install:backend
+      - task: install:frontend
+
+  install:backend:
+    desc: Install RW Studio backend dependencies
+    cmds:
+      - echo "📦 Installing {{.APP_NAME}} backend dependencies..."
+      - cd {{.BACKEND_DIR}} && pip install -r requirements.txt
+
+  install:frontend:
+    desc: Install RW Studio frontend dependencies
+    cmds:
+      - echo "📦 Installing {{.APP_NAME}} frontend dependencies..."
+      - cd {{.FRONTEND_DIR}} && pnpm install
+
+  # Cleaning
+  clean:
+    desc: Clean RW Studio build artifacts
+    cmds:
+      - echo "🧹 Cleaning {{.APP_NAME}} artifacts..."
+      - rm -rf {{.FRONTEND_DIR}}/src-tauri/target
+      - rm -rf {{.FRONTEND_DIR}}/dist
+      - rm -rf {{.BACKEND_DIR}}/__pycache__
+      - rm -rf {{.BACKEND_DIR}}/**/__pycache__
+      - rm -rf {{.BACKEND_DIR}}/*.pyc
+      - rm -rf {{.BACKEND_DIR}}/dist
+      - rm -rf {{.BACKEND_DIR}}/build
+      - rm -rf {{.BACKEND_DIR}}/logs/*
+      - rm -rf {{.BACKEND_DIR}}/temp/*
+      - rm -rf {{.BACKEND_DIR}}/cache/*
+      - rm -rf {{.BACKEND_DIR}}/backups/*
+
+  # Utilities
+  status:
+    desc: Show RW Studio status
+    cmds:
+      - |
+        echo "📊 {{.APP_NAME}} Status:"
+        echo "  Backend: $(cd {{.BACKEND_DIR}} && python --version 2>&1)"
+        echo "  Frontend: $(cd {{.FRONTEND_DIR}} && node --version)"
+        echo "  Tauri: $(cd {{.FRONTEND_DIR}} && pnpm tauri --version)"
+
+  health:
+    desc: Check RW Studio health
+    cmds:
+      - |
+        echo "🏥 {{.APP_NAME}} Health Check:"
+        curl -f http://localhost:8002/api/system/health 2>/dev/null && echo "✅ Backend OK" || echo "❌ Backend DOWN"
+
+  logs:
+    desc: Show RW Studio logs
+    cmds:
+      - |
+        echo "📋 {{.APP_NAME}} Logs:"
+        tail -n 50 {{.BACKEND_DIR}}/logs/*.log 2>/dev/null || echo "No logs found"
+
+  restart:
+    desc: Restart RW Studio services
+    cmds:
+      - echo "🔄 Restarting {{.APP_NAME}}..."
+      - pkill -f "rw-studio" || true
+      - sleep 2
+      - task: dev:backend
+
+  # RW Studio specific tasks
+  backup:
+    desc: Create backup of RW Studio data
+    cmds:
+      - echo "💾 Creating {{.APP_NAME}} backup..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -c "from services.save_game_service import SaveGameService; SaveGameService().backup_all_saves()"
+
+  sync:workshop:
+    desc: Sync Workshop items
+    cmds:
+      - echo "🔄 Syncing Workshop items..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -c "from services.workshop_service import WorkshopService; WorkshopService().sync_subscribed_items()"
+
+  validate:saves:
+    desc: Validate all save games
+    cmds:
+      - echo "✅ Validating save games..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -c "from services.save_game_service import SaveGameService; SaveGameService().validate_all_saves()"
+
+  cleanup:old-backups:
+    desc: Clean up old backups
+    cmds:
+      - echo "🧹 Cleaning up old backups..."
+      - cd {{.BACKEND_DIR}} && {{.PYTHON}} -c "from services.save_game_service import SaveGameService; SaveGameService().cleanup_old_backups()"

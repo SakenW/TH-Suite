@@ -1,0 +1,8 @@
+export { default as HomePage } from './HomePage';
+export { default as ScanPage } from './ScanPage';
+export { default as ExtractPage } from './ExtractPage';
+export { default as ExportPage } from './ExportPage';
+export { default as BuildPage } from './BuildPage';
+export { default as SecurityPage } from './SecurityPage';
+export { default as SettingsPage } from './SettingsPage';
+export { default as LocalDataPage } from './LocalDataPage';

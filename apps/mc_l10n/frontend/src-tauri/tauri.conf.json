@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TH Suite MC L10n",
+  "version": "0.1.0",
+  "identifier": "com.thsuite.mcl10n",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:3456"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "TH Suite MC L10n",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "devtools": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' tauri:; img-src 'self' asset: https://asset.localhost tauri:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com tauri:; font-src 'self' https://fonts.gstatic.com tauri:; script-src 'self' 'unsafe-eval' tauri:; connect-src 'self' ws://localhost:* http://localhost:* tauri:",
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "DeveloperTool",
+    "copyright": "",
+    "longDescription": "TransHub Suite Minecraft Localization Tool - A powerful tool for managing and translating Minecraft mod language files.",
+    "shortDescription": "TransHub Suite MC L10n",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

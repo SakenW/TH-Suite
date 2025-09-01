@@ -1,0 +1,95 @@
+{
+  "name": "th-suite",
+  "version": "1.0.0",
+  "description": "TransHub Suite - 本地化工具套件，支持Minecraft、RimWorld等游戏的模组和资源包自动化翻译工作流程",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*/frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:mc_l10n\" \"npm run dev:rw_l10n\"",
+    "dev:mc_l10n": "cd apps/mc_l10n/frontend && npm run tauri dev",
+    "dev:rw_l10n": "cd apps/rw_l10n/backend && python main.py",
+    "build": "npm run build:packages && npm run build:apps",
+    "build:packages": "npm run build:protocol && npm run build:ui-kit",
+    "build:protocol": "cd packages/protocol && npm run build",
+    "build:ui-kit": "cd packages/ui-kit && npm run build",
+    "build:apps": "npm run build:mc_l10n",
+    "build:mc_l10n": "cd apps/mc_l10n/frontend && npm run tauri build",
+    "install:all": "npm install && npm run install:packages && npm run install:apps",
+    "install:packages": "cd packages/protocol && npm install && cd ../ui-kit && npm install",
+    "install:apps": "cd apps/mc_l10n/frontend && npm install",
+    "install:python": "npm run install:python:mc && npm run install:python:rw",
+    "install:python:mc": "cd apps/mc_l10n/backend && pip install -r requirements.txt",
+    "install:python:rw": "cd apps/rw_l10n/backend && pip install -r requirements.txt",
+    "clean": "npm run clean:packages && npm run clean:apps",
+    "clean:packages": "cd packages/protocol && npm run clean && cd ../ui-kit && npm run clean",
+    "clean:apps": "cd apps/mc_l10n/frontend && npm run clean",
+    "lint": "npm run lint:packages && npm run lint:apps",
+    "lint:packages": "cd packages/protocol && npm run lint && cd ../ui-kit && npm run lint",
+    "lint:apps": "cd apps/mc_l10n/frontend && npm run lint",
+    "lint:python": "npm run lint:python:mc && npm run lint:python:rw",
+    "lint:python:mc": "cd apps/mc_l10n/backend && flake8 . && mypy .",
+    "lint:python:rw": "cd apps/rw_l10n/backend && flake8 . && mypy .",
+    "test": "npm run test:packages && npm run test:apps",
+    "test:packages": "cd packages/protocol && npm run test",
+    "test:apps": "cd apps/mc_l10n/frontend && npm run test",
+    "test:python": "npm run test:python:mc && npm run test:python:rw",
+    "test:python:mc": "cd apps/mc_l10n/backend && pytest",
+    "test:python:rw": "cd apps/rw_l10n/backend && pytest",
+    "format": "npm run format:packages && npm run format:apps",
+    "format:packages": "cd packages/protocol && npm run format",
+    "format:apps": "cd apps/mc_l10n/frontend && npm run format",
+    "format:python": "npm run format:python:mc && npm run format:python:rw",
+    "format:python:mc": "cd apps/mc_l10n/backend && black . && isort .",
+    "format:python:rw": "cd apps/rw_l10n/backend && black . && isort .",
+    "start:mc_l10n": "cd apps/mc_l10n/backend && python main.py",
+    "start:rw_l10n": "cd apps/rw_l10n/backend && python main.py",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0",
+    "python": ">=3.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Saken/th-suite.git"
+  },
+  "keywords": [
+    "tauri",
+    "fastapi",
+    "localization",
+    "translation",
+    "i18n",
+    "trans-hub",
+    "automation",
+    "workflow",
+    "minecraft",
+    "rusted-warfare",
+    "game-localization",
+    "typescript",
+    "python",
+    "monorepo"
+  ],
+  "author": "Saken",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Saken/th-suite/issues"
+  },
+  "homepage": "https://trans-hub.net",
+  "dependencies": {
+    "immer": "^10.1.1"
+  }
+}

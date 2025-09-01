@@ -1,0 +1,497 @@
+{
+  "mcStudio": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "Minecraft Localization Tool",
+    "description": "Professional Minecraft localization and translation management"
+  },
+  "welcome": {
+    "title": "TH Suite MC L10n",
+    "subtitle": "Your comprehensive Minecraft resource management toolkit",
+    "description": "Analyze, extract, and build Minecraft resources with powerful tools designed for mod and resource pack creators.",
+    "quickActionsTitle": "Quick Actions",
+    "quickActions": {
+      "scan": {
+        "title": "Scan Resources",
+        "description": "Analyze and inventory Minecraft resources"
+      },
+      "extract": {
+        "title": "Extract Resources",
+        "description": "Extract resources from JAR files or archives"
+      },
+      "build": {
+        "title": "Build Resources",
+        "description": "Package and build resource packs"
+      },
+      "server": {
+        "title": "Server Interaction",
+        "description": "Manage server connections and status"
+      }
+    },
+    "buttons": {
+      "scanDirectory": "Scan Directory",
+      "scanArchive": "Scan Archive"
+    }
+  },
+  "features": {
+    "modpackProcessing": {
+      "title": "Modpack Processing",
+      "description": "Automatically extract language files from CurseForge/Modrinth modpacks",
+      "actions": {
+        "extract": "Extract Language Files",
+        "analyze": "Analyze Modpack",
+        "process": "Process Modpack"
+      }
+    },
+    "modLocalization": {
+      "title": "Mod Localization",
+      "description": "Batch processing of mod language file extraction and translation",
+      "actions": {
+        "scanMods": "Scan Mods",
+        "extractTexts": "Extract Texts",
+        "translateBatch": "Batch Translate"
+      }
+    },
+    "resourcePackSupport": {
+      "title": "Resource Pack Support",
+      "description": "Automated translation of resource pack text content",
+      "actions": {
+        "loadPack": "Load Resource Pack",
+        "extractTexts": "Extract Texts",
+        "applyTranslations": "Apply Translations"
+      }
+    },
+    "versionAdaptation": {
+      "title": "Version Adaptation",
+      "description": "Support for Java Edition and Bedrock Edition language file formats",
+      "versions": {
+        "java": "Java Edition",
+        "bedrock": "Bedrock Edition",
+        "auto": "Auto Detect"
+      }
+    }
+  },
+  "workflow": {
+    "extraction": {
+      "status": {
+        "completed": "Extraction completed",
+        "failed": "Extraction failed"
+      }
+    },
+    "translation": {
+      "status": {
+        "checking": "Checking Trans-Hub database...",
+        "submitting": "Submitting new texts...",
+        "translating": "Translation in progress...",
+        "downloading": "Downloading translations...",
+        "completed": "Translation completed"
+      }
+    },
+    "synchronization": {
+      "status": {
+        "completed": "Synchronization completed"
+      }
+    }
+  },
+  "settings": {
+    "paths": {
+      "title": "Game Paths",
+      "javaPath": "Java Edition Path",
+      "bedrockPath": "Bedrock Edition Path",
+      "modsPath": "Mods Directory",
+      "resourcePacksPath": "Resource Packs Directory"
+    }
+  },
+  "export": {
+    "title": "Export Language Packs",
+    "description": "Export language files from Minecraft resource packs, mods, or custom projects. Choose your source directory, select the languages you want to export, and download them in your preferred format.",
+    "source": {
+      "title": "Source Directory",
+      "placeholder": "Select source directory..."
+    },
+    "output": {
+      "title": "Output Settings",
+      "placeholder": "Select output directory..."
+    },
+    "format": "Export Format",
+    "createZip": "Create ZIP archive",
+    "scan": "Scan for Language Files",
+    "scanning": "Scanning...",
+    "files": {
+      "title": "Language Files"
+    },
+    "selection": {
+      "summary": "Selected {{count}} files with {{keys}} keys ({{size}})"
+    },
+    "progress": {
+      "title": "Export Progress",
+      "completed": "Export completed! {{exported}} files exported successfully.",
+      "error": "Export failed. Please try again."
+    },
+    "actions": {
+      "title": "Ready to Export?"
+    },
+    "start": "Start Export",
+    "exporting": "Exporting...",
+    "openOutput": "Open Output Folder",
+    "cancel": "Cancel Export",
+    "openOutputDirectory": "Open Output Directory",
+    "exportCancelled": "Export Cancelled",
+    "exportProgress": "Export Progress",
+    "filesExported": "Files Exported",
+    "filesFailed": "Files Failed"
+  },
+  "common": {
+    "browse": "Browse",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "openInExplorer": "Open in Explorer",
+    "directorySelected": "Directory selected",
+    "failedToSelectDirectory": "Failed to select directory",
+    "failedToOpenDirectory": "Failed to open directory"
+  },
+  "server": {
+    "title": "Server Interaction",
+    "status": {
+      "title": "Server Status",
+      "healthy": "Healthy",
+      "unhealthy": "Unhealthy",
+      "unreachable": "Unreachable",
+      "checking": "Checking...",
+      "lastCheck": "Last Check",
+      "responseTime": "Response Time",
+      "serverVersion": "Server Version",
+      "capabilities": "Capabilities"
+    },
+    "languages": {
+       "title": "Available Languages",
+       "available": "Available",
+       "partial": "Partial",
+       "unavailable": "Unavailable",
+       "lastUpdated": "Last Updated",
+       "fileCount": "File Count",
+       "size": "Size",
+       "refresh": "Refresh Language List",
+       "loading": "Loading language information..."
+     },
+    "cache": {
+       "title": "Cache Management",
+       "type": "Type",
+       "size": "Size",
+       "entries": "Entries",
+       "hitRate": "Hit Rate",
+       "clear": "Clear Cache",
+       "refresh": "Refresh Cache Info",
+       "loading": "Loading cache information..."
+     },
+    "actions": {
+       "checkStatus": "Check Status",
+       "refreshLanguages": "Refresh Languages",
+       "clearCache": "Clear Cache",
+       "configure": "Configure Server",
+       "actions": "Actions"
+     }
+   },
+   "transfer": {
+     "title": "Upload & Download",
+     "queue": {
+       "title": "Transfer Queue",
+       "controls": "Queue Controls",
+       "start": "Start Queue",
+       "pause": "Pause Queue",
+       "clearCompleted": "Clear Completed",
+       "retryFailed": "Retry Failed",
+       "started": "Queue started",
+       "paused": "Queue paused",
+       "clearedCompleted": "Completed items cleared",
+       "retriedFailed": "Failed items retried"
+     },
+     "stats": {
+       "total": "Total",
+       "pending": "Pending",
+       "running": "Running",
+       "completed": "Completed",
+       "failed": "Failed"
+     },
+     "tabs": {
+       "all": "All",
+       "uploads": "Uploads",
+       "downloads": "Downloads",
+       "active": "Active",
+       "completed": "Completed"
+     },
+     "type": {
+       "upload": "Upload",
+       "download": "Download"
+     },
+     "status": {
+       "pending": "Pending",
+       "running": "Running",
+       "paused": "Paused",
+       "completed": "Completed",
+       "failed": "Failed",
+       "cancelled": "Cancelled"
+     },
+     "table": {
+       "type": "Type",
+       "name": "File Name",
+       "language": "Language",
+       "size": "Size",
+       "progress": "Progress",
+       "status": "Status",
+       "speed": "Speed",
+       "eta": "ETA",
+       "actions": "Actions"
+     },
+     "actions": {
+       "pause": "Pause",
+       "resume": "Resume",
+       "cancel": "Cancel",
+       "retry": "Retry"
+     },
+     "batch": {
+       "noSelection": "Please select items first",
+       "selected": "{{count}} items selected",
+       "pause": "Pause Selected",
+       "resume": "Resume Selected",
+       "cancel": "Cancel Selected",
+       "actionCompleted": "Batch action completed"
+     },
+     "empty": {
+       "title": "No Transfer Tasks",
+       "description": "Start uploading or downloading language packs to see transfer progress"
+     },
+     "settings": {
+       "title": "Transfer Settings",
+       "maxConcurrent": "Max Concurrent Transfers",
+       "info": "Adjusting the maximum concurrent transfers can optimize network usage and system performance."
+     }
+   },
+   "build": {
+     "title": "Build Project",
+     "targets": {
+       "title": "Build Targets",
+       "add": "Add Target",
+       "remove": "Remove Target",
+       "empty": "No build targets",
+       "types": {
+         "resourcepack": "Resource Pack",
+         "datapack": "Data Pack",
+         "mod": "Mod",
+         "plugin": "Plugin"
+       }
+     },
+     "options": {
+       "title": "Build Options",
+       "outputFormat": "Output Format",
+       "compressionLevel": "Compression Level",
+       "customName": "Custom Name",
+       "outputPath": "Output Path",
+       "includeMetadata": "Include Metadata",
+       "validateStructure": "Validate Structure",
+       "optimizeAssets": "Optimize Assets",
+       "generateManifest": "Generate Manifest",
+       "formats": {
+         "zip": "ZIP Archive",
+         "folder": "Folder"
+       },
+       "compression": {
+         "fast": "Fast",
+         "best": "Best"
+       },
+       "placeholders": {
+          "customName": "Leave empty for default name",
+          "outputPath": "Select output directory"
+        },
+        "select": "Select"
+     },
+     "control": {
+       "title": "Build Control",
+       "start": "Start Build",
+       "stop": "Stop Build",
+       "building": "Building",
+       "progress": "Build Progress"
+     },
+     "results": {
+       "title": "Build Results",
+       "success": "Build successful",
+       "error": "Build failed",
+       "warning": "Build warning",
+       "output": "Output",
+       "size": "Size",
+       "duration": "Duration",
+       "openOutput": "Open output directory"
+     },
+     "messages": {
+       "addTargetSuccess": "Build target added",
+       "removeTargetSuccess": "Build target removed",
+       "buildComplete": "Build completed",
+       "buildFailed": "Build failed",
+       "buildStopped": "Build stopped",
+       "noTargets": "Please add build targets first",
+       "selectOutputPath": "Failed to select output path",
+       "addTargetFailed": "Failed to add build target",
+       "unknownProjectType": "Unknown project type",
+        "fileCorrupted": "File corrupted"
+     },
+     "security": {
+       "title": "Security Audit",
+       "description": "Integrity check results, license record viewing, audit log display",
+       "stats": {
+         "totalChecks": "Total Checks",
+         "failedChecks": "Failed Checks",
+         "licenseRecords": "License Records",
+         "auditLogs": "Audit Logs"
+       },
+       "tabs": {
+         "integrity": "Integrity Check",
+         "licenses": "License Records",
+         "audit": "Audit Logs"
+       },
+       "search": {
+         "placeholder": "Search..."
+       },
+       "filters": {
+         "status": "Status",
+         "license": "License Type",
+         "eventType": "Event Type",
+         "all": "All",
+         "valid": "Valid",
+         "invalid": "Invalid",
+         "build": "Build",
+         "upload": "Upload",
+         "download": "Download"
+       },
+       "status": {
+         "valid": "Valid",
+         "invalid": "Invalid"
+       },
+       "actions": {
+         "runCheck": "Run Check",
+         "viewDetails": "View Details",
+         "viewLicense": "View License",
+         "viewLog": "View Log",
+         "actions": "Actions"
+       },
+       "integrity": {
+         "status": "Status",
+         "filePath": "File Path",
+         "algorithm": "Algorithm",
+         "fileSize": "File Size",
+         "checkTime": "Check Time"
+       },
+       "license": {
+         "assetId": "Asset ID",
+         "platform": "Platform",
+         "type": "Type",
+         "permissions": "Permissions",
+         "recordedAt": "Recorded At",
+         "url": "License URL",
+         "commercial": "Commercial Use",
+         "modify": "Modify",
+         "redistribute": "Redistribute",
+         "attribution": "Attribution Required"
+       },
+       "audit": {
+         "eventType": "Event Type",
+         "action": "Action",
+         "result": "Result",
+         "resource": "Resource",
+         "timestamp": "Timestamp",
+         "eventId": "Event ID",
+         "userId": "User ID",
+         "ipAddress": "IP Address",
+         "details": "Details",
+         "anonymous": "Anonymous"
+       },
+       "dialogs": {
+         "auditDetails": "Audit Log Details",
+         "licenseDetails": "License Record Details"
+       },
+       "messages": {
+         "noProject": "Please select a project first",
+         "noData": "No data available",
+         "loadStatsFailed": "Failed to load statistics",
+         "loadIntegrityFailed": "Failed to load integrity check results",
+         "loadLicensesFailed": "Failed to load license records",
+         "loadAuditFailed": "Failed to load audit logs",
+         "integrityCheckComplete": "Integrity check completed",
+         "integrityCheckFailed": "Integrity check failed"
+       }
+     },
+     "dryRun": {
+       "title": "Dry-run Preview",
+       "description": "Preview build results without generating files",
+       "start": "Start Dry-run",
+       "results": "Preview Results",
+       "fileList": "File List",
+       "estimatedSize": "Estimated Size",
+       "warnings": "Warnings",
+       "conflicts": "Conflict Detection"
+     },
+     "rollback": {
+       "title": "Version Rollback",
+       "description": "Rollback to previous build version",
+       "selectVersion": "Select Version",
+       "rollback": "Rollback",
+       "confirm": "Confirm Rollback",
+       "success": "Rollback successful",
+       "failed": "Rollback failed"
+     }
+   },
+   "scan": {
+     "title": "Project Scan",
+     "selectPath": "Select Path",
+     "selectProjectPath": "Select Project Path",
+     "noPathSelected": "No path selected",
+     "startScan": "Start Scan",
+     "scanning": "Scanning...",
+     "createProject": "Create Project",
+     "progress": "Scan Progress",
+     "results": "Scan Results",
+     "completedIn": "Completed in",
+     "currentFile": "Current file",
+     "processedFiles": "Processed files",
+     "estimatedRemaining": "Estimated remaining",
+     "supportedLanguages": "Supported Languages",
+     "warnings": "Warnings",
+     "errors": "Errors",
+     "phase": {
+       "detectingProjectType": "Detecting project type",
+       "scanningModpack": "Scanning modpack",
+       "scanningMods": "Scanning mods",
+       "scanningLanguageResources": "Scanning language resources",
+       "generatingStatistics": "Generating statistics",
+       "validation": "Validation",
+       "completed": "Completed"
+     },
+     "tabs": {
+       "overview": "Overview",
+       "modpack": "Modpack",
+       "mods": "Mods",
+       "languages": "Languages"
+     },
+     "stats": {
+       "totalMods": "Total Mods",
+       "languageFiles": "Language Files",
+       "translatableKeys": "Translatable Keys",
+       "supportedLanguages": "Supported Languages"
+     },
+     "modpack": {
+       "name": "Name",
+       "version": "Version",
+       "author": "Author",
+       "description": "Description",
+       "minecraftVersion": "Minecraft Version",
+       "loader": "Loader",
+       "platform": "Platform",
+       "notFound": "Modpack information not found"
+     },
+     "mod": {
+       "authors": "Authors"
+     },
+     "language": {
+       "keys": "keys",
+       "source": "Source"
+     }
+   }
+ }

@@ -1,0 +1,318 @@
+# Packages Taskfile
+version: '3'
+
+vars:
+  PYTHON: poetry run python
+  PYTEST: poetry run pytest
+  PACKAGES:
+    - core
+    - parsers
+    - backend-kit
+    - protocol
+
+tasks:
+  # Building
+  build:
+    desc: Build all packages
+    cmds:
+      - task: build:python
+      - task: build:node
+
+  build:python:
+    desc: Build Python packages
+    cmds:
+      - echo "📦 Building Python packages..."
+      - task: build:core
+      - task: build:parsers
+      - task: build:backend-kit
+
+  build:node:
+    desc: Build Node.js packages
+    cmds:
+      - echo "📦 Building Node.js packages..."
+      - task: build:protocol
+
+  build:core:
+    desc: Build core package
+    cmds:
+      - echo "🔧 Building core package..."
+      - cd core && {{.PYTHON}} -m build
+
+  build:parsers:
+    desc: Build parsers package
+    cmds:
+      - echo "📝 Building parsers package..."
+      - cd parsers && {{.PYTHON}} -m build
+
+  build:backend-kit:
+    desc: Build backend-kit package
+    cmds:
+      - echo "🛠️ Building backend-kit package..."
+      - cd backend-kit && {{.PYTHON}} -m build
+
+  build:protocol:
+    desc: Build protocol package
+    cmds:
+      - echo "📡 Building protocol package..."
+      - cd protocol && npm run build
+
+  # Testing
+  test:
+    desc: Test all packages
+    cmds:
+      - task: test:python
+      - task: test:node
+
+  test:python:
+    desc: Test Python packages
+    cmds:
+      - echo "🧪 Testing Python packages..."
+      - task: test:core
+      - task: test:parsers
+      - task: test:backend-kit
+
+  test:node:
+    desc: Test Node.js packages
+    cmds:
+      - echo "🧪 Testing Node.js packages..."
+      - task: test:protocol
+
+  test:core:
+    desc: Test core package
+    cmds:
+      - echo "🔧 Testing core package..."
+      - cd core && {{.PYTEST}} tests/
+
+  test:parsers:
+    desc: Test parsers package
+    cmds:
+      - echo "📝 Testing parsers package..."
+      - cd parsers && {{.PYTEST}} tests/
+
+  test:backend-kit:
+    desc: Test backend-kit package
+    cmds:
+      - echo "🛠️ Testing backend-kit package..."
+      - cd backend-kit && {{.PYTEST}} tests/
+
+  test:protocol:
+    desc: Test protocol package
+    cmds:
+      - echo "📡 Testing protocol package..."
+      - cd protocol && npm test
+
+  # Linting and Formatting
+  lint:
+    desc: Lint all packages
+    cmds:
+      - task: lint:python
+      - task: lint:node
+
+  lint:python:
+    desc: Lint Python packages
+    cmds:
+      - echo "🔍 Linting Python packages..."
+      - task: lint:core
+      - task: lint:parsers
+      - task: lint:backend-kit
+
+  lint:node:
+    desc: Lint Node.js packages
+    cmds:
+      - echo "🔍 Linting Node.js packages..."
+      - task: lint:protocol
+
+  lint:core:
+    desc: Lint core package
+    cmds:
+      - cd core && poetry run ruff check .
+      - cd core && poetry run mypy .
+
+  lint:parsers:
+    desc: Lint parsers package
+    cmds:
+      - cd parsers && poetry run ruff check .
+      - cd parsers && poetry run mypy .
+
+  lint:backend-kit:
+    desc: Lint backend-kit package
+    cmds:
+      - cd backend-kit && poetry run ruff check .
+      - cd backend-kit && poetry run mypy .
+
+  lint:protocol:
+    desc: Lint protocol package
+    cmds:
+      - cd protocol && npm run lint
+
+  format:
+    desc: Format all packages
+    cmds:
+      - task: format:python
+      - task: format:node
+
+  format:python:
+    desc: Format Python packages
+    cmds:
+      - echo "✨ Formatting Python packages..."
+      - task: format:core
+      - task: format:parsers
+      - task: format:backend-kit
+
+  format:node:
+    desc: Format Node.js packages
+    cmds:
+      - echo "✨ Formatting Node.js packages..."
+      - task: format:protocol
+
+  format:core:
+    desc: Format core package
+    cmds:
+      - cd core && poetry run ruff format .
+      - cd core && poetry run isort .
+
+  format:parsers:
+    desc: Format parsers package
+    cmds:
+      - cd parsers && poetry run ruff format .
+      - cd parsers && poetry run isort .
+
+  format:backend-kit:
+    desc: Format backend-kit package
+    cmds:
+      - cd backend-kit && poetry run ruff format .
+      - cd backend-kit && poetry run isort .
+
+  format:protocol:
+    desc: Format protocol package
+    cmds:
+      - cd protocol && npm run format
+
+  # Installation
+  install:
+    desc: Install all package dependencies
+    cmds:
+      - task: install:python
+      - task: install:node
+
+  install:python:
+    desc: Install Python package dependencies
+    cmds:
+      - echo "📦 Installing Python package dependencies..."
+      - cd core && poetry install
+      - cd parsers && poetry install
+      - cd backend-kit && poetry install
+
+  install:node:
+    desc: Install Node.js package dependencies
+    cmds:
+      - echo "📦 Installing Node.js package dependencies..."
+      - cd protocol && npm install
+
+  # Publishing
+  publish:
+    desc: Publish all packages
+    cmds:
+      - task: publish:python
+      - task: publish:node
+
+  publish:python:
+    desc: Publish Python packages
+    cmds:
+      - echo "🚀 Publishing Python packages..."
+      - task: publish:core
+      - task: publish:parsers
+      - task: publish:backend-kit
+
+  publish:node:
+    desc: Publish Node.js packages
+    cmds:
+      - echo "🚀 Publishing Node.js packages..."
+      - task: publish:protocol
+
+  publish:core:
+    desc: Publish core package
+    cmds:
+      - cd core && poetry publish
+
+  publish:parsers:
+    desc: Publish parsers package
+    cmds:
+      - cd parsers && poetry publish
+
+  publish:backend-kit:
+    desc: Publish backend-kit package
+    cmds:
+      - cd backend-kit && poetry publish
+
+  publish:protocol:
+    desc: Publish protocol package
+    cmds:
+      - cd protocol && npm publish
+
+  # Cleaning
+  clean:
+    desc: Clean all package build artifacts
+    cmds:
+      - echo "🧹 Cleaning package artifacts..."
+      - task: clean:python
+      - task: clean:node
+
+  clean:python:
+    desc: Clean Python package artifacts
+    cmds:
+      - rm -rf core/dist core/build core/**/__pycache__ core/**/*.pyc
+      - rm -rf parsers/dist parsers/build parsers/**/__pycache__ parsers/**/*.pyc
+      - rm -rf backend-kit/dist backend-kit/build backend-kit/**/__pycache__ backend-kit/**/*.pyc
+
+  clean:node:
+    desc: Clean Node.js package artifacts
+    cmds:
+      - rm -rf protocol/dist protocol/node_modules/.cache
+
+  # Utilities
+  status:
+    desc: Show package status
+    cmds:
+      - |
+        echo "📊 Package Status:"
+        echo "Python packages:"
+        for pkg in core parsers backend-kit; do
+          if [ -f "$pkg/pyproject.toml" ]; then
+            version=$(cd $pkg && poetry version -s 2>/dev/null || echo "unknown")
+            echo "  $pkg: v$version"
+          fi
+        done
+        echo "Node.js packages:"
+        if [ -f "protocol/package.json" ]; then
+          version=$(cd protocol && node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+          echo "  protocol: v$version"
+        fi
+
+  check:
+    desc: Check package health
+    cmds:
+      - |
+        echo "🏥 Package Health Check:"
+        for pkg in core parsers backend-kit; do
+          if [ -d "$pkg" ]; then
+            echo "✅ $pkg: exists"
+          else
+            echo "❌ $pkg: missing"
+          fi
+        done
+        if [ -d "protocol" ]; then
+          echo "✅ protocol: exists"
+        else
+          echo "❌ protocol: missing"
+        fi
+
+  update:
+    desc: Update package dependencies
+    cmds:
+      - echo "🔄 Updating package dependencies..."
+      - cd core && poetry update
+      - cd parsers && poetry update
+      - cd backend-kit && poetry update
+      - cd protocol && npm update
+      - echo "✅ Dependencies updated!"
