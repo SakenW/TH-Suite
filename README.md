@@ -20,11 +20,12 @@ TransHub Suite 是一个专门接入 [Trans-Hub](https://trans-hub.net) 项目�
 ## ✨ 核心特性
 
 ### 🏗️ 架构特点
-- **混合架构**: Tauri 前端 + FastAPI 后端，兼具性能与开发效率
-- **模块化设计**: 基于 monorepo 的包管理，代码复用性高
-- **类型安全**: TypeScript + Python 类型注解，减少运行时错误
-- **现代化 UI**: 基于 React + Tailwind CSS 的响应式界面
-- **实时协作**: WebSocket 支持，提供实时翻译协作
+- **Clean Architecture**: 领域驱动设计，业务逻辑与技术细节分离
+- **双层数据模型**: Artifact/Container 架构，支持灵活的物理/逻辑映射
+- **内容寻址存储**: 基于 SHA256 的 Blob 去重系统，大幅减少存储空间
+- **Minecraft 主题 UI**: 完全仿真的 MC 风格界面，包括像素渲染、3D 边框、附魔效果
+- **实时进度系统**: WebSocket + 轮询混合模式，提供流畅的实时反馈
+- **全链路追踪**: 分布式链路追踪系统，完整的操作可观测性
 
 ### 🔄 自动化翻译工作流程
 - **智能提取**: 自动提取整合包或模组中的可翻译文本
@@ -33,11 +34,34 @@ TransHub Suite 是一个专门接入 [Trans-Hub](https://trans-hub.net) 项目�
 - **本地同步**: 翻译完成后自动拉回本地，写入相应文件
 - **版本管理**: 支持翻译版本控制和增量更新
 
-### 🎮 TH Suite MC L10n 功能
-- **整合包处理**: 自动提取 CurseForge/Modrinth 整合包的语言文件
-- **模组本地化**: 批量处理模组语言文件的提取和翻译
-- **资源包支持**: 资源包文本内容的自动化翻译
-- **版本适配**: 支持 Java 版和基岩版的不同语言文件格式
+### 🎮 TH Suite MC L10n 核心功能
+
+#### 📦 内容管理
+- **Artifact/Container 双层架构**: 物理载体与逻辑容器分离，灵活管理复杂结构
+- **Blob 去重存储**: SHA256 哈希内容寻址，相同内容仅存储一次
+- **增量扫描**: 基于指纹的智能缓存，仅处理变更部分
+- **多格式支持**: JSON、Properties、YAML、TOML 等格式自动识别
+
+#### 🔧 补丁系统
+- **多种合并策略**: OVERLAY（覆盖）、REPLACE（替换）、MERGE（合并）、CREATE_IF_MISSING（按需创建）
+- **冲突检测**: 自动识别并报告补丁冲突
+- **版本控制**: 补丁集版本管理，支持回滚和历史追踪
+- **数字签名**: 补丁内容签名验证，确保内容完整性
+
+#### ✅ 质量保证
+- **占位符验证**: 检查翻译中占位符一致性（%s、{0} 等）
+- **颜色代码检查**: MC 颜色代码（§）完整性验证
+- **长度比例控制**: 翻译文本长度合理性检查
+- **格式化标签**: HTML/XML 标签正确性验证
+- **术语一致性**: 基于术语表的翻译一致性检查
+
+#### 🎨 Minecraft 主题界面
+- **像素完美渲染**: `imageRendering: 'pixelated'` 还原游戏质感
+- **3D 边框系统**: 动态光影边框，按钮按下效果
+- **游戏纹理背景**: 石头、木板、泥土等材质纹理
+- **附魔闪烁效果**: 史诗和传奇物品的动态光效
+- **物品稀有度颜色**: 普通、罕见、稀有、史诗、传奇五级颜色系统
+- **快捷栏交互**: 1-9 数字键快速操作，ESC 菜单切换
 
 ### 🏠 RW Studio 功能
 - **Steam Workshop 集成**: 自动处理 Workshop 模组的本地化
@@ -114,23 +138,43 @@ docker-compose logs -f
 ```
 th-suite/
 ├── apps/                          # 应用程序
-│   ├── mc-l10n/                   # TH Suite MC L10n 应用
+│   ├── mc_l10n/                   # TH Suite MC L10n 应用
 │   │   ├── backend/               # Python FastAPI 后端
+│   │   │   └── src/              
+│   │   │       ├── adapters/     # 外部接口适配器
+│   │   │       ├── application/  # 应用服务层
+│   │   │       ├── domain/       # 领域模型
+│   │   │       └── infrastructure/ # 基础设施
 │   │   └── frontend/              # Tauri + React 前端
-│   └── rw-studio/                 # RW Studio 应用
+│   │       └── src/
+│   │           ├── components/    # React 组件
+│   │           │   └── minecraft/ # MC 主题组件
+│   │           ├── pages/         # 页面组件
+│   │           ├── services/      # 服务层
+│   │           └── i18n/          # 国际化
+│   └── rw_l10n/                   # RW Studio 应用
 │       ├── backend/               # Python FastAPI 后端
 │       └── frontend/              # Tauri + React 前端
-├── packages/                      # 共享包
-│   ├── core/                      # 核心工具库
+├── packages/                      # 共享包（通用组件）
+│   ├── localization-kit/         # 本地化核心库
+│   │   ├── models/                # 数据模型
+│   │   ├── services/              # 核心服务
+│   │   ├── quality/               # 质量检查
+│   │   ├── observability/         # 可观测性
+│   │   └── trans_hub/             # Trans-Hub 集成
 │   ├── parsers/                   # 文件解析器
-│   ├── backend-kit/               # FastAPI 骨架
+│   ├── backend-kit/               # FastAPI 工具集
 │   └── protocol/                  # API 协议定义
 ├── docs/                          # 文档
+│   ├── ARCHITECTURE.md           # 架构设计文档
+│   ├── API.md                     # API 接口文档
+│   └── USAGE.md                   # 使用指南
 ├── tests/                         # 测试文件
 ├── docker-compose.yml             # Docker 编排
 ├── Taskfile.yml                   # 任务定义
 ├── pyproject.toml                 # Python 项目配置
 ├── package.json                   # Node.js 项目配置
+├── CLAUDE.md                      # AI 助手配置
 └── README.md                      # 项目说明
 ```
 
@@ -200,8 +244,31 @@ poetry run mypy apps packages
 
 启动开发服务器后，可以访问以下地址查看 API 文档：
 
-- **TH Suite MC L10n API**: http://localhost:8001/docs
-- **RW Studio API**: http://localhost:8002/docs
+- **TH Suite MC L10n API**: http://localhost:8000/docs (FastAPI 自动生成)
+- **RW Studio API**: http://localhost:8002/docs (FastAPI 自动生成)
+
+### 核心 API 端点
+
+#### 扫描相关
+- `POST /api/scan/directory` - 扫描目录提取语言文件
+- `GET /api/scan/{scan_id}/status` - 获取扫描进度
+- `GET /api/scan/{scan_id}/result` - 获取扫描结果
+
+#### 补丁管理
+- `GET /api/patches` - 获取补丁列表
+- `POST /api/patches` - 创建新补丁集
+- `PUT /api/patches/{patch_id}/apply` - 应用补丁
+- `DELETE /api/patches/{patch_id}/rollback` - 回滚补丁
+
+#### 质量检查
+- `POST /api/quality/validate` - 运行质量验证
+- `GET /api/quality/reports` - 获取质量报告
+- `GET /api/quality/validators` - 获取可用验证器列表
+
+#### Trans-Hub 集成
+- `POST /api/trans-hub/sync` - 同步翻译数据
+- `GET /api/trans-hub/projects` - 获取项目列表
+- `POST /api/trans-hub/upload` - 上传待翻译内容
 
 ## 🔌 翻译引擎插件开发
 

@@ -1,8 +1,20 @@
-import React from 'react';
-import ProjectScan from '../components/ProjectScan';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore, ProjectType, ProjectIdentifier } from '../stores/appStore';
+import {
+  MCPanel,
+  MCButton,
+  MCProgress,
+  MCInput,
+  MCTooltip,
+  MCTabPanel,
+  MCInventoryGrid,
+  minecraftColors,
+  typography,
+} from '../components/minecraft';
+import ProjectScan from '../components/ProjectScan';
 
 interface ScanResult {
   scan_id: string;
@@ -21,21 +33,23 @@ interface ScanResult {
 }
 
 const ScanPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['mcStudio', 'minecraft']);
   const navigate = useNavigate();
-
   const { createProject, setCurrentProject } = useAppStore();
+  
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
 
   const handleScanComplete = (result: ScanResult) => {
     console.log('Scan completed:', result);
-    // 扫描完成后，数据已经保存在扫描结果中，等待用户创建项目
+    setScanResult(result);
   };
 
   const handleCreateProject = async (result: ScanResult) => {
     console.log('Creating project from scan result:', result);
+    setIsCreatingProject(true);
     
     try {
-      // 从扫描结果创建项目标识符
       const identifier: ProjectIdentifier = {
         type: result.modpack_manifest ? ProjectType.MODPACK : ProjectType.MOD,
         modpackName: result.modpack_manifest?.name || undefined,
@@ -48,10 +62,8 @@ const ScanPage: React.FC = () => {
                       result.modpack_manifest?.dependencies?.fabric || 'unknown'
       };
       
-      // 创建项目并保存扫描结果到metadata中
       const project = await createProject(identifier, result.project_path);
       
-      // 将扫描结果保存到项目的metadata中
       project.metadata = {
         scanResult: result,
         totalMods: result.total_mods,
@@ -63,29 +75,183 @@ const ScanPage: React.FC = () => {
       };
       
       setCurrentProject(project);
-      
-      // 项目创建成功后跳转到项目页面
       navigate('/projects');
     } catch (error) {
       console.error('Failed to create project:', error);
+    } finally {
+      setIsCreatingProject(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t('welcome.quickActions.scan.title')}</h1>
-        <p className="text-muted-foreground">
-          {t('welcome.newProject.description')}
+    <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      {/* 页面标题 */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          marginBottom: '24px',
+          textAlign: 'center',
+        }}
+      >
+        <h1
+          style={{
+            fontSize: typography.fontSize.huge,
+            fontFamily: typography.fontFamily.minecraft,
+            color: minecraftColors.ui.text.secondary,
+            textShadow: '3px 3px 0px rgba(0, 0, 0, 0.5)',
+            marginBottom: '8px',
+          }}
+        >
+          {t('scan.title')}
+        </h1>
+        <p
+          style={{
+            fontSize: typography.fontSize.medium,
+            fontFamily: typography.fontFamily.minecraft,
+            color: minecraftColors.formatting['§7'],
+          }}
+        >
+          {t('mcStudio.welcome.newProject.description')}
         </p>
-      </div>
-      
-      <ProjectScan 
-        onScanComplete={handleScanComplete}
-        onCreateProject={handleCreateProject}
-      />
+      </motion.div>
+
+      {/* 扫描组件（MC风格包装） */}
+      <MCPanel
+        variant="stone"
+        title={t('scan.selectPath')}
+        style={{ marginBottom: '24px' }}
+      >
+        <ProjectScan 
+          onScanComplete={handleScanComplete}
+          onCreateProject={handleCreateProject}
+        />
+      </MCPanel>
+
+      {/* 扫描结果显示 */}
+      <AnimatePresence>
+        {scanResult && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <MCPanel
+              variant="planks"
+              title={t('scan.results')}
+            >
+              <div style={{ padding: '16px' }}>
+                {/* 统计信息 */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '16px',
+                    marginBottom: '24px',
+                  }}
+                >
+                  <StatCard
+                    label={t('scan.stats.totalMods')}
+                    value={scanResult.total_mods}
+                    icon="📦"
+                    color={minecraftColors.primary.emerald}
+                  />
+                  <StatCard
+                    label={t('scan.stats.languageFiles')}
+                    value={scanResult.total_language_files}
+                    icon="📄"
+                    color={minecraftColors.primary.diamond}
+                  />
+                  <StatCard
+                    label={t('scan.stats.translatableKeys')}
+                    value={scanResult.total_translatable_keys}
+                    icon="🔑"
+                    color={minecraftColors.primary.gold}
+                  />
+                  <StatCard
+                    label={t('scan.stats.supportedLanguages')}
+                    value={scanResult.supported_locales.length}
+                    icon="🌐"
+                    color={minecraftColors.primary.redstone}
+                  />
+                </div>
+
+                {/* 创建项目按钮 */}
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <MCButton
+                    onClick={() => handleCreateProject(scanResult)}
+                    variant="primary"
+                    size="large"
+                    loading={isCreatingProject}
+                    disabled={isCreatingProject}
+                    icon={<span>🎮</span>}
+                  >
+                    {t('scan.createProject')}
+                  </MCButton>
+                </div>
+              </div>
+            </MCPanel>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+// 统计卡片组件
+interface StatCardProps {
+  label: string;
+  value: number | string;
+  icon: string;
+  color: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => (
+  <div
+    style={{
+      padding: '16px',
+      backgroundColor: minecraftColors.ui.background.secondary,
+      border: `2px solid ${color}`,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+    }}
+  >
+    <div
+      style={{
+        fontSize: '32px',
+        width: '48px',
+        height: '48px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: color + '20',
+      }}
+    >
+      {icon}
+    </div>
+    <div>
+      <div
+        style={{
+          fontSize: typography.fontSize.small,
+          color: minecraftColors.formatting['§7'],
+          fontFamily: typography.fontFamily.minecraft,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: typography.fontSize.xlarge,
+          color: minecraftColors.ui.text.secondary,
+          fontFamily: typography.fontFamily.minecraft,
+          fontWeight: typography.fontWeight.bold,
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  </div>
+);
 
 export default ScanPage;
