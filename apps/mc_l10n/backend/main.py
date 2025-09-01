@@ -61,12 +61,20 @@ from infrastructure import initialize_infrastructure
 
 from packages.core.framework.logging import StructLogFactory
 
+# 导入新的统一扫描服务
+from scanner_service import init_mc_scanner_service
+
 logger = StructLogFactory.get_logger(__name__)
+
+# 全局扫描服务实例
+_scanner_service = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
+    global _scanner_service
+    
     # 启动时执行
     logger.info("MC L10n API服务启动中...")
 
@@ -75,11 +83,9 @@ async def lifespan(app: FastAPI):
         logger.info("初始化基础设施组件...")
         initialize_infrastructure()
 
-        # 初始化数据库连接（如果需要）
-        # await initialize_database()
-
-        # 初始化缓存系统
-        # await initialize_cache()
+        # 初始化统一扫描服务
+        logger.info("初始化统一扫描服务...")
+        _scanner_service = await init_mc_scanner_service("mc_l10n_unified.db")
 
         logger.info("MC L10n API服务启动完成")
 
@@ -93,8 +99,7 @@ async def lifespan(app: FastAPI):
         logger.info("MC L10n API服务关闭中...")
 
         # 清理资源
-        # await cleanup_database()
-        # await cleanup_cache()
+        _scanner_service = None
 
         logger.info("MC L10n API服务关闭完成")
 
@@ -180,7 +185,8 @@ def create_app() -> FastAPI:
                 mod_loader TEXT,
                 description TEXT,
                 authors TEXT,
-                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id)
+                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id),
+                UNIQUE(mod_id, file_path)
             )
         """)
         
@@ -194,7 +200,8 @@ def create_app() -> FastAPI:
                 locale TEXT,
                 file_path TEXT,
                 key_count INTEGER,
-                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id)
+                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id),
+                UNIQUE(namespace, locale, file_path)
             )
         """)
         
@@ -220,6 +227,14 @@ def create_app() -> FastAPI:
                 last_scanned TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        
+        # 创建唯一索引以防止重复数据（如果不存在）
+        try:
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_mods_unique ON mods(mod_id, file_path)")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_language_files_unique ON language_files(namespace, locale, file_path)")
+        except Exception as e:
+            # 索引可能已存在或有冲突数据，忽略错误
+            print(f"创建唯一索引时出现警告（可能已存在）: {e}")
         
         conn.commit()
         conn.close()
@@ -422,8 +437,10 @@ def create_app() -> FastAPI:
         return {"success": True, "received": request}
     
     @compat_router.post("/api/v1/scan-project")
-    async def scan_project_v1_compat(request: ScanRequest, background_tasks: BackgroundTasks):
-        """真实的扫描端点"""
+    async def scan_project_v1_compat(request: ScanRequest):
+        """使用统一扫描服务的扫描端点"""
+        global _scanner_service
+        
         try:
             # 提取参数
             directory = request.directory
@@ -432,62 +449,46 @@ def create_app() -> FastAPI:
             if not directory:
                 raise ValueError("directory参数是必需的")
             
-            # 生成扫描ID
-            scan_id = str(uuid.uuid4())
+            if not _scanner_service:
+                raise HTTPException(status_code=500, detail="扫描服务未初始化")
             
-            # 创建扫描记录
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO scan_sessions (id, directory, started_at, status)
-                VALUES (?, ?, ?, 'scanning')
-            """, (scan_id, directory, datetime.now().isoformat()))
-            conn.commit()
-            conn.close()
-            
-            # 启动后台扫描任务
-            background_tasks.add_task(scan_directory_real, scan_id, directory, incremental)
+            # 使用统一扫描服务启动扫描
+            scan_info = await _scanner_service.start_scan(
+                target_path=directory,
+                incremental=incremental,
+                options={}
+            )
             
             return {
                 "success": True,
-                "message": f"扫描已开始: {directory}",
-                "job_id": scan_id,
-                "scan_id": scan_id
+                "message": f"扫描已开始: {directory} (使用统一扫描引擎)",
+                "job_id": scan_info["scan_id"],
+                "scan_id": scan_info["scan_id"]
             }
             
         except Exception as e:
-            logger.error(f"启动扫描失败: {e}")
+            logger.error(f"启动统一扫描失败: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     @compat_router.get("/api/v1/scan-status/{scan_id}")
     async def get_scan_status_v1_compat(scan_id: str):
-        """获取扫描状态"""
+        """使用统一扫描服务获取扫描状态"""
+        global _scanner_service
+        
         try:
-            # 检查内存中的扫描状态
-            if scan_id in active_scans:
-                status = active_scans[scan_id]
+            if not _scanner_service:
+                return {"success": False, "message": "扫描服务未初始化"}
+            
+            # 使用统一扫描服务获取状态
+            status = await _scanner_service.get_scan_status(scan_id)
+            
+            if status:
+                logger.info(f"返回统一扫描状态 {scan_id}: status={status.get('status', 'unknown')}, progress={status.get('progress', {}).get('percent', 0)}")
                 return {"success": True, "data": status}
             
-            # 从数据库查询扫描状态
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM scan_sessions WHERE id = ?", (scan_id,))
-            row = cursor.fetchone()
-            conn.close()
-            
-            if row:
-                return {
-                    "success": True,
-                    "data": {
-                        "status": row[3],
-                        "progress": 100 if row[3] == 'completed' else 0,
-                        "total_mods": row[4],
-                        "total_language_files": row[5],
-                        "total_keys": row[6]
-                    }
-                }
-            else:
-                return {"success": False, "message": "扫描任务未找到"}
+            # 扫描不存在
+            logger.warning(f"未找到扫描任务: {scan_id}")
+            return {"success": False, "message": "扫描任务未找到"}
                 
         except Exception as e:
             logger.error(f"获取扫描状态失败: {e}")
@@ -495,60 +496,87 @@ def create_app() -> FastAPI:
     
     @compat_router.get("/api/v1/scan-results/{scan_id}")
     async def get_scan_results_v1_compat(scan_id: str):
-        """获取扫描结果"""
+        """使用统一扫描服务获取扫描结果"""
+        global _scanner_service
+        
         try:
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM scan_sessions WHERE id = ?", (scan_id,))
-            row = cursor.fetchone()
-            conn.close()
+            if not _scanner_service:
+                return {"success": False, "message": "扫描服务未初始化"}
             
-            if row and row[3] == 'completed':
-                return {
-                    "success": True,
-                    "data": {
-                        "scan_id": scan_id,
-                        "mods": [],  # 简化实现
-                        "language_files": [],  # 简化实现
-                        "statistics": {
-                            "total_mods": row[4] or 0,
-                            "total_language_files": row[5] or 0, 
-                            "total_keys": row[6] or 0,
-                            "scan_duration_ms": 0  # 简化实现
-                        }
-                    }
+            # 获取扫描状态，检查是否完成
+            status = await _scanner_service.get_scan_status(scan_id)
+            
+            if not status:
+                return {"success": False, "message": "扫描任务不存在"}
+            
+            if status.get("status") != "completed":
+                return {"success": False, "message": "扫描未完成"}
+            
+            # 获取内容项统计
+            statistics = await _scanner_service.get_statistics()
+            
+            return {
+                "success": True,
+                "data": {
+                    "scan_id": scan_id,
+                    "status": status,
+                    "statistics": statistics
                 }
-            else:
-                return {"success": False, "message": "扫描未完成或不存在"}
+            }
                 
         except Exception as e:
-            logger.error(f"获取扫描结果失败: {e}")
+            logger.error(f"获取统一扫描结果失败: {e}")
             return {"success": False, "message": str(e)}
     
     @compat_router.post("/api/v1/scan-cancel/{scan_id}")
     async def cancel_scan_v1_compat(scan_id: str):
-        """取消扫描"""
+        """使用统一扫描服务取消扫描"""
+        global _scanner_service
+        
         try:
-            # 检查扫描是否存在
-            if scan_id not in active_scans:
+            if not _scanner_service:
+                return {"success": False, "message": "扫描服务未初始化"}
+            
+            # 使用统一扫描服务取消扫描
+            success = await _scanner_service.cancel_scan(scan_id)
+            
+            if success:
+                logger.info(f"统一扫描已取消: {scan_id}")
+                return {"success": True, "message": "扫描已取消"}
+            else:
                 return {"success": False, "message": "扫描任务不存在或已完成"}
-            
-            # 标记为取消
-            active_scans[scan_id]["status"] = "cancelled"
-            
-            # 更新数据库状态
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            cursor.execute("UPDATE scan_sessions SET status = 'cancelled' WHERE id = ?", (scan_id,))
-            conn.commit()
-            conn.close()
-            
-            logger.info(f"扫描已取消: {scan_id}")
-            return {"success": True, "message": "扫描已取消"}
                 
         except Exception as e:
-            logger.error(f"取消扫描失败: {e}")
+            logger.error(f"取消统一扫描失败: {e}")
             return {"success": False, "message": str(e)}
+    
+    @compat_router.get("/api/v1/scans/active")
+    async def get_active_scans():
+        """获取活跃的扫描状态"""
+        try:
+            active_scan_list = []
+            for scan_id, scan_status in active_scans.items():
+                active_scan_list.append({
+                    "id": scan_id,
+                    "status": scan_status.get("status", "unknown"),
+                    "progress": scan_status.get("progress", 0),
+                    "processed_files": scan_status.get("processed_files", 0),
+                    "total_files": scan_status.get("total_files", 0),
+                    "current_file": scan_status.get("current_file", ""),
+                    "total_mods": scan_status.get("total_mods", 0),
+                    "total_language_files": scan_status.get("total_language_files", 0),
+                    "total_keys": scan_status.get("total_keys", 0),
+                    "scan_mode": scan_status.get("scan_mode", "未知"),
+                    "started_at": scan_status.get("started_at", "")
+                })
+            
+            return {
+                "success": True,
+                "data": active_scan_list
+            }
+        except Exception as e:
+            logger.error(f"获取活跃扫描失败: {e}")
+            return {"success": False, "error": str(e)}
     
     app.include_router(compat_router)
     

@@ -3,7 +3,7 @@
  * 使用新的服务架构和现代React模式
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Typography, LinearProgress, Alert } from '@mui/material';
 import { FolderOpen, Play, CheckCircle, Square, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -62,6 +62,30 @@ export default function ScanPageOptimal() {
     hasStatus: !!scanStatus,
     hasResult: !!scanResult
   });
+
+  // 监听恢复活跃扫描事件
+  useEffect(() => {
+    const handleResumeActiveScan = (event: CustomEvent) => {
+      const { scanId, status, directory: scanDirectory } = event.detail;
+      console.log('🔄 恢复活跃扫描:', { scanId, status });
+      
+      // 恢复扫描状态
+      setCurrentScanId(scanId);
+      setIsScanning(true);
+      setDirectory(scanDirectory);
+      
+      // 启动实时进度监控 - 直接调用startPolling
+      startPolling(scanId);
+      
+      toast.success(`已恢复扫描进度: ${Math.round(status.progress || 0)}%`);
+    };
+
+    window.addEventListener('resumeActiveScan', handleResumeActiveScan as EventListener);
+    
+    return () => {
+      window.removeEventListener('resumeActiveScan', handleResumeActiveScan as EventListener);
+    };
+  }, []); // 移除startPolling依赖，使用useRef引用
 
   const selectDirectory = async () => {
     try {
@@ -365,6 +389,35 @@ export default function ScanPageOptimal() {
               </Button>
             </>
           )}
+          
+          {/* 临时测试按钮 */}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={async () => {
+              console.log('🧪 开始API测试...');
+              try {
+                // 直接测试API调用
+                const response = await fetch('http://localhost:8000/api/v1/scan-status/0a5172e0-30c6-4ade-9fb6-331ccc409ed4');
+                const data = await response.json();
+                console.log('✅ API响应:', data);
+                
+                // 然后触发恢复事件
+                window.dispatchEvent(new CustomEvent('resumeActiveScan', {
+                  detail: {
+                    scanId: '0a5172e0-30c6-4ade-9fb6-331ccc409ed4',
+                    status: { progress: 67, status: 'scanning' },
+                    directory: 'D:\\Games\\Curseforge\\Minecraft\\Instances\\All the Mods 10 - ATM10'
+                  }
+                }));
+              } catch (error) {
+                console.error('❌ API测试失败:', error);
+              }
+            }}
+            sx={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}
+          >
+            🧪 API测试
+          </Button>
           
           {/* 扫描配置信息 */}
           <Box 

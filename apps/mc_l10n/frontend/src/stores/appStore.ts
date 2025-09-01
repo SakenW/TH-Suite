@@ -234,7 +234,26 @@ export const useAppStore = create<AppState>()(
             if (activeScansResponse.ok) {
               const activeScansData = await activeScansResponse.json();
               console.log('🔍 Active scans found:', activeScansData);
-              // TODO: 恢复活跃扫描状态
+              
+              // 恢复活跃扫描状态
+              if (activeScansData.success && activeScansData.data && activeScansData.data.length > 0) {
+                const activeScans = activeScansData.data;
+                const runningScans = activeScans.filter((scan: any) => scan.status === 'scanning');
+                
+                if (runningScans.length > 0) {
+                  const latestScan = runningScans[runningScans.length - 1];
+                  console.log('🔄 Resuming active scan:', latestScan.id);
+                  
+                  // 通知扫描页面恢复扫描状态
+                  window.dispatchEvent(new CustomEvent('resumeActiveScan', {
+                    detail: {
+                      scanId: latestScan.id,
+                      status: latestScan,
+                      directory: latestScan.directory || 'Unknown'
+                    }
+                  }));
+                }
+              }
             }
           } catch (scanCheckError) {
             console.log('ℹ️ No active scans to resume, continuing...');

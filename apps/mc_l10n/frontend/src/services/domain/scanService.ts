@@ -85,7 +85,11 @@ export class ScanService implements ScanServiceInterface {
   async getStatus(scanId: string): Promise<ServiceResult<ScanStatus>> {
     try {
       console.log(`🔍 获取扫描状态: ${scanId}`);
-      const response = await this.apiClient.get(`/scan-status/${scanId}`);
+      console.log(`🔍 请求URL: /scan-status/${scanId}`);
+      // 为状态查询使用较短的超时时间，避免阻塞轮询
+      const response = await this.apiClient.get(`/scan-status/${scanId}`, undefined, { timeout: 15000 });
+      
+      console.log(`🔍 扫描状态响应:`, JSON.stringify(response, null, 2));
       
       if (!response.success) {
         return {

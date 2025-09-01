@@ -19,7 +19,7 @@ export class BaseApiService {
   protected readonly baseUrl: string;
   private interceptors: RequestInterceptor[] = [];
 
-  constructor(baseUrl: string = 'http://localhost:8001/api/v1') {
+  constructor(baseUrl: string = 'http://localhost:8000/api/v1') {
     this.baseUrl = baseUrl;
   }
 
@@ -47,7 +47,7 @@ export class BaseApiService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        timeout: 30000, // 30秒超时
+        timeout: 120000, // 120秒超时，扫描大型目录需要更长时间
       };
 
       // 合并配置
@@ -189,10 +189,11 @@ export class BaseApiService {
    */
   protected async get<T = any>(
     endpoint: string, 
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     const queryString = this.buildQueryString(params || {});
-    return this.request<T>(`${endpoint}${queryString}`);
+    return this.request<T>(`${endpoint}${queryString}`, config);
   }
 
   /**
@@ -281,7 +282,7 @@ export class BaseApiService {
   async checkConnection(): Promise<boolean> {
     try {
       // 健康检查API不在 /api/v1 前缀下
-      const url = 'http://localhost:8001/health';
+      const url = 'http://localhost:8000/health';
       const response = await this.request(url);
       return response.success !== false; // 健康检查返回的格式可能不同
     } catch (error) {
