@@ -17,6 +17,7 @@ import { ScanService } from './domain/scanService';
 export { TauriService, initializeTauri, FILE_FILTERS } from './infrastructure/tauriService';
 export { SystemService } from './infrastructure/systemService';
 export { FileService } from './infrastructure/fileService';
+export { storageService, StorageService } from './storage.service';
 
 // === 服务容器 ===
 export { serviceContainer } from './container/serviceContainer';

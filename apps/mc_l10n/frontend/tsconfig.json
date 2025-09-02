@@ -31,7 +31,8 @@
       "@types/*": ["src/types/*"],
       "@stores/*": ["src/stores/*"],
       "@services/*": ["src/services/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@theme/*": ["src/theme/*"]
     },
 
     /* Additional options */

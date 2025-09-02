@@ -15,7 +15,7 @@ export default defineConfig(async () => ({
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
-    port: 3456,
+    port: 5555,
     strictPort: true,
     host: '127.0.0.1',
     watch: {
@@ -35,6 +35,7 @@ export default defineConfig(async () => ({
       "@stores": resolve(__dirname, "src/stores"),
       "@services": resolve(__dirname, "src/services"),
       "@assets": resolve(__dirname, "src/assets"),
+      "@theme": resolve(__dirname, "src/theme"),
     },
   },
   
@@ -55,6 +56,10 @@ export default defineConfig(async () => ({
         },
       },
     },
+  },
+  
+  optimizeDeps: {
+    exclude: ['@tauri-apps/api'],
   },
   
   define: {

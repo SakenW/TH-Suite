@@ -3,23 +3,25 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 import LayoutMinecraft from '@components/Layout/LayoutMinecraft';
-import ScanPageMinecraft from '@pages/ScanPageMinecraft';
-import HomePageMinecraft from '@pages/HomePageMinecraft';
-import ProjectPageMinecraft from '@pages/ProjectPageMinecraft';
-import SettingsPageMinecraft from '@pages/SettingsPageMinecraft';
-import ExtractPageMinecraft from '@pages/ExtractPageMinecraft';
-import ExportPageMinecraft from '@pages/ExportPageMinecraft';
-import PlaceholderPage from '@pages/PlaceholderPage';
-import ProgressTestPage from '@pages/ProgressTestPage';
-import TransferPageMinecraft from '@pages/TransferPageMinecraft';
-import BuildPageMinecraft from '@pages/BuildPageMinecraft';
-import LocalDataPageMinecraft from '@pages/LocalDataPageMinecraft';
-import SecurityPageMinecraft from '@pages/SecurityPageMinecraft';
-import ServerPageMinecraft from '@pages/ServerPageMinecraft';
 import { useAppStore } from '@stores/appStore';
-import { initializeTauri, storageService } from '@services';
-import { useGlobalShortcuts } from '@hooks/useKeyboardShortcuts';
-import { ShortcutHelp } from '@components/ShortcutHelp';
+import { initializeTauri } from '@services';
+import { lazyLoad, preloadComponents } from '@utils/lazyLoad';
+
+// 立即加载的核心页面
+import HomePageMinecraft from '@pages/HomePageMinecraft';
+
+// 懒加载其他页面
+const ScanPageMinecraft = lazyLoad(() => import('@pages/ScanPageMinecraft'));
+const ProjectPageMinecraft = lazyLoad(() => import('@pages/ProjectPageMinecraft'));
+const SettingsPageMinecraft = lazyLoad(() => import('@pages/SettingsPageMinecraft'));
+const ExtractPageMinecraft = lazyLoad(() => import('@pages/ExtractPageMinecraft'));
+const ExportPageMinecraft = lazyLoad(() => import('@pages/ExportPageMinecraft'));
+const TransferPageMinecraft = lazyLoad(() => import('@pages/TransferPageMinecraft'));
+const BuildPageMinecraft = lazyLoad(() => import('@pages/BuildPageMinecraft'));
+const LocalDataPageMinecraft = lazyLoad(() => import('@pages/LocalDataPageMinecraft'));
+const SecurityPageMinecraft = lazyLoad(() => import('@pages/SecurityPageMinecraft'));
+const ServerPageMinecraft = lazyLoad(() => import('@pages/ServerPageMinecraft'));
+const ProgressTestPage = lazyLoad(() => import('@pages/ProgressTestPage'));
 
 interface AppProps {
   onReady?: () => void;
@@ -30,16 +32,20 @@ function App({ onReady }: AppProps) {
   const isLoading = useAppStore((state) => state.isLoading);
   const loadingMessage = useAppStore((state) => state.loadingMessage);
   const initialize = useAppStore((state) => state.initialize);
-  
-  // 启用全局快捷键
-  useGlobalShortcuts();
-
-  console.log('🔄 App render - isInitialized:', isInitialized, 'isLoading:', isLoading);
 
   useEffect(() => {
-    // 防止重复初始化的标识
+    // 预加载常用页面
     if (isInitialized) {
-      console.log('🔄 App already initialized, skipping...');
+      preloadComponents([
+        () => import('@pages/ScanPageMinecraft'),
+        () => import('@pages/ProjectPageMinecraft'),
+        () => import('@pages/SettingsPageMinecraft')
+      ]);
+    }
+  }, [isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
       onReady?.();
       return;
     }
@@ -50,42 +56,21 @@ function App({ onReady }: AppProps) {
       if (isCancelled || isInitialized) return;
       
       try {
-        console.log('🚀 Starting app initialization sequence...');
-        
-        // Initialize Tauri APIs
-        console.log('📱 Initializing Tauri APIs...');
         await initializeTauri();
-        
         if (isCancelled || isInitialized) return;
-        console.log('✅ Tauri APIs initialized successfully');
         
-        // Initialize storage service
-        console.log('💾 Initializing storage service...');
-        await storageService.init();
-        
-        if (isCancelled || isInitialized) return;
-        console.log('✅ Storage service initialized successfully');
-        
-        // Initialize app store
-        console.log('🏪 Initializing app store...');
         const result = await initialize();
-        
         if (isCancelled || isInitialized) return;
-        console.log('✅ App store initialization result:', result);
         
-        // Notify that app is ready
-        console.log('🎉 App initialization sequence complete');
         onReady?.();
       } catch (error) {
         if (!isCancelled) {
-          console.error('❌ Failed to initialize app:', error);
-          // Still call onReady to remove HTML loading spinner
+          console.error('Failed to initialize app:', error);
           onReady?.();
         }
       }
     };
 
-    console.log('🔧 Setting up initialization effect...');
     initApp();
     
     return () => {
@@ -104,7 +89,6 @@ function App({ onReady }: AppProps) {
         bgcolor="background.default"
         sx={{ color: 'text.primary' }}
       >
-        {/* 显示详细的加载状态 */}
         <Box textAlign="center" mb={2}>
           <h2>🎮 TH Suite MC L10n</h2>
           <p>Minecraft 本地化工具</p>
@@ -143,22 +127,13 @@ function App({ onReady }: AppProps) {
             </button>
           </Box>
         )}
-        
-        {/* 调试信息 */}
-        <Box mt={4} p={2} bgcolor="rgba(0,0,0,0.1)" borderRadius={1} fontSize="12px">
-          <div>调试信息:</div>
-          <div>isInitialized: {isInitialized.toString()}</div>
-          <div>isLoading: {isLoading.toString()}</div>
-          <div>loadingMessage: {loadingMessage || 'null'}</div>
-        </Box>
       </Box>
     );
   }
 
   return (
-    <>
-      <LayoutMinecraft>
-        <Routes>
+    <LayoutMinecraft>
+      <Routes>
         <Route path="/" element={<HomePageMinecraft />} />
         <Route path="/home" element={<HomePageMinecraft />} />
         <Route path="/project" element={<ProjectPageMinecraft />} />
@@ -175,8 +150,6 @@ function App({ onReady }: AppProps) {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </LayoutMinecraft>
-    <ShortcutHelp />
-    </>
   );
 }
 

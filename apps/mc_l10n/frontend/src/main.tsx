@@ -2,13 +2,13 @@
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 
 import App from './App';
 import { ErrorBoundary } from './components/common';
-import { minecraftTheme } from './theme/minecraftTheme';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { NotificationProvider } from './hooks/useNotification';
 import './index.css';
 import './assets/fonts/minecraft.css';
 import './i18n';
@@ -48,10 +48,12 @@ const AppContent = () => (
     reportButtonText="报告错误"
   >
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={minecraftTheme}>
+      <ThemeProvider>
         <CssBaseline />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <App onReady={removeLoadingSpinner} />
+          <NotificationProvider>
+            <App onReady={removeLoadingSpinner} />
+          </NotificationProvider>
           <Toaster
             position="top-right"
             toastOptions={{

@@ -46,6 +46,7 @@ class ScanRequest(BaseModel):
 
 from api.middleware.cors_config import setup_cors
 from api.middleware.error_handler import setup_error_handlers
+from api.routes import transhub
 
 # 中间件导入
 from api.middleware.logging_middleware import LoggingMiddleware
@@ -150,6 +151,7 @@ def create_app() -> FastAPI:
     app.include_router(mod_router)
     # app.include_router(scan_router)  # 暂时移除，避免模型冲突
     app.include_router(translation_router)
+    app.include_router(transhub.router)  # Trans-Hub集成路由
     
     # 扫描相关函数
     def init_database():

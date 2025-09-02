@@ -1,31 +1,52 @@
-﻿# TH Suite MC L10n Frontend
+﻿# 🎮 TH Suite MC L10n Frontend
 
-TH Suite MC L10n 前端应用，基于 Tauri + React + TypeScript 构建的桌面应用程序。
+TH Suite MC L10n 前端应用，基于 Tauri + React + TypeScript 构建的 Minecraft 风格桌面应用程序。
+
+## ✨ 最新更新 (2025.01)
+
+### Minecraft 主题 UI 重构
+- 🎨 **全新 Minecraft 风格界面**: 像素化设计，游戏化体验
+- 🎮 **自定义组件库**: MinecraftButton、MinecraftCard、MinecraftProgress 等
+- ✨ **动画效果**: 粒子效果、方块动画、游戏化过渡
+- 🏆 **成就系统**: 游戏化的进度追踪和成就展示
 
 ## 技术栈
 
 - **框架**: React 18 + TypeScript
 - **构建工具**: Vite
 - **桌面框架**: Tauri
-- **UI 库**: Material-UI (MUI)
+- **UI 库**: Material-UI (MUI) + 自定义 Minecraft 组件
+- **主题系统**: Minecraft 主题配置
 - **状态管理**: Zustand
 - **路由**: React Router DOM
 - **动画**: Framer Motion
 - **HTTP 客户端**: Axios
 - **表单处理**: React Hook Form + Zod
 - **通知**: React Hot Toast
-- **图标**: Lucide React
+- **图标**: Lucide React + Minecraft 图标
 
 ## 项目结构
 
 ```
 src/
 ├── components/          # 组件
+│   ├── minecraft/      # Minecraft 风格组件
+│   │   ├── MinecraftButton.tsx     # 游戏风格按钮
+│   │   ├── MinecraftCard.tsx       # 游戏风格卡片
+│   │   └── MinecraftProgress.tsx   # 游戏风格进度条
 │   ├── Layout/         # 布局组件
 │   └── common/         # 通用组件
 ├── pages/              # 页面组件
+│   ├── HomePageMinecraft.tsx       # Minecraft 风格首页
+│   ├── ScanPageMinecraft.tsx       # Minecraft 风格扫描页
+│   └── PlaceholderPage.tsx         # 占位页面
 ├── services/           # 服务层
+│   ├── domain/         # 领域服务
+│   └── infrastructure/ # 基础设施服务
 ├── stores/             # 状态管理
+├── theme/              # 主题配置
+│   └── minecraftTheme.ts          # Minecraft 主题
+├── hooks/              # 自定义 Hooks
 ├── App.tsx            # 主应用组件
 ├── main.tsx           # 应用入口
 └── index.css          # 全局样式
@@ -41,17 +62,27 @@ src-tauri/              # Tauri 后端
 ## 功能特性
 
 ### 核心功能
-- 🔍 **资源扫描**: 扫描 Minecraft 资源文件和数据包
-- 📦 **资源提取**: 从压缩包中提取资源文件
-- 🔨 **项目构建**: 构建资源包和数据包
-- ⚙️ **设置管理**: 应用配置和偏好设置
+- 🔍 **模组扫描**: 智能扫描和识别 Minecraft 模组与资源包
+- 📦 **资源提取**: 从 JAR 文件和压缩包中提取语言文件
+- 🌐 **翻译管理**: 管理和编辑本地化内容
+- 🔄 **Trans-Hub 集成**: 与 Trans-Hub 平台实时同步
+- 📊 **进度追踪**: 实时显示扫描和处理进度
+- 🏆 **成就系统**: 游戏化的任务完成追踪
+
+### Minecraft 主题特性
+- 🎮 **游戏化界面**: 完全的 Minecraft 视觉风格
+- 🧱 **方块元素**: 草方块、钻石、金块等图标系统
+- ⚡ **粒子效果**: 动态粒子和爆炸效果
+- 📊 **经验条进度**: 游戏风格的进度显示
+- 🎨 **像素化设计**: 像素字体和复古风格
+- 💎 **材质按钮**: 不同材质风格的交互按钮
 
 ### 界面特性
-- 🎨 **现代化 UI**: 基于 Material Design 的美观界面
-- 🌙 **主题支持**: 支持浅色/深色/跟随系统主题
-- 📱 **响应式设计**: 适配不同屏幕尺寸
-- ✨ **流畅动画**: 使用 Framer Motion 提供流畅的交互动画
-- 🔔 **实时通知**: 操作状态和结果的实时反馈
+- 🌟 **沉浸式体验**: 完整的 Minecraft 游戏体验
+- 🎯 **快捷操作**: 游戏化的功能导航
+- 📈 **实时统计**: 动态更新的数据展示
+- ✨ **流畅动画**: 游戏风格的过渡和动效
+- 🔔 **游戏通知**: Minecraft 风格的提示信息
 
 ### 技术特性
 - 🚀 **高性能**: Tauri 提供原生性能
@@ -90,6 +121,52 @@ npm run tauri dev
 ```bash
 # 构建生产版本
 npm run tauri build
+```
+
+## Minecraft 组件使用指南
+
+### MinecraftButton
+```tsx
+import { MinecraftButton } from '@components/minecraft';
+
+// 不同材质风格
+<MinecraftButton minecraftStyle="diamond" onClick={handleClick}>
+  钻石按钮
+</MinecraftButton>
+
+<MinecraftButton minecraftStyle="emerald" glowing>
+  发光的绿宝石按钮
+</MinecraftButton>
+
+// 可用材质: grass, stone, diamond, gold, iron, emerald, redstone
+```
+
+### MinecraftCard
+```tsx
+import { MinecraftCard } from '@components/minecraft';
+
+// 不同卡片风格
+<MinecraftCard variant="chest" title="宝箱" icon="gold">
+  内容
+</MinecraftCard>
+
+// 可用风格: inventory, chest, crafting, enchantment
+```
+
+### MinecraftProgress
+```tsx
+import { MinecraftProgress } from '@components/minecraft';
+
+// 不同进度条风格
+<MinecraftProgress 
+  value={75} 
+  max={100} 
+  variant="experience"
+  label="经验值"
+  animated
+/>
+
+// 可用风格: experience, health, hunger, armor, loading
 ```
 
 ## 可用脚本
