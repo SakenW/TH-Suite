@@ -87,16 +87,37 @@ class McScannerService:
     async def _execute_scan(self, request: ScanRequest) -> None:
         """执行扫描并处理结果"""
         try:
+            logger.info(f"🔍 Starting scan execution for {request.scan_id}")
+            
+            # 初始化扫描状态
+            self._scan_cache[request.scan_id] = {
+                "scan_id": request.scan_id,
+                "status": "scanning",
+                "progress_percent": 0.0,
+                "current_item": "初始化扫描...",
+                "processed_count": 0,
+                "total_count": 0,
+                "statistics": {},
+                "metadata": {"scan_mode": "增量" if request.incremental else "全量"}
+            }
+            
             # 定义进度回调
             async def progress_callback(progress: ScanProgress):
+                logger.info(f"📊 Progress update: {progress.scan_id} - {progress.progress_percent:.1f}%")
                 await self._cache_scan_progress(progress)
             
             # 执行扫描
+            scan_completed = False
             async for result in self.universal_scanner.scan(request, progress_callback):
+                scan_completed = True
                 # 缓存最终结果
                 self._scan_cache[request.scan_id] = {
                     "scan_id": result.scan_id,
                     "status": result.status.value,
+                    "progress_percent": 100.0,
+                    "current_item": "扫描完成",
+                    "processed_count": len(result.discovered_items),
+                    "total_count": len(result.discovered_items),
                     "discovered_items": len(result.discovered_items),
                     "statistics": result.statistics,
                     "errors": result.errors,
@@ -105,22 +126,34 @@ class McScannerService:
                     "metadata": result.metadata
                 }
                 
-                logger.info(f"✅ Scan completed: {request.scan_id}")
+                logger.info(f"✅ Scan completed: {request.scan_id}, discovered {len(result.discovered_items)} items")
+            
+            if not scan_completed:
+                logger.warning(f"⚠️ Scan {request.scan_id} did not complete normally")
                 
         except Exception as e:
             error_msg = f"Scan execution failed: {str(e)}"
-            logger.error(error_msg)
+            logger.error(f"❌ {error_msg}", exc_info=True)
             
             # 缓存错误状态
             self._scan_cache[request.scan_id] = {
                 "scan_id": request.scan_id,
                 "status": "failed",
+                "progress_percent": 0.0,
                 "error_message": error_msg
             }
     
     async def _cache_scan_progress(self, progress: ScanProgress) -> None:
         """缓存扫描进度"""
-        self._scan_cache[progress.scan_id] = {
+        # 确保metadata中包含统计信息
+        metadata = progress.metadata or {}
+        
+        # 尝试从progress中提取统计信息
+        statistics = metadata.get("statistics", {})
+        if not statistics and hasattr(progress, "statistics"):
+            statistics = progress.statistics
+        
+        cache_data = {
             "scan_id": progress.scan_id,
             "status": progress.status.value,
             "progress_percent": progress.progress_percent,
@@ -128,25 +161,58 @@ class McScannerService:
             "processed_count": progress.processed_count,
             "total_count": progress.total_count,
             "duration_seconds": progress.duration_seconds,
-            "metadata": progress.metadata
+            "metadata": metadata,
+            "statistics": statistics  # 单独存储统计信息
         }
+        
+        self._scan_cache[progress.scan_id] = cache_data
+        
+        # 记录进度日志用于调试 - 使用 INFO 级别确保输出
+        logger.info(f"📊 Progress cached for {progress.scan_id}: "
+                   f"status={progress.status.value}, "
+                   f"percent={progress.progress_percent:.1f}%, "
+                   f"processed={progress.processed_count}/{progress.total_count}, "
+                   f"current_item={progress.current_item}")
+        
+        # 打印缓存内容用于调试
+        logger.info(f"📦 Cache content: {cache_data}")
     
     async def get_scan_status(self, scan_id: str) -> Optional[Dict[str, Any]]:
         """获取扫描状态（兼容现有前端API）"""
         
+        logger.info(f"🔍 Getting scan status for: {scan_id}")
+        logger.info(f"📦 Current cache keys: {list(self._scan_cache.keys())}")
+        
         # 优先从缓存获取
         if scan_id in self._scan_cache:
             cached_status = self._scan_cache[scan_id]
+            logger.info(f"✅ Found in cache: {cached_status}")
             
-            # 转换为前端期望的格式
+            # 转换为前端期望的扁平格式
+            progress_percent = cached_status.get("progress_percent", 0.0)
+            processed_count = cached_status.get("processed_count", 0)
+            total_count = cached_status.get("total_count", 0)
+            
             return {
                 "scan_id": scan_id,
                 "status": cached_status.get("status", "unknown"),
-                "progress": {
-                    "percent": cached_status.get("progress_percent", 0.0),
+                "progress": progress_percent,  # 扁平的进度百分比
+                "total": total_count,  # 扁平的总数
+                "current": processed_count,  # 扁平的当前数
+                "processed_files": processed_count,
+                "total_files": total_count,
+                "current_file": cached_status.get("current_item", ""),
+                # 从statistics中提取统计信息
+                "total_mods": cached_status.get("statistics", {}).get("total_mods", 0),
+                "total_language_files": cached_status.get("statistics", {}).get("total_language_files", 0),
+                "total_keys": cached_status.get("statistics", {}).get("total_keys", 0),
+                "scan_mode": cached_status.get("metadata", {}).get("scan_mode", "全量"),
+                # 保留嵌套的progress对象以支持新格式
+                "progress_detail": {
+                    "percent": progress_percent,
                     "current_item": cached_status.get("current_item", ""),
-                    "processed": cached_status.get("processed_count", 0),
-                    "total": cached_status.get("total_count", 0)
+                    "processed": processed_count,
+                    "total": total_count
                 },
                 "statistics": cached_status.get("statistics", {}),
                 "errors": cached_status.get("errors", []),
@@ -161,7 +227,19 @@ class McScannerService:
             return {
                 "scan_id": scan_id,
                 "status": progress.status.value,
-                "progress": {
+                "progress": progress.progress_percent,  # 扁平的进度百分比
+                "total": progress.total_count,  # 扁平的总数
+                "current": progress.processed_count,  # 扁平的当前数
+                "processed_files": progress.processed_count,
+                "total_files": progress.total_count,
+                "current_file": progress.current_item,
+                # 统计信息需要从metadata中提取
+                "total_mods": progress.metadata.get("total_mods", 0) if progress.metadata else 0,
+                "total_language_files": progress.metadata.get("total_language_files", 0) if progress.metadata else 0,
+                "total_keys": progress.metadata.get("total_keys", 0) if progress.metadata else 0,
+                "scan_mode": progress.metadata.get("scan_mode", "全量") if progress.metadata else "全量",
+                # 保留嵌套的progress对象以支持新格式
+                "progress_detail": {
                     "percent": progress.progress_percent,
                     "current_item": progress.current_item,
                     "processed": progress.processed_count,

@@ -297,20 +297,38 @@ export class ScanService implements ScanServiceInterface {
    * 转换扫描状态数据
    */
   private transformScanStatus(scanId: string, data: any): ScanStatus {
+    // 处理新的嵌套格式和旧的扁平格式
+    const progressData = data.progress || {};
+    
+    // 优先使用扁平字段，如果不存在则从嵌套的progress对象中提取
+    const progress = data.progress && typeof data.progress === 'object' 
+      ? (progressData.percent || 0) 
+      : (data.progress || 0);
+    
+    const processed_files = data.processed_files !== undefined 
+      ? data.processed_files 
+      : (progressData.processed || 0);
+    
+    const total_files = data.total_files !== undefined
+      ? data.total_files
+      : (progressData.total || 0);
+    
+    const current_file = data.current_file || progressData.current_item || '';
+    
     return {
       scan_id: scanId,
       status: data.status || 'pending',
-      progress: data.progress || 0,
-      total_files: data.total_files || 0,
-      processed_files: data.processed_files || 0,
-      current_file: data.current_file,
-      total_mods: data.total_mods || 0,
-      total_language_files: data.total_language_files || 0,
-      total_keys: data.total_keys || 0,
+      progress: progress,
+      total_files: total_files,
+      processed_files: processed_files,
+      current_file: current_file,
+      total_mods: data.total_mods || data.statistics?.total_mods || 0,
+      total_language_files: data.total_language_files || data.statistics?.total_language_files || 0,
+      total_keys: data.total_keys || data.statistics?.total_keys || 0,
       scan_mode: data.scan_mode || '全量',
       started_at: new Date(data.started_at || Date.now()),
       completed_at: data.completed_at ? new Date(data.completed_at) : undefined,
-      error: data.error
+      error: data.error || data.error_message
     };
   }
 

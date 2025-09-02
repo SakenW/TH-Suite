@@ -27,7 +27,7 @@ APP_VERSION = "1.0.0"
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 CORS_ORIGINS = os.getenv(
-    "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
+    "CORS_ORIGINS", "http://localhost:3000,http://localhost:15173"
 ).split(",")
 LOG_FILE = os.getenv("LOG_FILE", "logs/mc-studio-backend.log")
 
@@ -167,5 +167,5 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "main:app", host="0.0.0.0", port=8000, reload=DEBUG, log_level=LOG_LEVEL.lower()
+        "main:app", host="0.0.0.0", port = 18000, reload=DEBUG, log_level=LOG_LEVEL.lower()
     )

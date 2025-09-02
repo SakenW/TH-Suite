@@ -127,7 +127,7 @@ const MCLayout: React.FC = () => {
   useEffect(() => {
     const checkServerStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/health');
+        const response = await fetch('http://localhost:18000/health');
         setServerStatus(response.ok ? 'online' : 'offline');
       } catch {
         setServerStatus('offline');

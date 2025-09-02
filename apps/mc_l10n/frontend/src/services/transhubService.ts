@@ -71,7 +71,7 @@ class TransHubService extends BaseApiService {
    */
   async connect(config: ServerConfig): Promise<ConnectionStatus> {
     try {
-      const response = await this.post<ConnectionStatus>('/api/transhub/connect', config);
+      const response = await this.post<ConnectionStatus>('/transhub/connect', config);
       this.connectionStatus = response;
       return response;
     } catch (error) {
@@ -85,7 +85,7 @@ class TransHubService extends BaseApiService {
    */
   async disconnect(): Promise<void> {
     try {
-      await this.post('/api/transhub/disconnect', {});
+      await this.post('/transhub/disconnect', {});
       this.connectionStatus = null;
     } catch (error) {
       console.error('Failed to disconnect from Trans-Hub:', error);
@@ -98,11 +98,24 @@ class TransHubService extends BaseApiService {
    */
   async getStatus(): Promise<ConnectionStatus> {
     try {
-      const response = await this.get<ConnectionStatus>('/api/transhub/status');
+      const response = await this.get<ConnectionStatus>('/transhub/status');
       this.connectionStatus = response;
       return response;
-    } catch (error) {
-      console.error('Failed to get connection status:', error);
+    } catch (error: any) {
+      // Silently handle 404 errors for Trans-Hub endpoints that may not be implemented yet
+      if (error?.error?.code === 'NOT_FOUND' || error?.message?.includes('404')) {
+        return {
+          connected: false,
+          status: 'not_implemented',
+          serverUrl: '',
+          offlineQueueSize: 0,
+          message: 'Trans-Hub integration not yet implemented'
+        };
+      }
+      // Only log non-404 errors
+      if (!error?.message?.includes('404')) {
+        console.error('Failed to get connection status:', error);
+      }
       // 返回默认状态
       return {
         connected: false,
@@ -124,7 +137,7 @@ class TransHubService extends BaseApiService {
     scanId: string;
   }> {
     try {
-      return await this.post('/api/transhub/upload', request);
+      return await this.post('/transhub/upload', request);
     } catch (error) {
       console.error('Failed to upload scan results:', error);
       throw error;
@@ -200,7 +213,7 @@ class TransHubService extends BaseApiService {
         try {
           updateProgress('uploading');
           
-          await this.post('/api/transhub/upload-chunk', {
+          await this.post('/transhub/upload-chunk', {
             uploadId,
             projectId: request.projectId,
             scanId: request.scanId,
@@ -250,7 +263,7 @@ class TransHubService extends BaseApiService {
 
     while (retryCount < maxRetries) {
       try {
-        await this.post('/api/transhub/upload-chunk', chunk);
+        await this.post('/transhub/upload-chunk', chunk);
         return; // 成功上传
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
@@ -278,7 +291,7 @@ class TransHubService extends BaseApiService {
     fromCache: boolean;
   }> {
     try {
-      return await this.post('/api/transhub/download-patches', {
+      return await this.post('/transhub/download-patches', {
         projectId,
         since
       });
@@ -297,7 +310,7 @@ class TransHubService extends BaseApiService {
     patchId: string;
   }> {
     try {
-      return await this.post('/api/transhub/apply-patch', {
+      return await this.post('/transhub/apply-patch', {
         patchId,
         strategy,
         dryRun
@@ -313,7 +326,7 @@ class TransHubService extends BaseApiService {
    */
   async getTranslationStatus(projectId: string, targetLanguage = 'zh_cn'): Promise<TranslationStatus> {
     try {
-      return await this.get(`/api/transhub/translation-status/${projectId}?target_language=${targetLanguage}`);
+      return await this.get(`/transhub/translation-status/${projectId}?target_language=${targetLanguage}`);
     } catch (error) {
       console.error('Failed to get translation status:', error);
       return {
@@ -358,7 +371,7 @@ class TransHubService extends BaseApiService {
         });
       }
 
-      const result = await this.post('/api/transhub/sync-offline', {});
+      const result = await this.post('/transhub/sync-offline', {});
       
       if (onProgress) {
         onProgress({
@@ -405,7 +418,7 @@ class TransHubService extends BaseApiService {
     error?: string;
   }> {
     try {
-      return await this.get(`/api/transhub/test-connection?server_url=${encodeURIComponent(serverUrl)}`);
+      return await this.get(`/transhub/test-connection?server_url=${encodeURIComponent(serverUrl)}`);
     } catch (error) {
       console.error('Failed to test connection:', error);
       return {

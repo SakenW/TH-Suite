@@ -1444,11 +1444,11 @@ if __name__ == "__main__":
     print("📊 初始化数据库...")
     init_database()
     print("✅ 数据库初始化完成")
-    print("📍 API文档: http://localhost:8000/docs")
+    print("📍 API文档: http://localhost:18000/docs")
     uvicorn.run(
         "simple_backend:app",
         host="0.0.0.0", 
-        port=8000,
+        port = 18000,
         reload=True,
         log_level="info"
     )

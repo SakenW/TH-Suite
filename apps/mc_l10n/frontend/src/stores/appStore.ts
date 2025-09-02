@@ -191,7 +191,7 @@ export const useAppStore = create<AppState>()(
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时
             
-            const response = await fetch('http://localhost:8000/health', {
+            const response = await fetch('http://localhost:18000/health', {
               method: 'GET',
               signal: controller.signal,
               headers: {
@@ -221,7 +221,7 @@ export const useAppStore = create<AppState>()(
             const controller2 = new AbortController();
             const timeoutId2 = setTimeout(() => controller2.abort(), 2000); // 2秒超时
             
-            const activeScansResponse = await fetch('http://localhost:8000/api/v1/scans/active', {
+            const activeScansResponse = await fetch('http://localhost:18000/api/v1/scans/active', {
               method: 'GET',
               signal: controller2.signal,
               headers: {

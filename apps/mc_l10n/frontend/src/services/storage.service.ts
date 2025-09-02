@@ -6,29 +6,6 @@
 // Check if we're in a Tauri environment
 const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
 
-// Tauri APIs placeholder
-let tauriApis: any = {
-  invoke: null,
-  fs: null,
-  path: null
-};
-
-// Try to load Tauri APIs if available
-if (isTauri) {
-  try {
-    // These will be resolved at build time by Tauri
-    const tauriCore = (window as any).__TAURI__?.tauri;
-    const tauriFs = (window as any).__TAURI__?.fs;
-    const tauriPath = (window as any).__TAURI__?.path;
-    
-    if (tauriCore) tauriApis.invoke = tauriCore.invoke;
-    if (tauriFs) tauriApis.fs = tauriFs;
-    if (tauriPath) tauriApis.path = tauriPath;
-  } catch (err) {
-    console.warn('Tauri APIs not available');
-  }
-}
-
 export interface StorageOptions {
   encrypt?: boolean;
   compress?: boolean;
@@ -302,92 +279,34 @@ class FileStorageManager {
    * 初始化存储目录
    */
   async init(): Promise<void> {
-    if (!isTauri || !tauriApis.path) {
-      console.warn('Tauri APIs not available for file storage');
-      return;
-    }
-
-    try {
-      // Get app data directory
-      this.dataDir = await tauriApis.path.appDataDir();
-      
-      // Ensure storage directory exists
-      const storageDir = `${this.dataDir}/storage`;
-      if (!await tauriApis.fs.exists(storageDir)) {
-        await tauriApis.fs.createDir('storage', {
-          dir: tauriApis.fs.BaseDirectory.AppData,
-          recursive: true
-        });
-      }
-    } catch (error) {
-      console.error('Failed to initialize file storage:', error);
-    }
+    // Skip file system initialization for now to avoid permission issues
+    // Will use localStorage fallback instead
+    console.log('FileStorageManager: Using localStorage fallback');
   }
 
   /**
    * 保存数据到文件
    */
   async saveToFile(filename: string, data: any): Promise<void> {
-    if (!isTauri || !tauriApis.fs) {
-      // Fallback to localStorage
-      localStorage.setItem(`file_${filename}`, JSON.stringify(data));
-      return;
-    }
-
-    if (!this.dataDir) await this.init();
-    
-    try {
-      const content = JSON.stringify(data, null, 2);
-      await tauriApis.fs.writeTextFile(`storage/${filename}`, content, {
-        dir: tauriApis.fs.BaseDirectory.AppData
-      });
-    } catch (error) {
-      console.error('Failed to save to file:', error);
-      throw error;
-    }
+    // Always use localStorage for now to avoid permission issues
+    localStorage.setItem(`file_${filename}`, JSON.stringify(data));
   }
 
   /**
    * 从文件读取数据
    */
   async readFromFile<T>(filename: string): Promise<T | null> {
-    if (!isTauri || !tauriApis.fs) {
-      // Fallback to localStorage
-      const data = localStorage.getItem(`file_${filename}`);
-      return data ? JSON.parse(data) : null;
-    }
-
-    if (!this.dataDir) await this.init();
-    
-    try {
-      const content = await tauriApis.fs.readTextFile(`storage/${filename}`, {
-        dir: tauriApis.fs.BaseDirectory.AppData
-      });
-      return JSON.parse(content);
-    } catch (error) {
-      console.error('Failed to read from file:', error);
-      return null;
-    }
+    // Always use localStorage for now to avoid permission issues
+    const data = localStorage.getItem(`file_${filename}`);
+    return data ? JSON.parse(data) : null;
   }
 
   /**
    * 检查文件是否存在
    */
   async fileExists(filename: string): Promise<boolean> {
-    if (!isTauri || !tauriApis.fs) {
-      return localStorage.getItem(`file_${filename}`) !== null;
-    }
-
-    if (!this.dataDir) await this.init();
-    
-    try {
-      return await tauriApis.fs.exists(`storage/${filename}`, {
-        dir: tauriApis.fs.BaseDirectory.AppData
-      });
-    } catch (error) {
-      console.error('Failed to check file existence:', error);
-      return false;
-    }
+    // Always use localStorage for now to avoid permission issues
+    return localStorage.getItem(`file_${filename}`) !== null;
   }
 
   /**

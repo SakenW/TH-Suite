@@ -6,9 +6,16 @@
   "permissions": [
     "core:default",
     "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
     "fs:default",
+    "fs:read-all",
+    "fs:write-all",
+    "fs:scope",
     "notification:default",
     "shell:default",
-    "http:default"
+    "http:default",
+    "process:default",
+    "window-state:default"
   ]
 }

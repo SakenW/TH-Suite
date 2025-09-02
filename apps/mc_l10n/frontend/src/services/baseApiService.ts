@@ -19,7 +19,7 @@ export class BaseApiService {
   protected readonly baseUrl: string;
   private interceptors: RequestInterceptor[] = [];
 
-  constructor(baseUrl: string = 'http://localhost:8000/api/v1') {
+  constructor(baseUrl: string = 'http://localhost:18001/api/v1') {  // 使用18001端口
     this.baseUrl = baseUrl;
   }
 
@@ -138,7 +138,11 @@ export class BaseApiService {
    * 处理错误
    */
   private handleError(error: any): ApiResponse {
-    console.error('API request failed:', error);
+    // Only log non-404 errors or non-Trans-Hub 404 errors
+    const isTransHub404 = error.message?.includes('404') && error.message?.includes('transhub');
+    if (!isTransHub404) {
+      console.error('API request failed:', error);
+    }
     
     let message = '网络请求失败';
     let code = 'NETWORK_ERROR';
@@ -148,6 +152,10 @@ export class BaseApiService {
       code = 'TIMEOUT_ERROR';
     } else if (error.message) {
       message = error.message;
+      // Set specific code for 404 errors
+      if (error.message.includes('404')) {
+        code = 'NOT_FOUND';
+      }
     }
     
     return {
@@ -282,7 +290,7 @@ export class BaseApiService {
   async checkConnection(): Promise<boolean> {
     try {
       // 健康检查API不在 /api/v1 前缀下
-      const url = 'http://localhost:8000/health';
+      const url = 'http://localhost:18000/health';  // 使用18000端口
       const response = await this.request(url);
       return response.success !== false; // 健康检查返回的格式可能不同
     } catch (error) {

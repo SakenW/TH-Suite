@@ -171,7 +171,7 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
 
   const handleWebScan = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/scan-project', {
+      const response = await fetch('http://localhost:18000/api/v1/scan-project', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
     
     const poll = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/scan-result/${scanId}`);
+        const response = await fetch(`http://localhost:18000/api/v1/scan-result/${scanId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

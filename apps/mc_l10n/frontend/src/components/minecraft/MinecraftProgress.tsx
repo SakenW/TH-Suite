@@ -117,7 +117,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
                 textShadow: '1px 1px 0 rgba(0,0,0,0.8)',
               }}
             >
-              {value}/{max}
+              {typeof value === 'number' ? Math.round(value) : value}/{max}
             </Typography>
           )}
         </Box>

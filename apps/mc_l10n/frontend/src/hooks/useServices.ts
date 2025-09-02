@@ -58,8 +58,19 @@ export function useScan() {
   const service = useMemo(() => getScanService(), []);
   
   // 提取所有useCallback到外层
-  const startScan = useCallback(async (request: any) => {
-    return await service.startScan(request);
+  const startScan = useCallback(async (directoryOrRequest: string | any) => {
+    // 兼容两种调用方式：传入字符串或完整的request对象
+    const request = typeof directoryOrRequest === 'string' 
+      ? { directory: directoryOrRequest, incremental: true }
+      : directoryOrRequest;
+    
+    const result = await service.startScan(request);
+    
+    // 返回scan_id以兼容旧代码
+    if (result.success && result.data) {
+      return result.data.scan_id;
+    }
+    return null;
   }, [service]);
   
   const getScanStatus = useCallback(async (scanId: string) => {

@@ -66,10 +66,14 @@ class CORSConfig:
             # 开发环境：允许本地开发服务器
             return [
                 "http://localhost:3000",  # React开发服务器
-                "http://localhost:5173",  # Vite开发服务器
+                "http://localhost:15173",  # Vite开发服务器
+                "http://localhost:5174",  # Vite备用端口
+                "http://localhost:5175",  # Vite备用端口
                 "http://localhost:8080",  # 其他开发服务器
                 "http://127.0.0.1:3000",
-                "http://127.0.0.1:5173",
+                "http://127.0.0.1:15173",
+                "http://127.0.0.1:5174",
+                "http://127.0.0.1:5175",
                 "http://127.0.0.1:8080",
                 "tauri://localhost",  # Tauri应用
                 "http://tauri.localhost",  # Tauri开发环境
@@ -88,9 +92,25 @@ class CORSConfig:
 
     def apply_to_app(self, app):
         """将CORS配置应用到FastAPI应用"""
+        # 确保使用正确的origins列表
+        origins = self.allowed_origins
+        
+        # 开发环境添加更多允许的源
+        if self.environment in ["development", "dev", "local"]:
+            # 添加所有可能的本地开发端口
+            for port in range(3000, 3010):
+                origins.append(f"http://localhost:{port}")
+                origins.append(f"http://127.0.0.1:{port}")
+            for port in range(5170, 5180):
+                origins.append(f"http://localhost:{port}")
+                origins.append(f"http://127.0.0.1:{port}")
+            for port in range(8080, 8090):
+                origins.append(f"http://localhost:{port}")
+                origins.append(f"http://127.0.0.1:{port}")
+        
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=self.allowed_origins,
+            allow_origins=origins,
             allow_credentials=self.allow_credentials,
             allow_methods=self.allowed_methods,
             allow_headers=self.allowed_headers,
@@ -117,7 +137,16 @@ cors_config = CORSConfig()
 
 def setup_cors(app):
     """设置CORS中间件的便捷函数"""
-    cors_config.apply_to_app(app)
+    # 简化CORS配置，开发环境允许所有
+    from fastapi.middleware.cors import CORSMiddleware
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # 关闭credentials以允许使用*
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # 记录CORS配置
     from packages.core.framework.logging import get_logger

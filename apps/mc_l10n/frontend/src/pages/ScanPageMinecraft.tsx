@@ -192,20 +192,29 @@ export default function ScanPageMinecraft() {
       stopPolling();
       setIsScanning(false);
       setCurrentScanId(null);
-      toast.success('扫描已停止', { icon: '⏹️' });
+      notification.success('扫描已停止');
     }
   };
 
-  const formatTime = (seconds: number | undefined): string => {
-    if (!seconds || seconds <= 0) return '--:--';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
+  const formatTime = (milliseconds: number | null | undefined): string => {
+    if (!milliseconds || milliseconds <= 0) return '--:--';
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = Math.floor(totalSeconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const formatSpeed = (speed: number | undefined): string => {
-    if (!speed || speed <= 0) return '-- /秒';
-    return `${speed.toFixed(1)} /秒`;
+  const formatSpeed = (speed: number | null | undefined): string => {
+    if (!speed || speed <= 0) return '0.0 文件/秒';
+    if (speed < 1) {
+      return `${speed.toFixed(2)} 文件/秒`;
+    }
+    return `${speed.toFixed(1)} 文件/秒`;
   };
 
   return (
@@ -213,7 +222,7 @@ export default function ScanPageMinecraft() {
       {/* 粒子效果 */}
       <AnimatePresence>
         {showParticles && (
-          <MinecraftParticles count={50} duration={3000} />
+          <ParticleEffect count={50} duration={3000} />
         )}
       </AnimatePresence>
 
@@ -426,8 +435,8 @@ export default function ScanPageMinecraft() {
                 <Box sx={{ p: 2 }}>
                   {/* 主进度条 */}
                   <MinecraftProgress
-                    value={scanStatus?.progress || 0}
-                    max={scanStatus?.total || 100}
+                    value={Math.min(100, Math.max(0, scanStatus?.progress || 0))}
+                    max={100}  // 进度是百分比，最大值固定为100
                     variant="experience"
                     label="整体进度"
                     animated
@@ -445,18 +454,20 @@ export default function ScanPageMinecraft() {
                             fontSize: '20px',
                             color: '#FFFFFF',
                             mt: 1,
+                            fontWeight: 'bold',
                           }}
                         >
-                          {scanStatus?.current || 0}
+                          {(scanStatus?.processed_files || scanStatus?.current || 0).toLocaleString()}
                         </Typography>
                         <Typography
                           sx={{
                             fontFamily: '"Minecraft", monospace',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             color: 'text.secondary',
+                            mt: 0.5,
                           }}
                         >
-                          当前进度
+                          已处理
                         </Typography>
                       </Box>
                     </Grid>
@@ -469,18 +480,20 @@ export default function ScanPageMinecraft() {
                             fontSize: '20px',
                             color: '#FFFFFF',
                             mt: 1,
+                            fontWeight: 'bold',
                           }}
                         >
-                          {scanStatus?.total || 0}
+                          {(scanStatus?.total_files || scanStatus?.total || 0).toLocaleString()}
                         </Typography>
                         <Typography
                           sx={{
                             fontFamily: '"Minecraft", monospace',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             color: 'text.secondary',
+                            mt: 0.5,
                           }}
                         >
-                          总计文件
+                          总计
                         </Typography>
                       </Box>
                     </Grid>
@@ -490,9 +503,10 @@ export default function ScanPageMinecraft() {
                         <Typography
                           sx={{
                             fontFamily: '"Minecraft", monospace',
-                            fontSize: '20px',
+                            fontSize: '18px',
                             color: '#FFFFFF',
                             mt: 1,
+                            fontWeight: 'bold',
                           }}
                         >
                           {formatSpeed(processingSpeed)}
@@ -500,8 +514,9 @@ export default function ScanPageMinecraft() {
                         <Typography
                           sx={{
                             fontFamily: '"Minecraft", monospace',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             color: 'text.secondary',
+                            mt: 0.5,
                           }}
                         >
                           处理速度
@@ -517,6 +532,7 @@ export default function ScanPageMinecraft() {
                             fontSize: '20px',
                             color: '#FFFFFF',
                             mt: 1,
+                            fontWeight: 'bold',
                           }}
                         >
                           {formatTime(estimatedTimeRemaining)}
@@ -524,8 +540,9 @@ export default function ScanPageMinecraft() {
                         <Typography
                           sx={{
                             fontFamily: '"Minecraft", monospace',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             color: 'text.secondary',
+                            mt: 0.5,
                           }}
                         >
                           剩余时间
@@ -540,12 +557,39 @@ export default function ScanPageMinecraft() {
                       <Typography
                         sx={{
                           fontFamily: 'monospace',
+                          fontSize: '11px',
+                          color: '#888888',
+                          mb: 0.5,
+                        }}
+                      >
+                        正在处理:
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontFamily: 'monospace',
                           fontSize: '12px',
                           color: '#00FF00',
                           wordBreak: 'break-all',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
                         }}
                       >
-                        📂 {scanStatus.current_file}
+                        📂 {scanStatus.current_file.split('/').pop() || scanStatus.current_file.split('\\').pop() || scanStatus.current_file}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontFamily: 'monospace',
+                          fontSize: '10px',
+                          color: '#666666',
+                          mt: 0.5,
+                          wordBreak: 'break-all',
+                        }}
+                        title={scanStatus.current_file}
+                      >
+                        {scanStatus.current_file.length > 80 
+                          ? '...' + scanStatus.current_file.slice(-77) 
+                          : scanStatus.current_file}
                       </Typography>
                     </Box>
                   )}
@@ -631,7 +675,7 @@ export default function ScanPageMinecraft() {
                             color: '#FFFFFF',
                           }}
                         >
-                          {scanResult.statistics.total_lang_files}
+                          {scanResult.statistics.total_language_files || scanResult.statistics.total_lang_files || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -719,6 +763,87 @@ export default function ScanPageMinecraft() {
                               borderRadius: 0,
                             }}
                           />
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* 语言文件列表 */}
+                  {scanResult.language_files && scanResult.language_files.length > 0 && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: '"Minecraft", monospace',
+                          fontSize: '14px',
+                          color: '#FFFFFF',
+                          mb: 2,
+                        }}
+                      >
+                        语言文件示例：
+                      </Typography>
+                      <Box 
+                        sx={{ 
+                          maxHeight: 200, 
+                          overflowY: 'auto',
+                          background: 'rgba(0,0,0,0.2)',
+                          border: '1px solid #4A4A4A',
+                          p: 2,
+                        }}
+                      >
+                        {scanResult.language_files.slice(0, 10).map((file, index) => (
+                          <Box
+                            key={file.id}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              py: 0.5,
+                              borderBottom: index < 9 ? '1px solid #2A2A2A' : 'none',
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                fontFamily: 'monospace',
+                                fontSize: '11px',
+                                color: '#87CEEB',
+                              }}
+                            >
+                              {file.file_name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              <Typography
+                                sx={{
+                                  fontFamily: 'monospace',
+                                  fontSize: '10px',
+                                  color: '#888888',
+                                }}
+                              >
+                                {file.language}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  fontFamily: 'monospace',
+                                  fontSize: '10px',
+                                  color: '#98FB98',
+                                }}
+                              >
+                                {file.key_count} keys
+                              </Typography>
+                            </Box>
+                          </Box>
+                        ))}
+                        {scanResult.language_files.length > 10 && (
+                          <Typography
+                            sx={{
+                              fontFamily: 'monospace',
+                              fontSize: '10px',
+                              color: '#FFD700',
+                              textAlign: 'center',
+                              mt: 1,
+                            }}
+                          >
+                            ... 及其他 {scanResult.language_files.length - 10} 个文件
+                          </Typography>
                         )}
                       </Box>
                     </Box>

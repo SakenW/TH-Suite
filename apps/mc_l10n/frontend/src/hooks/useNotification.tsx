@@ -52,8 +52,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const notificationCounter = useRef(0);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
 
-  // 预加载音效
+  // 预加载音效 - Temporarily disabled until sound files are available
   React.useEffect(() => {
+    // Sound preloading disabled to prevent console errors
+    /*
     const sounds = {
       success: '/sounds/success.ogg',
       error: '/sounds/error.ogg',
@@ -70,9 +72,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       audio.volume = 0.5;
       audioRefs.current[type] = audio;
     });
+    */
   }, []);
 
   const playSound = useCallback((type: string) => {
+    // Temporarily disabled until sound files are available
+    return;
+    
+    /*
     if (!settings.soundEnabled) return;
     
     const audio = audioRefs.current[type];
@@ -83,6 +90,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         console.warn('Failed to play notification sound:', err);
       });
     }
+    */
   }, [settings.soundEnabled]);
 
   const notify = useCallback((options: Omit<NotificationOptions, 'id'>): string => {

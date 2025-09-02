@@ -18,6 +18,11 @@ export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
   glowing = false,
   disabled = false,
   onClick,
+  startIcon,
+  endIcon,
+  fullWidth,
+  size,
+  color,
   ...props
 }) => {
   const getStyleColors = () => {
@@ -200,6 +205,11 @@ export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
       variant={variant as ButtonProps['variant']}
       disabled={disabled}
       onClick={onClick}
+      startIcon={startIcon}
+      endIcon={endIcon}
+      fullWidth={fullWidth}
+      size={size}
+      color={color}
       {...props}
     >
       {children}

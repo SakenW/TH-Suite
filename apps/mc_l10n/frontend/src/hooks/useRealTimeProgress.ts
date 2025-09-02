@@ -50,6 +50,7 @@ export const useRealTimeProgress = (
   const [status, setStatus] = useState<ScanStatus | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+  const isPollingRef = useRef(false);
   const [error, setError] = useState<any>(null);
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number | null>(null);
   const [processingSpeed, setProcessingSpeed] = useState<number | null>(null);
@@ -123,19 +124,42 @@ export const useRealTimeProgress = (
     }
   }, []);
 
+  
   // 执行状态轮询
   const pollStatus = useCallback(async () => {
-    if (!currentScanId.current || !isPolling) return;
+    console.log(`📌 [pollStatus] 开始执行 - scanId: ${currentScanId.current}, isPolling: ${isPollingRef.current}`);
+    
+    if (!currentScanId.current) {
+      console.warn('⚠️ [pollStatus] 没有扫描ID，退出轮询');
+      return;
+    }
+    
+    if (!isPollingRef.current) {
+      console.warn('⚠️ [pollStatus] isPolling为false，退出轮询');
+      return;
+    }
 
     try {
+      console.log(`🔄 [useRealTimeProgress] Polling status for scan: ${currentScanId.current}`);
+      
       // 创建独立的AbortController，避免和其他请求冲突
       const response = await scanService.getStatus(currentScanId.current);
       
+      console.log(`📊 [useRealTimeProgress] Status response:`, response);
+      
       // 检查扫描ID是否仍然有效（防止竞争条件）
-      if (!currentScanId.current || !isPolling) return;
+      if (!currentScanId.current || !isPollingRef.current) return;
       
       if (response.success && response.data) {
         const newStatus = response.data;
+        console.log(`✅ [useRealTimeProgress] New status:`, {
+          status: newStatus.status,
+          progress: newStatus.progress,
+          processed_files: newStatus.processed_files,
+          total_files: newStatus.total_files,
+          current_file: newStatus.current_file
+        });
+        
         setStatus(newStatus);
         setError(null);
 
@@ -151,6 +175,7 @@ export const useRealTimeProgress = (
         // 检查是否完成
         if (newStatus.status === 'completed') {
           setIsPolling(false);
+          isPollingRef.current = false;
           
           // 获取最终结果
           try {
@@ -169,7 +194,14 @@ export const useRealTimeProgress = (
 
         // 检查是否失败或取消
         if (newStatus.status === 'failed' || newStatus.status === 'cancelled') {
+          console.log(`❌ 扫描${newStatus.status}，停止轮询`);
           setIsPolling(false);
+          isPollingRef.current = false;
+          // 清除定时器
+          if (intervalRef.current) {
+            clearTimeout(intervalRef.current);
+            intervalRef.current = null;
+          }
           return;
         }
 
@@ -195,7 +227,7 @@ export const useRealTimeProgress = (
       setError(err);
       onError?.(err);
     }
-  }, [scanService, calculateMetrics, adjustPollingInterval, onStatusChange, onComplete, onError]);
+  }, [scanService, calculateMetrics, adjustPollingInterval, onStatusChange, onComplete, onError, isPolling]);
 
   // 启动轮询
   const startPolling = useCallback((scanId: string) => {
@@ -216,18 +248,34 @@ export const useRealTimeProgress = (
     setEstimatedTimeRemaining(null);
     setProcessingSpeed(null);
     setIsPolling(true);
+    isPollingRef.current = true;
     lastUpdateTime.current = Date.now();
 
     // 立即执行一次轮询
-    pollStatus();
+    console.log('🚀 执行第一次轮询...');
+    pollStatus().catch(err => {
+      console.error('❌ 第一次轮询失败:', err);
+    });
 
     // 启动定时轮询 - 使用固定引用避免依赖问题
     const poll = () => {
-      pollStatus();
-      intervalRef.current = setTimeout(poll, currentPollingInterval.current);
+      // 再次检查是否应该继续轮询
+      if (!isPollingRef.current || !currentScanId.current) {
+        console.log('⏹️ 轮询已停止，不再安排下次轮询');
+        return;
+      }
+      console.log(`⏰ 定时轮询触发 (间隔: ${currentPollingInterval.current}ms)`);
+      pollStatus().catch(err => {
+        console.error('❌ 定时轮询失败:', err);
+      });
+      // 只有在仍然需要轮询时才安排下次
+      if (isPollingRef.current && currentScanId.current) {
+        intervalRef.current = setTimeout(poll, currentPollingInterval.current);
+      }
     };
     
     intervalRef.current = setTimeout(poll, currentPollingInterval.current);
+    console.log(`⏱️ 已设置定时轮询，间隔: ${currentPollingInterval.current}ms`);
   }, [pollStatus]);
 
   // 停止轮询
@@ -235,12 +283,13 @@ export const useRealTimeProgress = (
     console.log('⏹️ 停止轮询扫描状态');
     
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
     
     currentScanId.current = null;
     setIsPolling(false);
+    isPollingRef.current = false;
     progressHistory.current = [];
   }, []);
 

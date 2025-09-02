@@ -398,7 +398,7 @@ export default function ScanPageOptimal() {
               console.log('🧪 开始API测试...');
               try {
                 // 直接测试API调用
-                const response = await fetch('http://localhost:8000/api/v1/scan-status/0a5172e0-30c6-4ade-9fb6-331ccc409ed4');
+                const response = await fetch('http://localhost:18000/api/v1/scan-status/0a5172e0-30c6-4ade-9fb6-331ccc409ed4');
                 const data = await response.json();
                 console.log('✅ API响应:', data);
                 

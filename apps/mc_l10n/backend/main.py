@@ -485,7 +485,9 @@ def create_app() -> FastAPI:
             status = await _scanner_service.get_scan_status(scan_id)
             
             if status:
-                logger.info(f"返回统一扫描状态 {scan_id}: status={status.get('status', 'unknown')}, progress={status.get('progress', {}).get('percent', 0)}")
+                # 修正日志中的字段访问
+                logger.info(f"返回统一扫描状态 {scan_id}: status={status.get('status', 'unknown')}, progress={status.get('progress', 0)}, processed={status.get('processed_files', 0)}/{status.get('total_files', 0)}")
+                logger.info(f"完整状态数据: {status}")
                 return {"success": True, "data": status}
             
             # 扫描不存在
@@ -514,14 +516,54 @@ def create_app() -> FastAPI:
             if status.get("status") != "completed":
                 return {"success": False, "message": "扫描未完成"}
             
-            # 获取内容项统计
-            statistics = await _scanner_service.get_statistics()
+            # 获取内容项（模组和语言文件）
+            mods = await _scanner_service.get_content_items(content_type="mod", limit=500)
+            language_files = await _scanner_service.get_content_items(content_type="language_file", limit=1000)
+            
+            # 处理模组数据
+            mod_list = []
+            for mod in mods:
+                mod_data = {
+                    "id": mod.get("content_hash", "")[:8],
+                    "name": mod.get("name", "Unknown Mod"),
+                    "mod_id": mod.get("metadata", {}).get("mod_id", ""),
+                    "version": mod.get("metadata", {}).get("version", ""),
+                    "file_path": mod.get("metadata", {}).get("file_path", ""),
+                    "language_files": 0,
+                    "total_keys": 0
+                }
+                # 统计该模组的语言文件数
+                for lf in language_files:
+                    if lf.get("relationships", {}).get("mod_hash") == mod.get("content_hash"):
+                        mod_data["language_files"] += 1
+                        mod_data["total_keys"] += lf.get("metadata", {}).get("key_count", 0)
+                mod_list.append(mod_data)
+            
+            # 处理语言文件数据
+            lf_list = []
+            for lf in language_files[:100]:  # 限制返回前100个
+                lf_list.append({
+                    "id": lf.get("content_hash", "")[:8],
+                    "file_name": lf.get("name", ""),
+                    "language": lf.get("metadata", {}).get("language", "en_us"),
+                    "key_count": lf.get("metadata", {}).get("key_count", 0),
+                    "mod_id": lf.get("relationships", {}).get("mod_id", "")
+                })
+            
+            # 获取统计信息
+            statistics = {
+                "total_mods": len(mods),
+                "total_language_files": len(language_files),
+                "total_keys": sum(lf.get("metadata", {}).get("key_count", 0) for lf in language_files),
+                "scan_duration_ms": status.get("duration_seconds", 0) * 1000
+            }
             
             return {
                 "success": True,
                 "data": {
                     "scan_id": scan_id,
-                    "status": status,
+                    "mods": mod_list,
+                    "language_files": lf_list,
                     "statistics": statistics
                 }
             }
@@ -740,9 +782,9 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
 
-    # 从环境变量获取配置
+    # 从环境变量获取配置，使用不常见的端口避免冲突
     host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "18000"))  # 使用18000端口，避免与其他服务冲突
     debug = os.getenv("DEBUG", "false").lower() == "true"
     reload = os.getenv("RELOAD", "true" if debug else "false").lower() == "true"
     workers = int(os.getenv("WORKERS", "1"))

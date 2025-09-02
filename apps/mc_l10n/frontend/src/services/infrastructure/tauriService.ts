@@ -155,6 +155,11 @@ export class TauriService {
     }
   }
 
+  // Alias for selectDirectory for backward compatibility
+  async selectFolder(options: Omit<TauriDialogOptions, 'filters' | 'multiple'> = {}): Promise<string | null> {
+    return this.selectDirectory(options);
+  }
+
   async saveFile(options: TauriDialogOptions = {}): Promise<string | null> {
     try {
       const result = await save({

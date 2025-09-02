@@ -2,23 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目概述
+## Project Overview
 
-TransHub Suite 是一个专为游戏本地化设计的工具套件，专门与 Trans-Hub 翻译平台集成。这是一个包含多个桌面应用程序的 monorepo，采用 Tauri（前端）+ FastAPI（后端）架构：
+TransHub Suite is a game localization toolkit specifically designed for integration with the Trans-Hub translation platform. This is a monorepo containing multiple desktop applications using Tauri (frontend) + FastAPI (backend) architecture:
 
-- **TH Suite MC L10n** (`apps/mc_l10n/`) - Minecraft 模组和资源包本地化工具
-- **RW Studio** (`apps/rw_l10n/`) - Rusted Warfare 本地化工具
-- **共享包** (`packages/`) - 通用工具和组件
+- **TH Suite MC L10n** (`apps/mc_l10n/`) - Minecraft mod and resource pack localization tool
+- **RW Studio** (`apps/rw_l10n/`) - Rusted Warfare localization tool
+- **Shared packages** (`packages/`) - Common tools and components
 
-## 核心架构设计
+## Core Architecture
 
-### 技术栈
-- **前端**: Tauri + React + TypeScript + Material-UI + Tailwind CSS
-- **后端**: FastAPI + Python 3.12 + SQLCipher + Structlog
-- **状态管理**: 依赖注入模式（后端），Service Container 模式（前端）
-- **包管理**: Poetry（Python），pnpm（Node.js）
-- **任务运行器**: Taskfile（推荐）或 npm scripts
-- **实时通信**: WebSocket + Server-Sent Events
+### Tech Stack
+- **Frontend**: Tauri + React + TypeScript + Material-UI + Tailwind CSS
+- **Backend**: FastAPI + Python 3.12 + SQLite/SQLCipher + Structlog
+- **State Management**: Dependency injection pattern (backend), Service Container pattern (frontend)
+- **Package Management**: Poetry (Python), pnpm (Node.js)
+- **Task Runner**: Taskfile (recommended) or npm scripts
+- **Real-time Communication**: WebSocket + Server-Sent Events + Polling
 
 ### 架构模式
 

@@ -94,7 +94,8 @@ tasks:
     desc: Start TH Suite MC L10n backend
     dir: apps/mc_l10n/backend
     env:
-      PYTHONPATH: "{{.ROOT_DIR}}"
+      PYTHONPATH: "{{.ROOT_DIR}}/packages/core/src:{{.ROOT_DIR}}"
+      ENVIRONMENT: "development"
     cmds:
       - "{{.PYTHON}} main.py"
 

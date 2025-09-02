@@ -20,7 +20,7 @@ from trans_hub_core.infrastructure.transhub_client import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/transhub", tags=["Trans-Hub"])
+router = APIRouter(prefix="/api/v1/transhub", tags=["Trans-Hub"])
 
 # Global client instance
 transhub_client: Optional[TransHubClient] = None
@@ -28,7 +28,7 @@ transhub_client: Optional[TransHubClient] = None
 
 class ServerConfig(BaseModel):
     """Trans-Hub server configuration"""
-    base_url: str = Field(default="http://localhost:8000", description="Trans-Hub server URL")
+    base_url: str = Field(default="http://localhost:18000", description="Trans-Hub server URL")
     api_key: Optional[str] = Field(default=None, description="API key for authentication")
     offline_mode: bool = Field(default=False, description="Enable offline mode")
     auto_sync: bool = Field(default=True, description="Auto sync when connection restored")
@@ -102,9 +102,9 @@ async def connect_to_server(
         
         return ConnectionStatusResponse(
             connected=connected,
-            status=status['connection_status'],
-            server_url=status['server_url'],
-            offline_queue_size=status['offline_queue_size'],
+            status=status.value,
+            server_url=transhub_client.config.base_url,
+            offline_queue_size=transhub_client.get_offline_queue_size() if hasattr(transhub_client, 'get_offline_queue_size') else 0,
             message="Connected successfully" if connected else "Connection failed, running in offline mode"
         )
         
@@ -120,11 +120,11 @@ async def get_connection_status() -> ConnectionStatusResponse:
     status = client.get_status()
     
     return ConnectionStatusResponse(
-        connected=status['connection_status'] == 'connected',
-        status=status['connection_status'],
-        server_url=status['server_url'],
-        offline_queue_size=status['offline_queue_size'],
-        message=f"Status: {status['connection_status']}"
+        connected=status == ConnectionStatus.CONNECTED,
+        status=status.value,
+        server_url=client.config.base_url if client.config else "",
+        offline_queue_size=client.get_offline_queue_size() if hasattr(client, 'get_offline_queue_size') else 0,
+        message=f"Status: {status.value}"
     )
 
 
@@ -279,7 +279,7 @@ async def sync_offline_queue() -> Dict[str, Any]:
 
 
 @router.get("/test-connection")
-async def test_connection(server_url: str = "http://localhost:8000") -> Dict[str, Any]:
+async def test_connection(server_url: str = "http://localhost:18000") -> Dict[str, Any]:
     """Test connection to a Trans-Hub server"""
     try:
         # Create temporary client

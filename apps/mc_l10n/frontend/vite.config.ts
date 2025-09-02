@@ -15,12 +15,30 @@ export default defineConfig(async () => ({
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
-    port: 5555,
-    strictPort: true,
+    port: 15173,  // 使用15173端口，避免与其他服务冲突
+    strictPort: true,  // 强制使用指定端口，不允许自动切换
     host: '127.0.0.1',
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
+    },
+    // 添加代理配置，避免CORS问题
+    proxy: {
+      '/api': {
+        target: 'http://localhost:18000',  // 后端端口改为18000
+        changeOrigin: true,
+        secure: false,
+      },
+      '/health': {
+        target: 'http://localhost:18000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/docs': {
+        target: 'http://localhost:18000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   
