@@ -23,12 +23,12 @@ export class ScanService implements ScanServiceInterface {
     try {
       // 兼容旧的扫描 API
       const payload = {
-        directory: request.directory,
+        path: request.directory,  // 后端期望的是 'path' 字段
         incremental: request.incremental ?? true,
-        ...request.scan_options
+        options: request.scan_options
       };
 
-      const response = await this.apiClient.post('/scan-project', payload, { timeout: 120000 }); // 2分钟超时
+      const response = await this.apiClient.post('/api/scan/project/start', payload, { timeout: 120000 }); // 2分钟超时
       
       // 调试：打印完整响应
       console.log('🔍 ScanService: 完整API响应', JSON.stringify(response, null, 2));
@@ -85,9 +85,9 @@ export class ScanService implements ScanServiceInterface {
   async getStatus(scanId: string): Promise<ServiceResult<ScanStatus>> {
     try {
       console.log(`🔍 获取扫描状态: ${scanId}`);
-      console.log(`🔍 请求URL: /scan-status/${scanId}`);
+      console.log(`🔍 请求URL: /api/scan/progress/${scanId}`);
       // 为状态查询使用较短的超时时间，避免阻塞轮询
-      const response = await this.apiClient.get(`/scan-status/${scanId}`, undefined, { timeout: 15000 });
+      const response = await this.apiClient.get(`/api/scan/progress/${scanId}`, undefined, { timeout: 15000 });
       
       console.log(`🔍 扫描状态响应:`, JSON.stringify(response, null, 2));
       

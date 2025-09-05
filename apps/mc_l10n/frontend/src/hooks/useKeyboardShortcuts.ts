@@ -46,8 +46,11 @@ export function useKeyboardShortcuts(
         // 如果不是全局快捷键且焦点在输入框中，跳过
         if (!shortcut.global && isInputField) continue;
 
+        // 确保 key 存在才进行比较
+        if (!event.key || !shortcut.key) continue;
+        
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase() ||
-                        event.code.toLowerCase() === shortcut.key.toLowerCase();
+                        (event.code && event.code.toLowerCase() === shortcut.key.toLowerCase());
 
         const ctrlMatch = shortcut.ctrl ? (event.ctrlKey || event.metaKey) : true;
         const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;

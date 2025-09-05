@@ -19,7 +19,7 @@ export class BaseApiService {
   protected readonly baseUrl: string;
   private interceptors: RequestInterceptor[] = [];
 
-  constructor(baseUrl: string = 'http://localhost:18001/api/v1') {  // 使用18001端口
+  constructor(baseUrl: string = 'http://localhost:18000') {  // 使用18000端口，不加 /api/v1
     this.baseUrl = baseUrl;
   }
 

@@ -113,7 +113,7 @@ task dev:mc          # 启动 MC L10n（前端 + 后端，并行运行）
 task dev:rw          # 启动 RW Studio（前端 + 后端，并行运行）
 
 # 单独启动服务
-task dev:mc:backend  # 仅启动 MC L10n 后端（端口 8000）
+task dev:mc:backend  # 仅启动 MC L10n 后端（端口 18000）
 task dev:mc:frontend # 仅启动 MC L10n 前端（端口 5173）
 task dev:rw:backend  # 仅启动 RW Studio 后端（端口 8002）
 task dev:rw:frontend # 仅启动 RW Studio 前端
@@ -212,7 +212,7 @@ npm run lint:python:mc
 - `BaseApiService`: API 通信
 
 ## 服务端口配置
-- **MC L10n 后端**: http://localhost:8000 (API 文档: /docs)
+- **MC L10n 后端**: http://localhost:18000 (API 文档: /docs)
 - **MC L10n 前端**: http://localhost:5173
 - **RW Studio 后端**: http://localhost:8002 (API 文档: /docs)
 
@@ -266,11 +266,11 @@ npm run lint:python:mc
 ### 常见问题
 - 如果 `task dev:mc` 失败，尝试分别运行 `task dev:mc:backend` 和 `task dev:mc:frontend`
 - 确保已安装 Poetry、pnpm 和 Rust 工具链
-- 检查端口是否被占用（8000、8002、5173）
+- 检查端口是否被占用（18000、8002、5173）
 - 权限问题：确保对扫描目录有读取权限
 
 ### 调试工具
-- 后端 API 文档：http://localhost:8000/docs
+- 后端 API 文档：http://localhost:18000/docs
 - 使用 `structlog` 进行结构化日志记录
 - 前端开发者工具中查看网络请求
 - 使用 `ProgressTestPage.tsx` 测试进度组件

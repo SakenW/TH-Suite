@@ -15,9 +15,9 @@ export default defineConfig(async () => ({
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
-    port: 15173,  // 使用15173端口，避免与其他服务冲突
+    port: 5173,  // 固定使用5173端口
     strictPort: true,  // 强制使用指定端口，不允许自动切换
-    host: '127.0.0.1',
+    host: 'localhost',  // 本地开发
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],

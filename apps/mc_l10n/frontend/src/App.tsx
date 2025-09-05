@@ -16,6 +16,7 @@ import BuildPageMinecraft from '@pages/BuildPageMinecraft';
 import LocalDataPageMinecraft from '@pages/LocalDataPageMinecraft';
 import SecurityPageMinecraft from '@pages/SecurityPageMinecraft';
 import ServerPageMinecraft from '@pages/ServerPageMinecraft';
+import DesignPreviewHub from './design-previews/DesignPreviewHub';
 import { useAppStore } from '@stores/appStore';
 import { initializeTauri, storageService } from '@services';
 import { useGlobalShortcuts } from '@hooks/useKeyboardShortcuts';
@@ -164,6 +165,7 @@ function App({ onReady }: AppProps) {
         <Route path="/project" element={<ProjectPageMinecraft />} />
         <Route path="/scan" element={<ScanPageMinecraft />} />
         <Route path="/progress-test" element={<ProgressTestPage />} />
+        <Route path="/design-preview" element={<DesignPreviewHub />} />
         <Route path="/extract" element={<ExtractPageMinecraft />} />
         <Route path="/export" element={<ExportPageMinecraft />} />
         <Route path="/transfer" element={<TransferPageMinecraft />} />

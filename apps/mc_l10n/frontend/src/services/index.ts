@@ -43,7 +43,7 @@ export type {
 function initializeServices() {
   // 基础服务
   serviceContainer.register('apiClient', {
-    factory: () => new BaseApiService('http://localhost:18000/api/v1'),
+    factory: () => new BaseApiService('http://localhost:18000'),
     singleton: true,
   });
   

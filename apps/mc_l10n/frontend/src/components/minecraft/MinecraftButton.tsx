@@ -10,21 +10,22 @@ interface MinecraftButtonProps extends Omit<ButtonProps, 'variant'> {
   glowing?: boolean;
 }
 
-export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
-  children,
-  variant = 'minecraft',
-  minecraftStyle = 'stone',
-  pixelated = true,
-  glowing = false,
-  disabled = false,
-  onClick,
-  startIcon,
-  endIcon,
-  fullWidth,
-  size,
-  color,
-  ...props
-}) => {
+export const MinecraftButton = React.forwardRef<HTMLButtonElement, MinecraftButtonProps>(
+  ({
+    children,
+    variant = 'minecraft',
+    minecraftStyle = 'stone',
+    pixelated = true,
+    glowing = false,
+    disabled = false,
+    onClick,
+    startIcon,
+    endIcon,
+    fullWidth,
+    size,
+    color,
+    ...props
+  }, ref) => {
   const getStyleColors = () => {
     if (disabled) {
       return {
@@ -108,6 +109,7 @@ export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
       >
         <Box
           component="button"
+          ref={ref}
           onClick={disabled ? undefined : onClick}
           disabled={disabled}
           sx={{
@@ -202,6 +204,7 @@ export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
   // 标准Material-UI按钮样式
   return (
     <Button
+      ref={ref}
       variant={variant as ButtonProps['variant']}
       disabled={disabled}
       onClick={onClick}
@@ -215,6 +218,9 @@ export const MinecraftButton: React.FC<MinecraftButtonProps> = ({
       {children}
     </Button>
   );
-};
+  }
+);
+
+MinecraftButton.displayName = 'MinecraftButton';
 
 export default MinecraftButton;

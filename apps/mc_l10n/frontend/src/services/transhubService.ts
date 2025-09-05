@@ -98,7 +98,7 @@ class TransHubService extends BaseApiService {
    */
   async getStatus(): Promise<ConnectionStatus> {
     try {
-      const response = await this.get<ConnectionStatus>('/transhub/status');
+      const response = await this.get<ConnectionStatus>('/api/v1/transhub/status');
       this.connectionStatus = response;
       return response;
     } catch (error: any) {

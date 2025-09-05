@@ -46,7 +46,7 @@ class ScanRequest(BaseModel):
 
 from api.middleware.cors_config import setup_cors
 from api.middleware.error_handler import setup_error_handlers
-from api.routes import transhub
+# from api.routes import transhub  # 暂时注释掉有问题的导入
 
 # 中间件导入
 from api.middleware.logging_middleware import LoggingMiddleware
@@ -54,7 +54,7 @@ from api.routes.mod_routes import router as mod_router
 
 # API路由导入
 from api.routes.project_routes import router as project_router
-# from api.routes.scan_routes import router as scan_router  # 暂时移除，避免模型冲突
+from api.routes.scan_routes import router as scan_router
 from api.routes.translation_routes import router as translation_router
 
 # 基础设施初始化
@@ -62,8 +62,8 @@ from infrastructure import initialize_infrastructure
 
 from packages.core.framework.logging import StructLogFactory
 
-# 导入新的统一扫描服务
-from scanner_service import init_mc_scanner_service
+# 导入简单的扫描服务
+from ddd_scanner import init_ddd_scanner, get_scanner
 
 logger = StructLogFactory.get_logger(__name__)
 
@@ -80,13 +80,19 @@ async def lifespan(app: FastAPI):
     logger.info("MC L10n API服务启动中...")
 
     try:
+        # 初始化数据库（如果需要）
+        from init_db import init_database
+        logger.info("检查并初始化数据库...")
+        init_database()
+        
         # 初始化基础设施
         logger.info("初始化基础设施组件...")
         initialize_infrastructure()
 
-        # 初始化统一扫描服务
-        logger.info("初始化统一扫描服务...")
-        _scanner_service = await init_mc_scanner_service("mc_l10n_unified.db")
+        # 初始化简单扫描服务
+        global _scanner_service
+        logger.info("初始化简单扫描服务...")
+        _scanner_service = await init_ddd_scanner("mc_l10n.db")
 
         logger.info("MC L10n API服务启动完成")
 
@@ -149,9 +155,51 @@ def create_app() -> FastAPI:
     # 注册路由
     app.include_router(project_router)
     app.include_router(mod_router)
-    # app.include_router(scan_router)  # 暂时移除，避免模型冲突
+    app.include_router(scan_router)
     app.include_router(translation_router)
-    app.include_router(transhub.router)  # Trans-Hub集成路由
+    # app.include_router(transhub.router)  # Trans-Hub集成路由 - 暂时禁用
+    
+    # 添加全局的扫描结果路由
+    @app.get("/scan-results/{scan_id}")
+    async def get_scan_results_global(scan_id: str):
+        """获取扫描结果（全局路由）"""
+        from ddd_scanner import get_scanner
+        
+        scanner_service = get_scanner()
+        if not scanner_service:
+            return {
+                "success": False,
+                "error": {
+                    "code": "NO_SCANNER",
+                    "message": "Scanner service not initialized"
+                }
+            }
+        
+        status = await scanner_service.get_scan_status(scan_id)
+        if not status:
+            return {
+                "success": False,
+                "error": {
+                    "code": "NOT_FOUND",
+                    "message": f"Scan not found: {scan_id}"
+                }
+            }
+        
+        statistics = status.get("statistics", {})
+        return {
+            "success": True,
+            "data": {
+                "scan_id": scan_id,
+                "status": status.get("status"),
+                "statistics": statistics,
+                "total_mods": statistics.get("total_mods", 0),
+                "total_language_files": statistics.get("total_language_files", 0),
+                "total_keys": statistics.get("total_keys", 0),
+                "entries": {},
+                "errors": [],
+                "warnings": []
+            }
+        }
     
     # 扫描相关函数
     def init_database():

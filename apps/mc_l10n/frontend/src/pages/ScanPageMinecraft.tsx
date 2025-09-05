@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Chip, Alert, Divider, FormControlLabel, Switch, Tooltip } from '@mui/material';
+import { Box, Typography, Grid, Chip, Alert, Divider, FormControlLabel, Switch, Tooltip, TextField } from '@mui/material';
 import { FolderOpen, Play, Pause, CheckCircle, AlertCircle, Package, FileText, Hash, Clock, Cloud, CloudOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -150,15 +150,32 @@ export default function ScanPageMinecraft() {
   });
 
   const handleSelectDirectory = async () => {
-    try {
-      const selected = await tauriService.selectFolder();
-      if (selected) {
-        setDirectory(selected);
-        notification.success('已选择目录', selected);
+    // 检查是否在 Tauri 环境中
+    if (tauriService.isTauri()) {
+      try {
+        const selected = await tauriService.selectFolder();
+        if (selected) {
+          setDirectory(selected);
+          notification.success('已选择目录', selected);
+        }
+      } catch (error) {
+        console.error('Failed to select directory:', error);
+        notification.error('选择目录失败', '请检查文件系统权限');
       }
-    } catch (error) {
-      console.error('Failed to select directory:', error);
-      notification.error('选择目录失败', '请检查文件系统权限');
+    } else {
+      // Web 环境下使用手动输入
+      const input = prompt('请输入目录路径（支持 Windows 路径格式，如 D:\\Games\\Curseforge\\Minecraft）：');
+      if (input) {
+        // 转换 Windows 路径为 WSL 路径格式
+        let convertedPath = input;
+        if (input.match(/^[A-Z]:\\/i)) {
+          // 将 D:\path 转换为 /mnt/d/path
+          const driveLetter = input[0].toLowerCase();
+          convertedPath = `/mnt/${driveLetter}/${input.slice(3).replace(/\\/g, '/')}`;
+        }
+        setDirectory(convertedPath);
+        notification.success('已设置目录', convertedPath);
+      }
     }
   };
 
@@ -297,37 +314,109 @@ export default function ScanPageMinecraft() {
                     fontFamily: '"Minecraft", monospace',
                     fontSize: '12px',
                     color: 'text.secondary',
-                    mb: 1,
+                    mb: 0.5,
                   }}
                 >
                   扫描目录
                 </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Minecraft", monospace',
+                    fontSize: '10px',
+                    color: '#FFA000',
+                    mb: 1.5,
+                  }}
+                >
+                  💡 提示：请选择具体的模组文件夹（如 .../ATM10/mods），避免扫描整个 Instances 目录
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      p: 1.5,
-                      background: 'rgba(0,0,0,0.3)',
-                      border: '2px solid #4A4A4A',
-                      borderRadius: 0,
-                      fontFamily: 'monospace',
-                      fontSize: '14px',
-                      color: directory ? '#FFFFFF' : '#888888',
-                      minHeight: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {directory || '请选择目录...'}
-                  </Box>
-                  <MinecraftButton
-                    minecraftStyle="gold"
-                    onClick={handleSelectDirectory}
-                    disabled={isScanning}
-                    startIcon={<FolderOpen size={16} />}
-                  >
-                    选择
-                  </MinecraftButton>
+                  {tauriService.isTauri() ? (
+                    <>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 1.5,
+                          background: 'rgba(0,0,0,0.3)',
+                          border: '2px solid #4A4A4A',
+                          borderRadius: 0,
+                          fontFamily: 'monospace',
+                          fontSize: '14px',
+                          color: directory ? '#FFFFFF' : '#888888',
+                          minHeight: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {directory || '请选择目录...'}
+                      </Box>
+                      <MinecraftButton
+                        minecraftStyle="gold"
+                        onClick={handleSelectDirectory}
+                        disabled={isScanning}
+                        startIcon={<FolderOpen size={16} />}
+                      >
+                        选择
+                      </MinecraftButton>
+                    </>
+                  ) : (
+                    <>
+                      <TextField
+                        fullWidth
+                        value={directory}
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // 自动转换 Windows 路径为 WSL 路径
+                          if (value.match(/^[A-Z]:\\/i)) {
+                            const driveLetter = value[0].toLowerCase();
+                            value = `/mnt/${driveLetter}/${value.slice(3).replace(/\\/g, '/')}`;
+                          }
+                          setDirectory(value);
+                        }}
+                        placeholder="输入目录路径（如: D:\Games\Curseforge\Minecraft 或 /mnt/d/Games/Curseforge/Minecraft）"
+                        disabled={isScanning}
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '2px solid #4A4A4A',
+                            borderRadius: 0,
+                            fontFamily: 'monospace',
+                            fontSize: '14px',
+                            color: '#FFFFFF',
+                            '&:hover': {
+                              borderColor: '#6A6A6A',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: '#2EAFCC',
+                            },
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '12px',
+                          },
+                          '& fieldset': {
+                            border: 'none',
+                          },
+                        }}
+                      />
+                      <Tooltip title="设置推荐的模组文件夹路径（ATM10）">
+                        <MinecraftButton
+                          minecraftStyle="gold"
+                          onClick={() => {
+                            // 设置推荐的ATM10模组路径
+                            const recommendedPath = '/mnt/d/Games/Curseforge/Minecraft/Instances/All the Mods 10 - ATM10/mods';
+                            setDirectory(recommendedPath);
+                            notification.info(
+                              '推荐路径', 
+                              '已设置ATM10模组路径，请确认路径存在'
+                            );
+                          }}
+                          disabled={isScanning}
+                          startIcon={<FolderOpen size={16} />}
+                        >
+                          ATM10
+                        </MinecraftButton>
+                      </Tooltip>
+                    </>
+                  )}
                 </Box>
               </Box>
 
