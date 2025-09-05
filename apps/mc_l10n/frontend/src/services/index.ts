@@ -10,8 +10,10 @@ import { BaseApiService } from './baseApiService';
 // === 领域服务 ===
 export { ProjectService } from './domain/projectService';
 export { ScanService } from './domain/scanService';
+export { LocalDataService } from './domain/localDataService';
 import { ProjectService } from './domain/projectService';
 import { ScanService } from './domain/scanService';
+import { LocalDataService } from './domain/localDataService';
 
 // === 基础设施服务 ===
 export { TauriService, initializeTauri, FILE_FILTERS } from './infrastructure/tauriService';
@@ -65,6 +67,15 @@ function initializeServices() {
     dependencies: ['apiClient'],
     singleton: true,
   });
+  
+  serviceContainer.register('localDataService', {
+    factory: () => {
+      const apiClient = serviceContainer.resolve('apiClient');
+      return new LocalDataService(apiClient);
+    },
+    dependencies: ['apiClient'],
+    singleton: true,
+  });
 }
 
 // === 服务访问器 ===
@@ -83,9 +94,17 @@ export function getScanService(): ScanService {
   return serviceContainer.resolve('scanService');
 }
 
+/**
+ * 获取本地数据服务
+ */
+export function getLocalDataService(): LocalDataService {
+  return serviceContainer.resolve('localDataService');
+}
+
 // 兼容性导出（保持旧的命名）
 export const useProjectService = getProjectService;
 export const useScanService = getScanService;
+export const useLocalDataService = getLocalDataService;
 
 // === 工具函数 ===
 

@@ -159,6 +159,101 @@ def create_app() -> FastAPI:
     app.include_router(translation_router)
     # app.include_router(transhub.router)  # Trans-Hub集成路由 - 暂时禁用
     
+    # 注册本地数据管理路由
+    try:
+        from src.mc_l10n.adapters.api.local_data_routes import router as local_data_router
+        app.include_router(local_data_router)
+        logger.info("已注册本地数据管理路由")
+    except ImportError as e:
+        logger.warning(f"无法导入本地数据管理路由: {e}")
+    
+    # 添加数据库统计路由
+    @app.get("/api/database/statistics")
+    async def get_database_statistics():
+        """获取数据库统计信息"""
+        try:
+            db_path = "mc_l10n.db"
+            stats = {
+                "total_mods": 0,
+                "total_language_files": 0,
+                "total_translation_keys": 0,
+                "languages": {},
+                "mod_details": [],
+                "total_entries": 0
+            }
+            
+            if os.path.exists(db_path):
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                
+                # 从实际的表中获取统计数据
+                try:
+                    # 获取模组数量
+                    cursor.execute("SELECT COUNT(DISTINCT mod_id) FROM mods")
+                    stats["total_mods"] = cursor.fetchone()[0]
+                    
+                    # 获取语言文件数量
+                    cursor.execute("SELECT COUNT(*) FROM language_files")
+                    stats["total_language_files"] = cursor.fetchone()[0]
+                    
+                    # 获取翻译键数量
+                    cursor.execute("SELECT COUNT(*) FROM translation_entries")
+                    stats["total_translation_keys"] = cursor.fetchone()[0]
+                    
+                    # 获取语言分布
+                    cursor.execute("""
+                        SELECT locale_code, COUNT(*) 
+                        FROM language_files 
+                        GROUP BY locale_code
+                    """)
+                    stats["languages"] = dict(cursor.fetchall())
+                    
+                    # 获取模组详情（前10个最大的模组）
+                    cursor.execute("""
+                        SELECT m.mod_id, m.display_name, 
+                               COUNT(DISTINCT lf.locale_code) as lang_count,
+                               COUNT(DISTINCT te.entry_key) as key_count
+                        FROM mods m
+                        LEFT JOIN language_files lf ON m.mod_id = lf.mod_id
+                        LEFT JOIN translation_entries te ON lf.file_id = te.file_id
+                        GROUP BY m.mod_id, m.display_name
+                        ORDER BY key_count DESC
+                        LIMIT 10
+                    """)
+                    
+                    mod_rows = cursor.fetchall()
+                    stats["mod_details"] = [
+                        {
+                            "mod_id": row[0],
+                            "mod_name": row[1] or row[0],
+                            "language_count": row[2],
+                            "key_count": row[3]
+                        }
+                        for row in mod_rows
+                    ]
+                    
+                    # 获取总条目数
+                    stats["total_entries"] = stats["total_translation_keys"]
+                    
+                except Exception as e:
+                    logger.warning(f"读取数据库统计失败: {e}")
+                    
+                conn.close()
+            
+            return {
+                "success": True,
+                "data": stats
+            }
+        except Exception as e:
+            logger.error(f"获取数据库统计失败: {e}")
+            return {
+                "success": False,
+                "error": {
+                    "code": "STATS_ERROR",
+                    "message": str(e)
+                }
+            }
+    
     # 添加全局的扫描结果路由
     @app.get("/scan-results/{scan_id}")
     async def get_scan_results_global(scan_id: str):

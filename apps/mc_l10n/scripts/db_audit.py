@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-MC L10n 数据库审查工具
-提供 Web 界面查看和审查数据库内容
+MC L10n 数据库审计工具 v2.0.0
+提供高级Web界面查看和审计数据库内容
+支持数据导出、SQL查询、详细统计
 """
 
 import sqlite3
@@ -53,10 +54,11 @@ if not DB_PATH:
         print(f"   - {path}")
     DB_PATH = possible_db_paths[0]  # 使用默认路径
 
-PORT = 8889  # 改用 8889 端口避免冲突
-HOST = "127.0.0.1"
+# 默认配置
+DEFAULT_PORT = 18082  # 使用18082端口，避免与db_manager冲突
+DEFAULT_HOST = "127.0.0.1"
 
-app = FastAPI(title="MC L10n Database Audit Tool", version="1.0.0")
+app = FastAPI(title="MC L10n Database Audit Tool", version="2.0.0")
 
 # CORS 配置
 app.add_middleware(
@@ -1054,9 +1056,26 @@ def is_port_open(port: int) -> bool:
     except:
         return False
 
-if __name__ == "__main__":
+def main():
+    """主函数"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="MC L10n Database Audit Tool")
+    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='Server port')
+    parser.add_argument('--host', default=DEFAULT_HOST, help='Server host')
+    parser.add_argument('--db', type=str, help='Database file path')
+    
+    args = parser.parse_args()
+    
+    global DB_PATH, PORT, HOST
+    PORT = args.port
+    HOST = args.host
+    
+    if args.db:
+        DB_PATH = Path(args.db)
+    
     print("="*60)
-    print("         MC L10n Database Audit Tool v1.0.0")
+    print("         MC L10n Database Audit Tool v2.0.0")
     print("="*60)
     print(f"Database: {DB_PATH.name if DB_PATH else 'Not found'}")
     print(f"Path: {DB_PATH}")
@@ -1097,3 +1116,6 @@ if __name__ == "__main__":
         uvicorn.run(app, host=HOST, port=PORT, log_level="info")
     except KeyboardInterrupt:
         print("\nServer stopped")
+
+if __name__ == "__main__":
+    main()
