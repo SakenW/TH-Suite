@@ -50,9 +50,14 @@ export class BaseApiService {
         timeout: 120000, // 120秒超时，扫描大型目录需要更长时间
       };
 
-      // 合并配置
+      // 合并配置 - 确保timeout不被覆盖为undefined
       let finalConfig = { ...defaultConfig, ...config };
       finalConfig.headers = { ...defaultConfig.headers, ...config.headers };
+      
+      // 确保timeout有值
+      if (!finalConfig.timeout) {
+        finalConfig.timeout = defaultConfig.timeout;
+      }
 
       // 执行请求拦截器
       for (const interceptor of this.interceptors) {

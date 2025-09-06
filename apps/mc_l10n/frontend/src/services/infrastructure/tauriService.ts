@@ -54,14 +54,20 @@ export class TauriService {
   // Check if running in Tauri environment
   isTauri(): boolean {
     const isInTauri = typeof window !== 'undefined' && !!window.__TAURI__;
-    console.log('isTauri check:', {
-      windowExists: typeof window !== 'undefined',
-      tauriExists: typeof window !== 'undefined' ? !!window.__TAURI__ : false,
-      tauriValue: typeof window !== 'undefined' ? window.__TAURI__ : 'undefined',
-      result: isInTauri
-    });
+    // 只在首次检查或结果变化时记录日志
+    if (this.lastTauriCheckResult === undefined || this.lastTauriCheckResult !== isInTauri) {
+      console.log('isTauri check:', {
+        windowExists: typeof window !== 'undefined',
+        tauriExists: typeof window !== 'undefined' ? !!window.__TAURI__ : false,
+        tauriValue: typeof window !== 'undefined' ? window.__TAURI__ : 'undefined',
+        result: isInTauri
+      });
+      this.lastTauriCheckResult = isInTauri;
+    }
     return isInTauri;
   }
+  
+  private lastTauriCheckResult: boolean | undefined;
 
   private async setupEventListeners(): Promise<void> {
     // Listen for window events

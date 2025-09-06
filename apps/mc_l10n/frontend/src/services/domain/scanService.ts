@@ -23,12 +23,12 @@ export class ScanService implements ScanServiceInterface {
     try {
       // 兼容旧的扫描 API
       const payload = {
-        path: request.directory,  // 后端期望的是 'path' 字段
+        directory: request.directory,  // 后端期望的是 'directory' 字段
         incremental: request.incremental ?? true,
         options: request.scan_options
       };
 
-      const response = await this.apiClient.post('/api/scan/project/start', payload, { timeout: 120000 }); // 2分钟超时
+      const response = await this.apiClient.post('/api/v1/scan-project', payload, { timeout: 120000 }); // 2分钟超时
       
       // 调试：打印完整响应
       console.log('🔍 ScanService: 完整API响应', JSON.stringify(response, null, 2));
@@ -44,17 +44,18 @@ export class ScanService implements ScanServiceInterface {
         };
       }
 
-      // 获取扫描ID，处理两种响应格式：
+      // 获取扫描ID，处理多种响应格式：
       // 1. 标准格式: { success: true, data: { scan_id: "..." } }
-      // 2. 扁平格式: { success: true, scan_id: "...", job_id: "..." }
+      // 2. 驼峰格式: { success: true, data: { scanId: "..." } }
+      // 3. 扁平格式: { success: true, scan_id: "...", job_id: "..." }
       let scanId;
       
       if (response.data) {
-        // 标准格式
-        scanId = response.data.scan_id || response.data.job_id || response.data.task_id;
+        // 标准格式 - 支持多种字段名
+        scanId = response.data.scan_id || response.data.scanId || response.data.job_id || response.data.task_id;
       } else {
         // 扁平格式 - 检查响应本身
-        scanId = (response as any).scan_id || (response as any).job_id || (response as any).task_id;
+        scanId = (response as any).scan_id || (response as any).scanId || (response as any).job_id || (response as any).task_id;
       }
       
       if (!scanId) {
@@ -85,9 +86,9 @@ export class ScanService implements ScanServiceInterface {
   async getStatus(scanId: string): Promise<ServiceResult<ScanStatus>> {
     try {
       console.log(`🔍 获取扫描状态: ${scanId}`);
-      console.log(`🔍 请求URL: /api/scan/progress/${scanId}`);
+      console.log(`🔍 请求URL: /api/v1/scan-status/${scanId}`);
       // 为状态查询使用较短的超时时间，避免阻塞轮询
-      const response = await this.apiClient.get(`/api/scan/progress/${scanId}`, undefined, { timeout: 15000 });
+      const response = await this.apiClient.get(`/api/v1/scan-status/${scanId}`, undefined, { timeout: 15000 });
       
       console.log(`🔍 扫描状态响应:`, JSON.stringify(response, null, 2));
       

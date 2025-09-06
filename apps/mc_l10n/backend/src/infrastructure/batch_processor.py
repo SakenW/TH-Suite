@@ -3,7 +3,7 @@
 提高大量数据处理的性能
 """
 
-from typing import List, Any, Callable, Optional, TypeVar, Generic
+from typing import List, Any, Callable, Optional, TypeVar, Generic, Dict
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock

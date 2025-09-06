@@ -46,7 +46,7 @@ class ScanRequest(BaseModel):
 
 from api.middleware.cors_config import setup_cors
 from api.middleware.error_handler import setup_error_handlers
-# from api.routes import transhub  # 暂时注释掉有问题的导入
+from api.routes import transhub  # TransHub 集成路由
 
 # 中间件导入
 from api.middleware.logging_middleware import LoggingMiddleware
@@ -60,10 +60,10 @@ from api.routes.translation_routes import router as translation_router
 # 基础设施初始化
 from infrastructure import initialize_infrastructure
 
-from packages.core.framework.logging import StructLogFactory
+from simple_logging import StructLogFactory
 
 # 导入简单的扫描服务
-from ddd_scanner import init_ddd_scanner, get_scanner
+from ddd_scanner import get_scanner_instance
 
 logger = StructLogFactory.get_logger(__name__)
 
@@ -90,9 +90,8 @@ async def lifespan(app: FastAPI):
         initialize_infrastructure()
 
         # 初始化简单扫描服务
-        global _scanner_service
         logger.info("初始化简单扫描服务...")
-        _scanner_service = await init_ddd_scanner("mc_l10n.db")
+        _scanner_service = get_scanner_instance("mc_l10n.db")
 
         logger.info("MC L10n API服务启动完成")
 
@@ -157,7 +156,7 @@ def create_app() -> FastAPI:
     app.include_router(mod_router)
     app.include_router(scan_router)
     app.include_router(translation_router)
-    # app.include_router(transhub.router)  # Trans-Hub集成路由 - 暂时禁用
+    app.include_router(transhub.router)  # Trans-Hub集成路由
     
     # 注册本地数据管理路由
     try:
@@ -258,9 +257,7 @@ def create_app() -> FastAPI:
     @app.get("/scan-results/{scan_id}")
     async def get_scan_results_global(scan_id: str):
         """获取扫描结果（全局路由）"""
-        from ddd_scanner import get_scanner
-        
-        scanner_service = get_scanner()
+        scanner_service = _scanner_service
         if not scanner_service:
             return {
                 "success": False,

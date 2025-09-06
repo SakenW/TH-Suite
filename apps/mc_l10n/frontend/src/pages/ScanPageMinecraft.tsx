@@ -973,7 +973,7 @@ export default function ScanPageMinecraft() {
                 borderRadius: 0,
               }}
             >
-              {progressError}
+              {typeof progressError === 'string' ? progressError : progressError?.message || '扫描过程中发生错误'}
             </Alert>
           </Grid>
         )}
