@@ -17,7 +17,9 @@ MC L10n 是 TransHub Suite 中专门用于 Minecraft 模组和资源包本地化
 | 文档 | 描述 | 版本 |
 |------|------|------|
 | [数据库架构](./technical/database-schema.md) | **DDD架构数据库完整设计** | v2.0.0 |
-| API接口规范 | RESTful API接口文档 | - |
+| [数据库架构v4](./technical/database-architecture-v4.md) | **客户端-服务器分离架构** | v4.0.0 |
+| [数据库实现v5](./technical/database-implementation-v5.md) | **完整实现文档** | v5.0.0 |
+| [API接口规范](./technical/api-documentation.md) | RESTful API接口文档 | v1.0.0 |
 | WebSocket协议 | 实时通信协议规范 | - |
 
 ### 🚀 部署运维文档
@@ -55,18 +57,43 @@ MC L10n 是 TransHub Suite 中专门用于 Minecraft 模组和资源包本地化
 
 ## 📊 数据库架构概览
 
-### 核心数据表关系
+### 本地数据库架构 (v5.0)
+
+本地客户端使用SQLite数据库，负责缓存、离线工作和数据同步：
+
 ```
-translation_projects (翻译项目)
-    ↓
-project_mods (项目-模组关联)
-    ↓
-mods (模组) ←──→ language_files (语言文件)
-    ↓                    ↓
-scan_sessions      translation_entries (翻译条目)
-    ↓                    ↑
-scan_discoveries    terminology (术语库)
-                   translation_memory (翻译记忆)
+本地数据库 (SQLite)
+├── 扫描缓存层
+│   ├── scan_cache (扫描缓存)
+│   ├── mod_discoveries (MOD发现)
+│   └── language_file_cache (语言文件缓存)
+├── 工作管理层
+│   ├── work_queue (工作队列)
+│   ├── offline_changes (离线变更)
+│   └── file_watch (文件监控)
+└── 配置同步层
+    ├── local_settings (本地设置)
+    ├── local_projects (本地项目)
+    └── sync_log (同步日志)
+```
+
+### 服务器数据库架构 (Trans-Hub)
+
+服务器端使用PostgreSQL，管理核心业务数据：
+
+```
+服务器数据库 (PostgreSQL)
+├── 项目管理
+│   ├── translation_projects (翻译项目)
+│   └── project_mods (项目模组关联)
+├── 翻译管理
+│   ├── mods (模组主数据)
+│   ├── language_files (语言文件)
+│   └── translation_entries (翻译条目)
+└── 辅助功能
+    ├── terminology (术语库)
+    ├── translation_memory (翻译记忆)
+    └── domain_events (领域事件)
 ```
 
 ### 关键数据流
@@ -96,14 +123,16 @@ scan_discoveries    terminology (术语库)
 
 ## 📈 项目统计
 
-基于最新扫描数据（2025-09-05）：
+基于最新扫描数据（2025-09-06）：
 
 | 指标 | 数值 |
 |------|------|
-| 支持的模组数 | 225+ |
-| 语言文件 | 450+ |
-| 翻译键总数 | 25,000+ |
-| 数据库大小 | ~360KB |
+| 支持的模组数 | 226 |
+| 语言文件 | 2,122 |
+| 翻译条目总数 | 526,520 |
+| 数据库大小 | ~150 MB |
+| 扫描速度 | ~10 MODs/秒 |
+| 缓存命中率 | >90% |
 
 ---
 
@@ -111,38 +140,61 @@ scan_discoveries    terminology (术语库)
 
 ### 快速开始
 ```bash
-# 1. 初始化数据库
-poetry run python init_db_ddd.py
+# 1. 初始化本地数据库
+cd apps/mc_l10n/backend
+python database/init_local_db.py --reset
 
 # 2. 启动后端服务
 poetry run python main.py
 
 # 3. 启动前端开发服务器
-cd frontend && npm run dev
+cd frontend && npm run tauri:dev
 ```
 
-### 数据库操作
-```python
-# UPSERT模组信息
-INSERT OR REPLACE INTO mods (mod_id, name, version, file_hash) 
-VALUES (?, ?, ?, ?);
+### 数据库CLI工具
+```bash
+# 扫描MOD目录
+python database/db_cli.py scan /path/to/mods
 
-# 查询项目进度
-SELECT * FROM v_project_progress WHERE project_id = ?;
+# 查看统计信息
+python database/db_cli.py stats
+
+# 同步数据
+python database/db_cli.py sync --type mods
+
+# 显示离线变更
+python database/db_cli.py changes
 ```
 
 ### API调用示例
 ```javascript
-// 启动扫描
-POST /api/scan
+// 获取数据库统计
+GET /api/database/statistics
+
+// 扫描MOD目录
+POST /api/database/scan
 {
-  "target_path": "/path/to/mods",
-  "project_id": "default-project",
-  "scan_type": "full"
+  "scan_path": "/path/to/mods",
+  "recursive": true,
+  "force_rescan": false
 }
 
-// 获取扫描状态
-GET /api/scan/{scan_id}/status
+// 获取MOD列表
+GET /api/database/mods?limit=100&offset=0
+
+// 更新翻译
+PUT /api/database/translations/{entry_id}
+{
+  "translated_text": "新翻译",
+  "status": "translated"
+}
+
+// 同步数据
+POST /api/database/sync
+{
+  "sync_type": "mods",
+  "direction": "upload"
+}
 ```
 
 ---
@@ -151,6 +203,8 @@ GET /api/scan/{scan_id}/status
 
 | 版本 | 日期 | 主要变更 |
 |------|------|----------|
+| v5.0.0 | 2025-09-06 | 实现完整本地数据库系统，包含扫描、缓存、同步、离线跟踪 |
+| v4.0.0 | 2025-09-06 | 设计客户端-服务器分离架构 |
 | v2.0.0 | 2025-09-05 | 完全重构为DDD架构，实现UPSERT机制 |
 | v1.5.0 | 2025-09-04 | 添加实时进度推送 |
 | v1.0.0 | 2025-09-01 | 初始版本发布 |
