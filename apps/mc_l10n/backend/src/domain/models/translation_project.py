@@ -4,8 +4,8 @@ TranslationProject聚合
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, List, Optional, Set
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Set
 from enum import Enum
 
 from .mod import ModId
@@ -109,7 +109,20 @@ class TranslationTask:
 
 
 class TranslationProject:
-    """翻译项目聚合根"""
+    """翻译项目聚合根
+    
+    负责维护翻译项目的完整性和业务规则：
+    - 管理项目生命周期
+    - 协调模组、贡献者和任务
+    - 确保翻译流程的一致性
+    - 跟踪项目进度和质量
+    """
+    
+    # 业务常量
+    MAX_MODS_PER_PROJECT = 100
+    MAX_CONTRIBUTORS = 50
+    MAX_LANGUAGES = 20
+    MIN_QUALITY_THRESHOLD = 0.5
     
     def __init__(
         self,
@@ -118,10 +131,21 @@ class TranslationProject:
         description: Optional[str] = None,
         target_languages: Optional[Set[str]] = None
     ):
+        # 验证输入
+        if not project_id:
+            raise ValueError("Project ID is required")
+        if not name or len(name) < 3:
+            raise ValueError("Project name must be at least 3 characters")
+        
         self.project_id = project_id
         self.name = name
         self.description = description
         self.target_languages = target_languages or set()
+        
+        # 验证目标语言数量
+        if len(self.target_languages) > self.MAX_LANGUAGES:
+            raise ValueError(f"Cannot have more than {self.MAX_LANGUAGES} target languages")
+        
         self.mod_ids: Set[ModId] = set()
         self.status = ProjectStatus.DRAFT
         self.settings = ProjectSettings()
@@ -131,18 +155,45 @@ class TranslationProject:
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
         self.domain_events = []
+        
+        # 新增：业务状态
+        self.owner_id: Optional[str] = None
+        self.quality_metrics: Dict[str, float] = {}
+        self.completion_date: Optional[datetime] = None
+        self.review_required_count = 0
+        self.auto_assignment_enabled = False
     
     def add_mod(self, mod_id: ModId):
-        """添加模组到项目"""
+        """添加模组到项目
+        
+        业务规则：
+        - 只能在非归档状态添加
+        - 不能超过最大模组数量
+        - 自动创建翻译任务
+        - 如果启用自动分配，尝试分配任务
+        """
         if self.status == ProjectStatus.ARCHIVED:
             raise ValueError("Cannot add mods to archived project")
+        
+        if self.status == ProjectStatus.COMPLETED:
+            raise ValueError("Cannot add mods to completed project")
+        
+        if len(self.mod_ids) >= self.MAX_MODS_PER_PROJECT:
+            raise ValueError(f"Cannot add more than {self.MAX_MODS_PER_PROJECT} mods to a project")
+        
+        if mod_id in self.mod_ids:
+            raise ValueError(f"Mod {mod_id} is already in the project")
         
         self.mod_ids.add(mod_id)
         self.updated_at = datetime.now()
         
         # 为每个目标语言创建任务
         for language in self.target_languages:
-            self._create_task(mod_id, language)
+            task = self._create_task(mod_id, language)
+            
+            # 自动分配任务给可用的贡献者
+            if self.auto_assignment_enabled:
+                self._auto_assign_task(task)
     
     def remove_mod(self, mod_id: ModId):
         """从项目移除模组"""
@@ -159,12 +210,40 @@ class TranslationProject:
         self.updated_at = datetime.now()
     
     def add_contributor(self, contributor: Contributor):
-        """添加贡献者"""
+        """添加贡献者
+        
+        业务规则：
+        - 只能在非归档状态添加
+        - 不能超过最大贡献者数量
+        - 验证贡献者的语言能力
+        - 第一个贡献者成为项目负责人（如果是manager角色）
+        """
         if self.status == ProjectStatus.ARCHIVED:
             raise ValueError("Cannot add contributors to archived project")
         
+        if len(self.contributors) >= self.MAX_CONTRIBUTORS:
+            raise ValueError(f"Cannot have more than {self.MAX_CONTRIBUTORS} contributors")
+        
+        if contributor.user_id in self.contributors:
+            raise ValueError(f"Contributor {contributor.user_id} is already in the project")
+        
+        # 验证贡献者的语言能力与项目需求匹配
+        if contributor.languages:
+            matching_languages = contributor.languages.intersection(self.target_languages)
+            if not matching_languages and contributor.role != "manager":
+                raise ValueError("Contributor's languages don't match project's target languages")
+        
         self.contributors[contributor.user_id] = contributor
+        
+        # 第一个manager成为项目负责人
+        if not self.owner_id and contributor.can_manage():
+            self.owner_id = contributor.user_id
+        
         self.updated_at = datetime.now()
+        
+        # 如果启用自动分配，为新贡献者分配待处理任务
+        if self.auto_assignment_enabled:
+            self._assign_pending_tasks_to_contributor(contributor)
     
     def remove_contributor(self, user_id: str):
         """移除贡献者"""
@@ -201,8 +280,25 @@ class TranslationProject:
         self.updated_at = datetime.now()
     
     def assign_task(self, task_id: str, user_id: str):
-        """分配任务"""
+        """分配任务
+        
+        业务规则：
+        - 只能分配给项目贡献者
+        - 贡献者必须具备相应语言能力
+        - 不能分配给已有过多任务的贡献者
+        - 优先级高的任务优先分配
+        """
+        if self.status not in [ProjectStatus.ACTIVE, ProjectStatus.PAUSED]:
+            raise ValueError(f"Cannot assign tasks in {self.status.value} project")
+        
         task = self._get_task(task_id)
+        
+        if task.status == "completed":
+            raise ValueError("Cannot assign completed task")
+        
+        if task.status == "cancelled":
+            raise ValueError("Cannot assign cancelled task")
+        
         contributor = self.contributors.get(user_id)
         
         if not contributor:
@@ -211,20 +307,58 @@ class TranslationProject:
         if not contributor.can_translate(task.language):
             raise ValueError(f"Contributor cannot translate {task.language}")
         
+        # 检查贡献者的任务负载
+        active_tasks = self._get_contributor_active_tasks(user_id)
+        if len(active_tasks) >= 10:  # 每人最多10个活跃任务
+            raise ValueError(f"Contributor {user_id} has too many active tasks")
+        
         task.assign(user_id)
+        contributor.contribution_count += 1
         self.updated_at = datetime.now()
     
-    def complete_task(self, task_id: str):
-        """完成任务"""
+    def complete_task(self, task_id: str, quality_score: float = 1.0):
+        """完成任务
+        
+        业务规则：
+        - 只能完成已分配的任务
+        - 记录质量分数
+        - 更新项目进度
+        - 检查是否所有任务完成
+        """
         task = self._get_task(task_id)
+        
+        if task.status != "in_progress":
+            raise ValueError("Can only complete in-progress tasks")
+        
+        if not task.assigned_to:
+            raise ValueError("Cannot complete unassigned task")
+        
+        # 验证质量分数
+        if not 0 <= quality_score <= 1:
+            raise ValueError("Quality score must be between 0 and 1")
+        
         task.complete()
         
-        # 更新贡献者统计
-        if task.assigned_to and task.assigned_to in self.contributors:
-            self.contributors[task.assigned_to].contribution_count += 1
+        # 记录质量指标
+        if task.language not in self.quality_metrics:
+            self.quality_metrics[task.language] = quality_score
+        else:
+            # 计算平均质量
+            completed_tasks = [t for t in self.tasks 
+                             if t.language == task.language and t.status == "completed"]
+            total_quality = self.quality_metrics[task.language] * (len(completed_tasks) - 1) + quality_score
+            self.quality_metrics[task.language] = total_quality / len(completed_tasks)
+        
+        # 检查是否需要审核
+        if quality_score < self.settings.quality_threshold:
+            self.review_required_count += 1
         
         self.updated_at = datetime.now()
         self._update_statistics()
+        
+        # 检查是否所有任务完成
+        if self._all_tasks_completed():
+            self._trigger_completion_check()
     
     def activate(self):
         """激活项目"""
@@ -307,3 +441,110 @@ class TranslationProject:
     def _update_statistics(self):
         """更新统计信息"""
         self.statistics = self.get_statistics()
+    
+    def _auto_assign_task(self, task: TranslationTask):
+        """自动分配任务给合适的贡献者"""
+        # 找到能处理该语言且任务最少的贡献者
+        suitable_contributors = [
+            (c, self._get_contributor_active_tasks(c.user_id))
+            for c in self.contributors.values()
+            if c.can_translate(task.language)
+        ]
+        
+        if not suitable_contributors:
+            return
+        
+        # 按任务数量排序，选择任务最少的
+        suitable_contributors.sort(key=lambda x: len(x[1]))
+        best_contributor = suitable_contributors[0][0]
+        
+        # 分配任务
+        if len(self._get_contributor_active_tasks(best_contributor.user_id)) < 10:
+            task.assign(best_contributor.user_id)
+    
+    def _assign_pending_tasks_to_contributor(self, contributor: Contributor):
+        """为新贡献者分配待处理任务"""
+        pending_tasks = [
+            t for t in self.tasks 
+            if t.status == "pending" and 
+            t.language in contributor.languages
+        ]
+        
+        # 按优先级排序
+        pending_tasks.sort(key=lambda t: t.priority, reverse=True)
+        
+        # 分配前5个任务
+        for task in pending_tasks[:5]:
+            task.assign(contributor.user_id)
+    
+    def _get_contributor_active_tasks(self, user_id: str) -> List[TranslationTask]:
+        """获取贡献者的活跃任务"""
+        return [
+            t for t in self.tasks 
+            if t.assigned_to == user_id and 
+            t.status == "in_progress"
+        ]
+    
+    def _all_tasks_completed(self) -> bool:
+        """检查是否所有任务完成"""
+        return all(
+            t.status in ["completed", "cancelled"] 
+            for t in self.tasks
+        )
+    
+    def _trigger_completion_check(self):
+        """触发项目完成检查"""
+        # 计算整体质量分数
+        if self.quality_metrics:
+            avg_quality = sum(self.quality_metrics.values()) / len(self.quality_metrics)
+            
+            # 如果质量达标且允许完成，自动标记项目完成
+            if avg_quality >= self.settings.quality_threshold:
+                if self.settings.allow_partial_translation or self._all_tasks_completed():
+                    self.status = ProjectStatus.COMPLETED
+                    self.completion_date = datetime.now()
+    
+    def set_owner(self, user_id: str):
+        """设置项目负责人"""
+        if user_id not in self.contributors:
+            raise ValueError(f"User {user_id} is not a contributor")
+        
+        if not self.contributors[user_id].can_manage():
+            raise ValueError(f"User {user_id} does not have manager role")
+        
+        self.owner_id = user_id
+        self.updated_at = datetime.now()
+    
+    def enable_auto_assignment(self):
+        """启用自动任务分配"""
+        self.auto_assignment_enabled = True
+        # 立即尝试分配所有待处理任务
+        for task in self.tasks:
+            if task.status == "pending":
+                self._auto_assign_task(task)
+    
+    def disable_auto_assignment(self):
+        """禁用自动任务分配"""
+        self.auto_assignment_enabled = False
+    
+    def calculate_estimated_completion(self) -> Optional[datetime]:
+        """计算预估完成时间"""
+        if not self.tasks:
+            return None
+        
+        completed_tasks = [t for t in self.tasks if t.status == "completed"]
+        if not completed_tasks:
+            return None
+        
+        # 基于历史完成速度预估
+        avg_completion_time = sum(
+            (t.completed_at - t.created_at).total_seconds() 
+            for t in completed_tasks if t.completed_at
+        ) / len(completed_tasks)
+        
+        remaining_tasks = [t for t in self.tasks if t.status in ["pending", "in_progress"]]
+        if not remaining_tasks:
+            return self.completion_date
+        
+        estimated_seconds = avg_completion_time * len(remaining_tasks)
+        return datetime.now() + timedelta(seconds=estimated_seconds)

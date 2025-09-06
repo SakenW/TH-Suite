@@ -9,9 +9,10 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 import logging
 
-from ...domain.models.mod import Mod, ModId, ModMetadata, ModVersion
-from ...domain.repositories import ModRepository, ScanResultRepository
-from ...domain.events import ModScannedEvent
+from domain.models.mod import Mod, ModId, ModMetadata, ModVersion
+from domain.repositories import ModRepository, ScanResultRepository
+from domain.events import ModScannedEvent
+from infrastructure.batch_processor import BatchProcessor, BulkOperationOptimizer
 from ..commands import ScanCommand, RescanCommand
 from ..dto import ScanResultDTO, ModDTO
 
@@ -25,11 +26,18 @@ class ScanService:
         self,
         mod_repository: ModRepository,
         scan_result_repository: ScanResultRepository,
-        scanner: Any  # 扫描器接口（将在infrastructure层实现）
+        scanner: Any,  # 扫描器接口（将在infrastructure层实现）
+        batch_size: int = 100,
+        max_workers: int = 4
     ):
         self.mod_repository = mod_repository
         self.scan_result_repository = scan_result_repository
         self.scanner = scanner
+        self.batch_processor = BatchProcessor(
+            batch_size=batch_size,
+            max_workers=max_workers
+        )
+        self.bulk_optimizer = BulkOperationOptimizer()
     
     def scan_directory(self, command: ScanCommand) -> ScanResultDTO:
         """扫描目录
@@ -57,15 +65,27 @@ class ScanService:
             )
             results.total_files = len(files)
             
-            # 扫描每个文件
-            for file_path in files:
-                try:
-                    self._scan_file(file_path, command.force_rescan, results)
-                    results.scanned_files += 1
-                except Exception as e:
-                    logger.error(f"Failed to scan {file_path}: {e}")
-                    results.failed_files += 1
-                    results.errors.append(f"Failed to scan {file_path}: {str(e)}")
+            # 使用批处理器扫描文件
+            def process_file(file_path):
+                self._scan_file(file_path, command.force_rescan, results)
+                return file_path
+            
+            # 批量处理文件
+            batch_result = self.batch_processor.process(
+                items=files,
+                processor=process_file,
+                progress_callback=lambda current, total: 
+                    logger.info(f"Scan progress: {current}/{total}")
+            )
+            
+            results.scanned_files = len(batch_result.successful)
+            results.failed_files = len(batch_result.failed)
+            
+            for failed_file, error in batch_result.failed:
+                logger.error(f"Failed to scan {failed_file}: {error}")
+                results.errors.append(f"Failed to scan {failed_file}: {str(error)}")
+            
+            logger.info(f"Batch scan completed in {batch_result.total_time:.2f}s, success rate: {batch_result.success_rate:.2%}")
             
             results.success = results.failed_files == 0
             results.completed_at = datetime.now()

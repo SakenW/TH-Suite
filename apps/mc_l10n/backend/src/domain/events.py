@@ -28,13 +28,8 @@ class DomainEvent:
         }
 
 
-@dataclass
 class ModScannedEvent(DomainEvent):
     """模组扫描完成事件"""
-    mod_id: str
-    translation_count: int
-    content_hash: str
-    
     def __init__(self, mod_id: str, timestamp: datetime, translation_count: int, content_hash: str):
         super().__init__(
             event_id=f"mod_scanned_{mod_id}_{timestamp.timestamp()}",
@@ -47,13 +42,8 @@ class ModScannedEvent(DomainEvent):
         self.content_hash = content_hash
 
 
-@dataclass
 class ModTranslatedEvent(DomainEvent):
     """模组翻译完成事件"""
-    mod_id: str
-    language: str
-    progress: float
-    
     def __init__(self, mod_id: str, language: str, timestamp: datetime, progress: float):
         super().__init__(
             event_id=f"mod_translated_{mod_id}_{language}_{timestamp.timestamp()}",
@@ -66,15 +56,8 @@ class ModTranslatedEvent(DomainEvent):
         self.progress = progress
 
 
-@dataclass
 class TranslationConflictEvent(DomainEvent):
     """翻译冲突事件"""
-    mod_id: str
-    language: str
-    key: str
-    existing_value: str
-    new_value: str
-    
     def __init__(self, mod_id: str, language: str, key: str, 
                  existing_value: str, new_value: str, timestamp: datetime):
         super().__init__(
@@ -90,7 +73,6 @@ class TranslationConflictEvent(DomainEvent):
         self.new_value = new_value
 
 
-@dataclass
 class ProjectCreatedEvent(DomainEvent):
     """项目创建事件"""
     project_id: str
@@ -109,7 +91,6 @@ class ProjectCreatedEvent(DomainEvent):
         self.creator = creator
 
 
-@dataclass
 class ProjectStatusChangedEvent(DomainEvent):
     """项目状态变更事件"""
     project_id: str
@@ -131,48 +112,6 @@ class ProjectStatusChangedEvent(DomainEvent):
         self.changed_by = changed_by
 
 
-@dataclass
-class TaskAssignedEvent(DomainEvent):
-    """任务分配事件"""
-    task_id: str
-    project_id: str
-    assigned_to: str
-    assigned_by: str
-    
-    def __init__(self, task_id: str, project_id: str, assigned_to: str, 
-                 assigned_by: str, timestamp: datetime):
-        super().__init__(
-            event_id=f"task_assigned_{task_id}_{timestamp.timestamp()}",
-            aggregate_id=project_id,
-            event_type="TaskAssigned",
-            timestamp=timestamp
-        )
-        self.task_id = task_id
-        self.project_id = project_id
-        self.assigned_to = assigned_to
-        self.assigned_by = assigned_by
-
-
-@dataclass
-class TaskCompletedEvent(DomainEvent):
-    """任务完成事件"""
-    task_id: str
-    project_id: str
-    completed_by: str
-    
-    def __init__(self, task_id: str, project_id: str, completed_by: str, timestamp: datetime):
-        super().__init__(
-            event_id=f"task_completed_{task_id}_{timestamp.timestamp()}",
-            aggregate_id=project_id,
-            event_type="TaskCompleted",
-            timestamp=timestamp
-        )
-        self.task_id = task_id
-        self.project_id = project_id
-        self.completed_by = completed_by
-
-
-@dataclass
 class SyncStartedEvent(DomainEvent):
     """同步开始事件"""
     sync_id: str
@@ -191,7 +130,6 @@ class SyncStartedEvent(DomainEvent):
         self.target = target
 
 
-@dataclass
 class SyncCompletedEvent(DomainEvent):
     """同步完成事件"""
     sync_id: str
@@ -213,7 +151,6 @@ class SyncCompletedEvent(DomainEvent):
         self.errors = errors
 
 
-@dataclass
 class TranslationApprovedEvent(DomainEvent):
     """翻译批准事件"""
     translation_id: str
@@ -237,7 +174,6 @@ class TranslationApprovedEvent(DomainEvent):
         self.approved_by = approved_by
 
 
-@dataclass
 class TranslationRejectedEvent(DomainEvent):
     """翻译拒绝事件"""
     translation_id: str
@@ -261,3 +197,64 @@ class TranslationRejectedEvent(DomainEvent):
         self.key = key
         self.rejected_by = rejected_by
         self.reason = reason
+
+
+class ProjectCompletedEvent(DomainEvent):
+    """项目完成事件"""
+    project_id: str
+    completion_rate: float
+    quality_score: float
+    
+    def __init__(self, project_id: str, completion_rate: float, 
+                 quality_score: float, timestamp: datetime):
+        super().__init__(
+            event_id=f"project_completed_{project_id}_{timestamp.timestamp()}",
+            aggregate_id=project_id,
+            event_type="ProjectCompleted",
+            timestamp=timestamp
+        )
+        self.project_id = project_id
+        self.completion_rate = completion_rate
+        self.quality_score = quality_score
+
+
+class TaskAssignedEvent(DomainEvent):
+    """任务分配事件"""
+    task_id: str
+    project_id: str
+    assignee: str
+    assignor: str
+    
+    def __init__(self, task_id: str, project_id: str, assignee: str, 
+                 assignor: str, timestamp: datetime):
+        super().__init__(
+            event_id=f"task_assigned_{task_id}_{timestamp.timestamp()}",
+            aggregate_id=project_id,
+            event_type="TaskAssigned",
+            timestamp=timestamp
+        )
+        self.task_id = task_id
+        self.project_id = project_id
+        self.assignee = assignee
+        self.assignor = assignor
+
+
+class TaskCompletedEvent(DomainEvent):
+    """任务完成事件"""
+    task_id: str
+    project_id: str
+    completed_by: str
+    quality_score: float
+    
+    def __init__(self, task_id: str, project_id: str, completed_by: str,
+                 quality_score: float, timestamp: datetime):
+        super().__init__(
+            event_id=f"task_completed_{task_id}_{timestamp.timestamp()}",
+            aggregate_id=project_id,
+            event_type="TaskCompleted",
+            timestamp=timestamp
+        )
+        self.task_id = task_id
+        self.project_id = project_id
+        self.completed_by = completed_by
+        self.quality_score = quality_score
