@@ -4,34 +4,31 @@
 提供翻译质量验证和控制功能
 """
 
+from .gate import QualityGate
 from .validators import (
-    QualityValidator,
-    ValidationResult,
-    ValidationLevel,
-    PlaceholderValidator,
     ColorCodeValidator,
-    LengthRatioValidator,
     EmptyValueValidator,
     FormatValidator,
-    LineBreakValidator
+    LengthRatioValidator,
+    LineBreakValidator,
+    PlaceholderValidator,
+    QualityValidator,
+    ValidationLevel,
+    ValidationResult,
 )
-
-from .gate import QualityGate
 
 __all__ = [
     # 基础类
-    'QualityValidator',
-    'ValidationResult',
-    'ValidationLevel',
-    
+    "QualityValidator",
+    "ValidationResult",
+    "ValidationLevel",
     # 验证器
-    'PlaceholderValidator',
-    'ColorCodeValidator',
-    'LengthRatioValidator',
-    'EmptyValueValidator',
-    'FormatValidator',
-    'LineBreakValidator',
-    
+    "PlaceholderValidator",
+    "ColorCodeValidator",
+    "LengthRatioValidator",
+    "EmptyValueValidator",
+    "FormatValidator",
+    "LineBreakValidator",
     # 门禁服务
-    'QualityGate'
+    "QualityGate",
 ]

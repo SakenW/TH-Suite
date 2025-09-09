@@ -1,42 +1,42 @@
-import { createTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles'
+import { alpha } from '@mui/material/styles'
 
 // 现代化 Minecraft 色彩调色板
 const minecraftColors = {
   // 核心色彩 - 更加鲜艳和现代
   grassGreen: '#4CAF50',
-  stoneGray: '#9E9E9E', 
+  stoneGray: '#9E9E9E',
   diamondBlue: '#00BCD4',
   goldYellow: '#FFB300',
   redstone: '#F44336',
-  
+
   // 自然方块色彩
   dirt: '#8D6E63',
   wood: '#D7CCC8',
   cobblestone: '#78909C',
   iron: '#CFD8DC',
   coal: '#263238',
-  
+
   // 宝石和特殊方块
   emerald: '#4CAF50',
   lapis: '#3F51B5',
   obsidian: '#212121',
   netherack: '#8D4037',
   endstone: '#FFF8E1',
-  
+
   // UI 增强色彩
   inventorySlot: '#37474F',
   hotbarSelected: '#FFFFFF',
   experienceGreen: '#8BC34A',
   healthRed: '#F44336',
   hungerOrange: '#FF9800',
-  
+
   // 现代渐变色
   skyBlue: '#E3F2FD',
   horizonBlue: '#1976D2',
   sunsetOrange: '#FF7043',
   nightPurple: '#5E35B1',
-};
+}
 
 // 创建现代化 Minecraft 主题
 export const minecraftTheme = createTheme({
@@ -89,9 +89,11 @@ export const minecraftTheme = createTheme({
     divider: alpha(minecraftColors.stoneGray, 0.2),
   },
   typography: {
-    fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+    fontFamily:
+      '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
     h1: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 800,
       letterSpacing: '-0.02em',
       background: `linear-gradient(135deg, ${minecraftColors.diamondBlue} 0%, ${minecraftColors.lapis} 100%)`,
@@ -100,7 +102,8 @@ export const minecraftTheme = createTheme({
       WebkitTextFillColor: 'transparent',
     },
     h2: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 700,
       letterSpacing: '-0.01em',
       background: `linear-gradient(135deg, ${minecraftColors.diamondBlue} 0%, ${minecraftColors.lapis} 100%)`,
@@ -109,13 +112,15 @@ export const minecraftTheme = createTheme({
       WebkitTextFillColor: 'transparent',
     },
     h3: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 700,
       letterSpacing: '-0.01em',
       color: minecraftColors.obsidian,
     },
     h4: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 700,
       letterSpacing: '-0.01em',
       background: `linear-gradient(135deg, ${minecraftColors.diamondBlue} 0%, ${minecraftColors.horizonBlue} 100%)`,
@@ -124,28 +129,33 @@ export const minecraftTheme = createTheme({
       WebkitTextFillColor: 'transparent',
     },
     h5: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 600,
       color: minecraftColors.obsidian,
     },
     h6: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 600,
       color: minecraftColors.coal,
     },
     button: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 600,
       letterSpacing: '0.02em',
       textTransform: 'none',
     },
     body1: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 400,
       lineHeight: 1.7,
     },
     body2: {
-      fontFamily: '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
+      fontFamily:
+        '"Inter", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "微软雅黑", sans-serif',
       fontWeight: 400,
       lineHeight: 1.6,
     },
@@ -165,7 +175,7 @@ export const minecraftTheme = createTheme({
         },
       },
     },
-    
+
     // Drawer 样式
     MuiDrawer: {
       styleOverrides: {
@@ -177,7 +187,7 @@ export const minecraftTheme = createTheme({
         },
       },
     },
-    
+
     // List Item 样式
     MuiListItemButton: {
       styleOverrides: {
@@ -287,7 +297,8 @@ export const minecraftTheme = createTheme({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%)',
+            background:
+              'linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%)',
             backgroundSize: '20px 20px',
             animation: 'progress-shine 2s linear infinite',
           },
@@ -299,7 +310,7 @@ export const minecraftTheme = createTheme({
         },
       },
     },
-    
+
     // Paper 样式
     MuiPaper: {
       styleOverrides: {
@@ -319,7 +330,7 @@ export const minecraftTheme = createTheme({
         },
       },
     },
-    
+
     // Alert 样式
     MuiAlert: {
       styleOverrides: {
@@ -352,7 +363,7 @@ export const minecraftTheme = createTheme({
         },
       },
     },
-    
+
     // Chip 样式
     MuiChip: {
       styleOverrides: {
@@ -371,7 +382,7 @@ export const minecraftTheme = createTheme({
       },
     },
   },
-});
+})
 
-export { minecraftColors };
-export default minecraftTheme;
+export { minecraftColors }
+export default minecraftTheme

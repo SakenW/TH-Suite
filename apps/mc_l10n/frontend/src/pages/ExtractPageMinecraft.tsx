@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -13,9 +13,9 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Checkbox,
-  Alert
-} from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+  Alert,
+} from '@mui/material'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package,
   FileArchive,
@@ -34,27 +34,27 @@ import {
   Archive,
   Zap,
   Clock,
-  Hash
-} from 'lucide-react';
-import toast from 'react-hot-toast';
+  Hash,
+} from 'lucide-react'
+import toast from 'react-hot-toast'
 
-import { MinecraftButton } from '../components/minecraft/MinecraftButton';
-import { MinecraftCard } from '../components/minecraft/MinecraftCard';
-import { MinecraftProgress } from '../components/minecraft/MinecraftProgress';
-import { MinecraftBlock } from '../components/MinecraftComponents';
+import { MinecraftButton } from '../components/minecraft/MinecraftButton'
+import { MinecraftCard } from '../components/minecraft/MinecraftCard'
+import { MinecraftProgress } from '../components/minecraft/MinecraftProgress'
+import { MinecraftBlock } from '../components/MinecraftComponents'
 
 interface ExtractItem {
-  id: string;
-  name: string;
-  type: 'jar' | 'zip' | 'folder';
-  path: string;
-  size: number;
-  status: 'pending' | 'extracting' | 'completed' | 'error';
-  progress: number;
-  langFiles: number;
-  keys: number;
-  selected: boolean;
-  error?: string;
+  id: string
+  name: string
+  type: 'jar' | 'zip' | 'folder'
+  path: string
+  size: number
+  status: 'pending' | 'extracting' | 'completed' | 'error'
+  progress: number
+  langFiles: number
+  keys: number
+  selected: boolean
+  error?: string
 }
 
 const mockExtractItems: ExtractItem[] = [
@@ -68,7 +68,7 @@ const mockExtractItems: ExtractItem[] = [
     progress: 100,
     langFiles: 12,
     keys: 1250,
-    selected: false
+    selected: false,
   },
   {
     id: '2',
@@ -80,7 +80,7 @@ const mockExtractItems: ExtractItem[] = [
     progress: 65,
     langFiles: 8,
     keys: 890,
-    selected: true
+    selected: true,
   },
   {
     id: '3',
@@ -92,7 +92,7 @@ const mockExtractItems: ExtractItem[] = [
     progress: 0,
     langFiles: 0,
     keys: 0,
-    selected: true
+    selected: true,
   },
   {
     id: '4',
@@ -105,109 +105,119 @@ const mockExtractItems: ExtractItem[] = [
     langFiles: 0,
     keys: 0,
     selected: false,
-    error: '文件损坏或格式不支持'
-  }
-];
+    error: '文件损坏或格式不支持',
+  },
+]
 
 export default function ExtractPageMinecraft() {
-  const [items, setItems] = useState<ExtractItem[]>(mockExtractItems);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'error'>('all');
-  const [selectedCount, setSelectedCount] = useState(2);
+  const [items, setItems] = useState<ExtractItem[]>(mockExtractItems)
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'error'>('all')
+  const [selectedCount, setSelectedCount] = useState(2)
 
   const handleSelectAll = (checked: boolean) => {
-    setItems(prev => prev.map(item => ({ ...item, selected: checked })));
-    setSelectedCount(checked ? items.length : 0);
-  };
+    setItems(prev => prev.map(item => ({ ...item, selected: checked })))
+    setSelectedCount(checked ? items.length : 0)
+  }
 
   const handleSelectItem = (id: string) => {
-    setItems(prev => prev.map(item =>
-      item.id === id ? { ...item, selected: !item.selected } : item
-    ));
-    const newSelected = items.filter(item => 
-      item.id === id ? !item.selected : item.selected
-    ).length;
-    setSelectedCount(newSelected);
-  };
+    setItems(prev =>
+      prev.map(item => (item.id === id ? { ...item, selected: !item.selected } : item)),
+    )
+    const newSelected = items.filter(item =>
+      item.id === id ? !item.selected : item.selected,
+    ).length
+    setSelectedCount(newSelected)
+  }
 
   const handleStartExtraction = () => {
     if (selectedCount === 0) {
-      toast.error('请选择要提取的文件', { icon: '⚠️' });
-      return;
+      toast.error('请选择要提取的文件', { icon: '⚠️' })
+      return
     }
-    setIsExtracting(true);
-    toast.success(`开始提取 ${selectedCount} 个文件`, { icon: '🚀' });
-    
+    setIsExtracting(true)
+    toast.success(`开始提取 ${selectedCount} 个文件`, { icon: '🚀' })
+
     // 模拟提取进度
     const interval = setInterval(() => {
-      setItems(prev => prev.map(item => {
-        if (item.selected && item.status === 'pending') {
-          return { ...item, status: 'extracting', progress: 0 };
-        }
-        if (item.status === 'extracting' && item.progress < 100) {
-          const newProgress = Math.min(100, item.progress + Math.random() * 20);
-          if (newProgress >= 100) {
-            return {
-              ...item,
-              status: 'completed',
-              progress: 100,
-              langFiles: Math.floor(Math.random() * 20) + 5,
-              keys: Math.floor(Math.random() * 2000) + 500
-            };
+      setItems(prev =>
+        prev.map(item => {
+          if (item.selected && item.status === 'pending') {
+            return { ...item, status: 'extracting', progress: 0 }
           }
-          return { ...item, progress: newProgress };
-        }
-        return item;
-      }));
-    }, 500);
+          if (item.status === 'extracting' && item.progress < 100) {
+            const newProgress = Math.min(100, item.progress + Math.random() * 20)
+            if (newProgress >= 100) {
+              return {
+                ...item,
+                status: 'completed',
+                progress: 100,
+                langFiles: Math.floor(Math.random() * 20) + 5,
+                keys: Math.floor(Math.random() * 2000) + 500,
+              }
+            }
+            return { ...item, progress: newProgress }
+          }
+          return item
+        }),
+      )
+    }, 500)
 
     setTimeout(() => {
-      clearInterval(interval);
-      setIsExtracting(false);
-      toast.success('提取完成！', { icon: '✅' });
-    }, 5000);
-  };
+      clearInterval(interval)
+      setIsExtracting(false)
+      toast.success('提取完成！', { icon: '✅' })
+    }, 5000)
+  }
 
   const handleStopExtraction = () => {
-    setIsExtracting(false);
-    toast.success('已停止提取', { icon: '⏹️' });
-  };
+    setIsExtracting(false)
+    toast.success('已停止提取', { icon: '⏹️' })
+  }
 
   const handleAddFiles = () => {
-    toast.info('选择要提取的文件...', { icon: '📁' });
-  };
+    toast.info('选择要提取的文件...', { icon: '📁' })
+  }
 
   const handleViewDetails = (item: ExtractItem) => {
-    toast.info(`查看 ${item.name} 详情`, { icon: '👁️' });
-  };
+    toast.info(`查看 ${item.name} 详情`, { icon: '👁️' })
+  }
 
   const formatSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(2)} MB`;
-  };
+    const mb = bytes / (1024 * 1024)
+    return `${mb.toFixed(2)} MB`
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle size={16} color="#4CAF50" />;
-      case 'extracting': return <Clock size={16} color="#2196F3" />;
-      case 'error': return <XCircle size={16} color="#F44336" />;
-      default: return <AlertTriangle size={16} color="#FF9800" />;
+      case 'completed':
+        return <CheckCircle size={16} color='#4CAF50' />
+      case 'extracting':
+        return <Clock size={16} color='#2196F3' />
+      case 'error':
+        return <XCircle size={16} color='#F44336' />
+      default:
+        return <AlertTriangle size={16} color='#FF9800' />
     }
-  };
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'jar': return <Package size={20} color="#FFD700" />;
-      case 'zip': return <FileArchive size={20} color="#9C27B0" />;
-      case 'folder': return <FolderOpen size={20} color="#2196F3" />;
-      default: return <FileText size={20} />;
+      case 'jar':
+        return <Package size={20} color='#FFD700' />
+      case 'zip':
+        return <FileArchive size={20} color='#9C27B0' />
+      case 'folder':
+        return <FolderOpen size={20} color='#2196F3' />
+      default:
+        return <FileText size={20} />
     }
-  };
+  }
 
   const filteredItems = items.filter(item => {
-    if (filter === 'all') return true;
-    return item.status === filter;
-  });
+    if (filter === 'all') return true
+    return item.status === filter
+  })
 
   const stats = {
     total: items.length,
@@ -215,8 +225,8 @@ export default function ExtractPageMinecraft() {
     extracting: items.filter(i => i.status === 'extracting').length,
     error: items.filter(i => i.status === 'error').length,
     totalLangFiles: items.reduce((sum, i) => sum + i.langFiles, 0),
-    totalKeys: items.reduce((sum, i) => sum + i.keys, 0)
-  };
+    totalKeys: items.reduce((sum, i) => sum + i.keys, 0),
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -228,7 +238,7 @@ export default function ExtractPageMinecraft() {
       >
         <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h3"
+            variant='h3'
             sx={{
               fontFamily: '"Minecraft", "Press Start 2P", monospace',
               fontSize: { xs: '24px', md: '32px' },
@@ -261,7 +271,7 @@ export default function ExtractPageMinecraft() {
         <Grid item xs={12}>
           <Grid container spacing={2}>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
                   <Archive size={24} />
                   <Typography
@@ -287,9 +297,9 @@ export default function ExtractPageMinecraft() {
               </MinecraftCard>
             </Grid>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <CheckCircle size={24} color="#4CAF50" />
+                  <CheckCircle size={24} color='#4CAF50' />
                   <Typography
                     sx={{
                       fontFamily: '"Minecraft", monospace',
@@ -313,9 +323,9 @@ export default function ExtractPageMinecraft() {
               </MinecraftCard>
             </Grid>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <Clock size={24} color="#2196F3" />
+                  <Clock size={24} color='#2196F3' />
                   <Typography
                     sx={{
                       fontFamily: '"Minecraft", monospace',
@@ -339,9 +349,9 @@ export default function ExtractPageMinecraft() {
               </MinecraftCard>
             </Grid>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <XCircle size={24} color="#F44336" />
+                  <XCircle size={24} color='#F44336' />
                   <Typography
                     sx={{
                       fontFamily: '"Minecraft", monospace',
@@ -365,9 +375,9 @@ export default function ExtractPageMinecraft() {
               </MinecraftCard>
             </Grid>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <FileText size={24} color="#FFD700" />
+                  <FileText size={24} color='#FFD700' />
                   <Typography
                     sx={{
                       fontFamily: '"Minecraft", monospace',
@@ -391,9 +401,9 @@ export default function ExtractPageMinecraft() {
               </MinecraftCard>
             </Grid>
             <Grid item xs={6} md={2}>
-              <MinecraftCard variant="inventory">
+              <MinecraftCard variant='inventory'>
                 <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <Hash size={24} color="#9C27B0" />
+                  <Hash size={24} color='#9C27B0' />
                   <Typography
                     sx={{
                       fontFamily: '"Minecraft", monospace',
@@ -423,7 +433,7 @@ export default function ExtractPageMinecraft() {
         <Grid item xs={12}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <MinecraftButton
-              minecraftStyle="gold"
+              minecraftStyle='gold'
               onClick={handleAddFiles}
               startIcon={<Plus size={16} />}
             >
@@ -431,7 +441,7 @@ export default function ExtractPageMinecraft() {
             </MinecraftButton>
             {!isExtracting ? (
               <MinecraftButton
-                minecraftStyle="emerald"
+                minecraftStyle='emerald'
                 onClick={handleStartExtraction}
                 startIcon={<Play size={16} />}
                 disabled={selectedCount === 0}
@@ -441,7 +451,7 @@ export default function ExtractPageMinecraft() {
               </MinecraftButton>
             ) : (
               <MinecraftButton
-                minecraftStyle="redstone"
+                minecraftStyle='redstone'
                 onClick={handleStopExtraction}
                 startIcon={<Pause size={16} />}
               >
@@ -475,7 +485,7 @@ export default function ExtractPageMinecraft() {
 
         {/* 文件列表 */}
         <Grid item xs={12}>
-          <MinecraftCard variant="chest" title="文件列表" icon="gold">
+          <MinecraftCard variant='chest' title='文件列表' icon='gold'>
             <Box sx={{ p: 2 }}>
               <Box sx={{ mb: 2 }}>
                 <FormControlLabel
@@ -483,7 +493,7 @@ export default function ExtractPageMinecraft() {
                     <Checkbox
                       checked={selectedCount === items.length}
                       indeterminate={selectedCount > 0 && selectedCount < items.length}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      onChange={e => handleSelectAll(e.target.checked)}
                       sx={{ color: '#FFD700' }}
                     />
                   }
@@ -524,9 +534,7 @@ export default function ExtractPageMinecraft() {
                             sx={{ color: '#FFD700' }}
                           />
                         </ListItemIcon>
-                        <ListItemIcon>
-                          {getTypeIcon(item.type)}
-                        </ListItemIcon>
+                        <ListItemIcon>{getTypeIcon(item.type)}</ListItemIcon>
                         <ListItemText
                           primary={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -542,7 +550,7 @@ export default function ExtractPageMinecraft() {
                               {getStatusIcon(item.status)}
                               <Chip
                                 label={formatSize(item.size)}
-                                size="small"
+                                size='small'
                                 sx={{
                                   fontFamily: '"Minecraft", monospace',
                                   fontSize: '10px',
@@ -568,8 +576,8 @@ export default function ExtractPageMinecraft() {
                                 <Box sx={{ mt: 1 }}>
                                   <MinecraftProgress
                                     value={item.progress}
-                                    variant="loading"
-                                    size="small"
+                                    variant='loading'
+                                    size='small'
                                     animated
                                   />
                                 </Box>
@@ -598,7 +606,7 @@ export default function ExtractPageMinecraft() {
                               )}
                               {item.error && (
                                 <Alert
-                                  severity="error"
+                                  severity='error'
                                   sx={{
                                     mt: 1,
                                     py: 0.5,
@@ -616,19 +624,13 @@ export default function ExtractPageMinecraft() {
                           }
                         />
                         <ListItemSecondaryAction>
-                          <Tooltip title="查看详情">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewDetails(item)}
-                            >
+                          <Tooltip title='查看详情'>
+                            <IconButton size='small' onClick={() => handleViewDetails(item)}>
                               <Eye size={16} />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="下载结果">
-                            <IconButton
-                              size="small"
-                              disabled={item.status !== 'completed'}
-                            >
+                          <Tooltip title='下载结果'>
+                            <IconButton size='small' disabled={item.status !== 'completed'}>
                               <Download size={16} />
                             </IconButton>
                           </Tooltip>
@@ -646,12 +648,13 @@ export default function ExtractPageMinecraft() {
         {isExtracting && (
           <Grid item xs={12}>
             <Alert
-              severity="info"
+              severity='info'
               icon={<Zap size={20} />}
               sx={{
                 fontFamily: '"Minecraft", monospace',
                 fontSize: '12px',
-                background: 'linear-gradient(135deg, rgba(33,150,243,0.2) 0%, rgba(0,0,0,0.2) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(33,150,243,0.2) 0%, rgba(0,0,0,0.2) 100%)',
                 border: '2px solid #2196F3',
                 borderRadius: 0,
               }}
@@ -662,5 +665,5 @@ export default function ExtractPageMinecraft() {
         )}
       </Grid>
     </Box>
-  );
+  )
 }

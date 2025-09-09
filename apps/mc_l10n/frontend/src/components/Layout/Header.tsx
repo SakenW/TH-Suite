@@ -1,93 +1,77 @@
-import React from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Box,
-  Chip,
-  useTheme,
-  alpha,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Minimize2,
-  Square,
-  X,
-} from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from 'react'
+import { AppBar, Toolbar, Typography, IconButton, Box, Chip, useTheme, alpha } from '@mui/material'
+import { Menu as MenuIcon, Minimize2, Square, X } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 
-import { useAppStore } from '@stores/appStore';
-import { tauriService } from '@services';
-import { useCommonTranslation, useMcStudioTranslation } from '@hooks/useTranslation';
+import { useAppStore } from '@stores/appStore'
+import { tauriService } from '@services'
+import { useCommonTranslation, useMcStudioTranslation } from '@hooks/useTranslation'
 
 interface HeaderProps {
-  sidebarWidth: number;
-  onSidebarToggle: () => void;
+  sidebarWidth: number
+  onSidebarToggle: () => void
 }
 
 function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { currentProject } = useAppStore();
-  const { t: tCommon } = useCommonTranslation();
-  const { t: tMc } = useMcStudioTranslation();
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { currentProject } = useAppStore()
+  const { t: tCommon } = useCommonTranslation()
+  const { t: tMc } = useMcStudioTranslation()
 
   const getPageTitle = () => {
     switch (location.pathname) {
       case '/':
-        return tCommon('pages.home');
+        return tCommon('pages.home')
       case '/scan':
-        return tCommon('pages.scan');
+        return tCommon('pages.scan')
       case '/extract':
-        return tCommon('pages.extract');
+        return tCommon('pages.extract')
       case '/export':
-        return tCommon('pages.export');
+        return tCommon('pages.export')
       case '/transfer':
-        return tCommon('pages.transfer');
+        return tCommon('pages.transfer')
       case '/build':
-        return tCommon('pages.build');
+        return tCommon('pages.build')
       case '/security':
-        return tCommon('pages.security');
+        return tCommon('pages.security')
       case '/server':
-        return tCommon('pages.server');
+        return tCommon('pages.server')
       case '/settings':
-        return tCommon('pages.settings');
+        return tCommon('pages.settings')
       default:
-        return tMc('mcStudio.title');
+        return tMc('mcStudio.title')
     }
-  };
+  }
 
   const handleMinimize = async () => {
     try {
-      await tauriService.invokeBackend('minimize_window');
+      await tauriService.invokeBackend('minimize_window')
     } catch (error) {
-      console.error('Failed to minimize window:', error);
+      console.error('Failed to minimize window:', error)
     }
-  };
+  }
 
   const handleMaximize = async () => {
     try {
-      await tauriService.invokeBackend('toggle_maximize');
+      await tauriService.invokeBackend('toggle_maximize')
     } catch (error) {
-      console.error('Failed to toggle maximize:', error);
+      console.error('Failed to toggle maximize:', error)
     }
-  };
+  }
 
   const handleClose = async () => {
     try {
-      await tauriService.invokeBackend('close_window');
+      await tauriService.invokeBackend('close_window')
     } catch (error) {
-      console.error('Failed to close window:', error);
+      console.error('Failed to close window:', error)
     }
-  };
-
-
+  }
 
   return (
     <AppBar
-      position="fixed"
+      position='fixed'
       elevation={0}
       sx={{
         zIndex: theme.zIndex.drawer + 1,
@@ -113,9 +97,9 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
       >
         {/* Menu button */}
         <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="toggle sidebar"
+          edge='start'
+          color='inherit'
+          aria-label='toggle sidebar'
           onClick={onSidebarToggle}
           sx={{ marginRight: 2 }}
         >
@@ -124,8 +108,8 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
 
         {/* Page title */}
         <Typography
-          variant="h6"
-          component="h1"
+          variant='h6'
+          component='h1'
           sx={{
             fontWeight: 600,
             fontSize: '1.1rem',
@@ -139,8 +123,8 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
         {currentProject && (
           <Chip
             label={currentProject.name}
-            size="small"
-            variant="outlined"
+            size='small'
+            variant='outlined'
             sx={{
               marginLeft: 2,
               fontSize: '0.75rem',
@@ -156,7 +140,7 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
 
         {/* Tagline */}
         <Typography
-          variant="body2"
+          variant='body2'
           sx={{
             fontSize: '0.9rem',
             fontWeight: 500,
@@ -171,19 +155,20 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
         </Typography>
 
         {/* Action buttons */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: { xs: 0.5, sm: 1 },
-          flexShrink: 0,
-          minWidth: 'fit-content'
-        }}>
-
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.5, sm: 1 },
+            flexShrink: 0,
+            minWidth: 'fit-content',
+          }}
+        >
           {/* Window controls (only show in Tauri) */}
           {tauriService.isRunningInTauri() && (
             <>
               <IconButton
-                color="inherit"
+                color='inherit'
                 onClick={handleMinimize}
                 sx={{
                   padding: '8px',
@@ -194,9 +179,9 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
               >
                 <Minimize2 size={16} />
               </IconButton>
-              
+
               <IconButton
-                color="inherit"
+                color='inherit'
                 onClick={handleMaximize}
                 sx={{
                   padding: '8px',
@@ -207,9 +192,9 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
               >
                 <Square size={16} />
               </IconButton>
-              
+
               <IconButton
-                color="inherit"
+                color='inherit'
                 onClick={handleClose}
                 sx={{
                   padding: '8px',
@@ -226,7 +211,7 @@ function Header({ sidebarWidth, onSidebarToggle }: HeaderProps) {
         </Box>
       </Toolbar>
     </AppBar>
-  );
+  )
 }
 
-export default Header;
+export default Header

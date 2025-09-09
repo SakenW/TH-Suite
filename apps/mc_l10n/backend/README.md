@@ -1,39 +1,80 @@
-# MC L10n Backend v6.0
+# MC L10n Backend v7.0
 
-## 概述
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20%2B%20DDD-orange.svg)](#architecture)
+[![Tests](https://img.shields.io/badge/Tests-Pytest-brightgreen.svg)](#testing)
 
-MC L10n (Minecraft Localization) 是一个专业的 Minecraft MOD 本地化管理工具，采用六边形架构和领域驱动设计(DDD)，提供高性能的扫描、翻译和项目管理功能。
+## 📖 概述
 
-## 🏗️ 架构特点
+MC L10n (Minecraft Localization) 后端是 TransHub Suite 的核心组件，专门为 Minecraft MOD 和整合包提供专业级本地化管理服务。
 
-### 六边形架构 (Hexagonal Architecture)
+### ✨ 核心特性
+
+- **🏗️ 现代架构**: 六边形架构 + 领域驱动设计 (DDD)
+- **⚡ 高性能**: 异步处理、智能缓存、批量操作
+- **🔒 安全可靠**: SQLCipher 加密、输入验证、错误处理
+- **🔄 实时更新**: WebSocket 推送、事件驱动架构
+- **🧪 高质量**: 完整的测试覆盖、类型安全
+- **🔌 可扩展**: 插件系统、依赖注入、微服务就绪
+
+## 🏗️ 技术架构
+
+### 六边形架构分层
+
+```mermaid
+graph TB
+    subgraph "外部适配器"
+        API[REST API]
+        CLI[命令行接口]
+        WS[WebSocket]
+    end
+    
+    subgraph "应用核心"
+        APP[应用层]
+        DOMAIN[领域层]
+    end
+    
+    subgraph "基础设施"
+        DB[(SQLCipher)]
+        CACHE[缓存]
+        FS[文件系统]
+        EXT[外部API]
+    end
+    
+    API --> APP
+    CLI --> APP
+    WS --> APP
+    
+    APP --> DOMAIN
+    DOMAIN --> APP
+    
+    APP --> DB
+    APP --> CACHE
+    APP --> FS
+    APP --> EXT
 ```
-┌─────────────────────────────────────┐
-│         REST API (FastAPI)          │
-├─────────────────────────────────────┤
-│         Facade (门面层)             │
-├─────────────────────────────────────┤
-│     Application Services (应用层)   │
-├─────────────────────────────────────┤
-│       Domain Layer (领域层)         │
-├─────────────────────────────────────┤
-│    Infrastructure (基础设施层)      │
-└─────────────────────────────────────┘
-```
 
-### 核心特性
-- **领域驱动设计**: 完整的DDD实现，包括聚合根、值对象、领域事件
-- **性能优化**: 批处理、连接池、智能缓存、请求合并
-- **简化API**: 门面模式提供统一简洁的接口
-- **事件驱动**: 支持领域事件和实时更新
-- **高可测试性**: 完整的单元测试和集成测试覆盖
+### 技术栈
+
+| 层级 | 技术选择 | 版本 | 用途 |
+|------|----------|------|------|
+| **Web 框架** | FastAPI | 0.115+ | 高性能异步API |
+| **类型验证** | Pydantic | 2.5+ | 数据验证和序列化 |
+| **数据库** | SQLCipher | - | 加密SQLite数据库 |
+| **日志系统** | Structlog | 25.4+ | 结构化日志记录 |
+| **HTTP客户端** | httpx + aiohttp | 最新 | 异步网络请求 |
+| **测试框架** | Pytest | 8.4+ | 单元和集成测试 |
+| **代码质量** | Ruff + MyPy | 最新 | 检查和类型检查 |
 
 ## 🚀 快速开始
 
-### 环境要求
-- Python 3.12+
-- Poetry 1.5+
-- SQLite 3.35+
+### 📋 环境要求
+
+- **Python**: 3.12 或更高版本
+- **Poetry**: 1.6 或更高版本 (推荐使用)
+- **SQLite**: 3.35 或更高版本
+- **系统**: Linux/Windows/macOS
 
 ### 安装步骤
 

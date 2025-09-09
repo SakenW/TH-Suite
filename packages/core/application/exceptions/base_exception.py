@@ -7,7 +7,7 @@
 from typing import Any
 
 
-class BaseException(Exception):
+class BaseAppError(Exception):
     """应用异常基类"""
 
     def __init__(
@@ -19,12 +19,13 @@ class BaseException(Exception):
         self.details = details or {}
 
 
-class BaseError(BaseException):
+class BaseError(BaseAppError):
     """应用异常基类"""
+
     pass
 
 
-class BusinessException(BaseException):
+class BusinessError(BaseAppError):
     """业务异常"""
 
     def __init__(
@@ -36,12 +37,7 @@ class BusinessException(BaseException):
         super().__init__(message, error_code, details)
 
 
-class BusinessError(BusinessException):
-    """业务异常"""
-    pass
-
-
-class ValidationException(BaseException):
+class ValidationError(BaseAppError):
     """验证异常"""
 
     def __init__(self, message: str, field_errors: dict[str, list] = None):

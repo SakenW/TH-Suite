@@ -28,7 +28,7 @@ export const typography = {
     xlarge: '20px',
     xxlarge: '24px',
     huge: '32px',
-    
+
     // UI 特定大小
     button: '14px',
     tooltip: '10px',
@@ -36,7 +36,7 @@ export const typography = {
     subtitle: '16px',
     label: '12px',
     caption: '10px',
-    
+
     // 游戏内文字大小
     chat: '12px',
     scoreboard: '10px',
@@ -92,7 +92,7 @@ export const typography = {
     lowercase: 'lowercase',
     capitalize: 'capitalize',
   },
-};
+}
 
 // 文字样式预设
 export const textStyles = {
@@ -220,30 +220,30 @@ export const textStyles = {
     color: '#9C6BFF',
     animation: 'enchantedGlow 2s ease-in-out infinite',
   },
-};
+}
 
 // 创建文字渐变效果
 export function createTextGradient(colors: string[]): {
-  background: string;
-  WebkitBackgroundClip: string;
-  WebkitTextFillColor: string;
-  backgroundClip: string;
+  background: string
+  WebkitBackgroundClip: string
+  WebkitTextFillColor: string
+  backgroundClip: string
 } {
   return {
     background: `linear-gradient(90deg, ${colors.join(', ')})`,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
-  };
+  }
 }
 
 // 创建像素化文字效果
 export function createPixelText(size = 12): {
-  fontSize: string;
-  fontFamily: string;
-  imageRendering: string;
-  textRendering: string;
-  WebkitFontSmoothing: string;
+  fontSize: string
+  fontFamily: string
+  imageRendering: string
+  textRendering: string
+  WebkitFontSmoothing: string
 } {
   return {
     fontSize: `${size}px`,
@@ -251,85 +251,92 @@ export function createPixelText(size = 12): {
     imageRendering: 'pixelated',
     textRendering: 'optimizeSpeed',
     WebkitFontSmoothing: 'none',
-  };
+  }
 }
 
 // 创建打字机效果
-export function createTypewriterEffect(text: string, speed = 100): {
-  animation: string;
-  overflow: string;
-  whiteSpace: string;
-  borderRight: string;
+export function createTypewriterEffect(
+  text: string,
+  speed = 100,
+): {
+  animation: string
+  overflow: string
+  whiteSpace: string
+  borderRight: string
 } {
-  const steps = text.length;
+  const steps = text.length
   return {
     animation: `typing ${steps * speed}ms steps(${steps}) forwards, blink 1s step-end infinite`,
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     borderRight: '2px solid #FFFFFF',
-  };
+  }
 }
 
 // 创建闪烁文字效果
 export function createBlinkingText(interval = 500): {
-  animation: string;
+  animation: string
 } {
   return {
     animation: `blink ${interval}ms step-end infinite`,
-  };
+  }
 }
 
 // 创建随机字符效果（Matrix / Enchantment Table 风格）
 export class ObfuscatedText {
-  private element: HTMLElement;
-  private originalText: string;
-  private intervalId?: number;
-  private chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+  private element: HTMLElement
+  private originalText: string
+  private intervalId?: number
+  private chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()'
 
   constructor(element: HTMLElement) {
-    this.element = element;
-    this.originalText = element.textContent || '';
+    this.element = element
+    this.originalText = element.textContent || ''
   }
 
   start(speed = 50): void {
     this.intervalId = window.setInterval(() => {
-      let obfuscated = '';
+      let obfuscated = ''
       for (let i = 0; i < this.originalText.length; i++) {
         if (this.originalText[i] === ' ') {
-          obfuscated += ' ';
+          obfuscated += ' '
         } else {
-          obfuscated += this.chars[Math.floor(Math.random() * this.chars.length)];
+          obfuscated += this.chars[Math.floor(Math.random() * this.chars.length)]
         }
       }
-      this.element.textContent = obfuscated;
-    }, speed);
+      this.element.textContent = obfuscated
+    }, speed)
   }
 
   stop(): void {
     if (this.intervalId) {
-      window.clearInterval(this.intervalId);
-      this.element.textContent = this.originalText;
+      window.clearInterval(this.intervalId)
+      this.element.textContent = this.originalText
     }
   }
 
   reveal(duration = 1000): void {
-    const steps = this.originalText.length;
-    const stepDuration = duration / steps;
-    let currentStep = 0;
+    const steps = this.originalText.length
+    const stepDuration = duration / steps
+    let currentStep = 0
 
     const revealStep = () => {
       if (currentStep <= steps) {
-        const revealed = this.originalText.slice(0, currentStep);
-        const obfuscated = this.originalText.slice(currentStep).split('').map(char =>
-          char === ' ' ? ' ' : this.chars[Math.floor(Math.random() * this.chars.length)]
-        ).join('');
-        this.element.textContent = revealed + obfuscated;
-        currentStep++;
-        window.setTimeout(revealStep, stepDuration);
+        const revealed = this.originalText.slice(0, currentStep)
+        const obfuscated = this.originalText
+          .slice(currentStep)
+          .split('')
+          .map(char =>
+            char === ' ' ? ' ' : this.chars[Math.floor(Math.random() * this.chars.length)],
+          )
+          .join('')
+        this.element.textContent = revealed + obfuscated
+        currentStep++
+        window.setTimeout(revealStep, stepDuration)
       }
-    };
+    }
 
-    revealStep();
+    revealStep()
   }
 }
 
@@ -368,6 +375,6 @@ export const textAnimations = `
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
   }
-`;
+`
 
-export default typography;
+export default typography

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真实数据集成测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #4caf50;
+            color: white;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .status.loading {
+            background: #ff9800;
+            color: white;
+        }
+        .data-preview {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 TH Suite MC L10n - 真实数据集成测试</h1>
+        
+        <div class="test-section">
+            <div class="test-title">
+                1. 后端健康检查
+                <span id="health-status" class="status loading">测试中...</span>
+            </div>
+            <div class="data-preview" id="health-data"></div>
+            <button onclick="testHealthCheck()">重新测试</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                2. 最新扫描数据
+                <span id="latest-scan-status" class="status loading">测试中...</span>
+            </div>
+            <div class="data-preview" id="latest-scan-data"></div>
+            <button onclick="testLatestScan()">重新测试</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                3. 扫描历史数据
+                <span id="scan-history-status" class="status loading">测试中...</span>
+            </div>
+            <div class="data-preview" id="scan-history-data"></div>
+            <button onclick="testScanHistory()">重新测试</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                4. 前端应用状态
+                <span id="frontend-status" class="status loading">测试中...</span>
+            </div>
+            <div class="data-preview" id="frontend-data"></div>
+            <button onclick="testFrontend()">检查前端</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                5. 数据持久化测试
+                <span id="persistence-status" class="status loading">测试中...</span>
+            </div>
+            <div class="data-preview" id="persistence-data"></div>
+            <button onclick="testPersistence()">测试持久化</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:18000';
+        const FRONTEND_URL = 'http://localhost:18001';
+
+        // 健康检查
+        async function testHealthCheck() {
+            const statusEl = document.getElementById('health-status');
+            const dataEl = document.getElementById('health-data');
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = '测试中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ 正常';
+                dataEl.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 失败';
+                dataEl.innerHTML = `<pre>错误: ${error.message}</pre>`;
+            }
+        }
+
+        // 最新扫描数据
+        async function testLatestScan() {
+            const statusEl = document.getElementById('latest-scan-status');
+            const dataEl = document.getElementById('latest-scan-data');
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = '测试中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/scans/latest`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ 有数据';
+                    
+                    const summary = {
+                        scan_id: data.data.scan_id,
+                        directory: data.data.directory,
+                        total_mods: data.data.statistics?.total_mods || 0,
+                        total_language_files: data.data.statistics?.total_language_files || 0,
+                        total_keys: data.data.statistics?.total_keys || 0,
+                        mods_count: data.data.mods?.length || 0,
+                        completed_at: data.data.completed_at
+                    };
+                    
+                    dataEl.innerHTML = `<pre>${JSON.stringify(summary, null, 2)}</pre>`;
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '⚠️ 无数据';
+                    dataEl.innerHTML = `<pre>没有找到扫描数据</pre>`;
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 失败';
+                dataEl.innerHTML = `<pre>错误: ${error.message}</pre>`;
+            }
+        }
+
+        // 扫描历史
+        async function testScanHistory() {
+            const statusEl = document.getElementById('scan-history-status');
+            const dataEl = document.getElementById('scan-history-data');
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = '测试中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/scans/history`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = `✅ ${data.data?.length || 0} 条记录`;
+                    
+                    const summary = data.data?.map(scan => ({
+                        id: scan.scan_id || scan.id,
+                        directory: scan.directory,
+                        status: scan.status,
+                        mods: scan.total_mods
+                    })) || [];
+                    
+                    dataEl.innerHTML = `<pre>${JSON.stringify(summary, null, 2)}</pre>`;
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '⚠️ 失败';
+                    dataEl.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 失败';
+                dataEl.innerHTML = `<pre>错误: ${error.message}</pre>`;
+            }
+        }
+
+        // 前端状态
+        async function testFrontend() {
+            const statusEl = document.getElementById('frontend-status');
+            const dataEl = document.getElementById('frontend-data');
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = '测试中...';
+            
+            try {
+                const response = await fetch(FRONTEND_URL);
+                if (response.ok) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ 运行中';
+                    dataEl.innerHTML = `<pre>前端服务运行在: ${FRONTEND_URL}
+状态码: ${response.status}
+响应类型: ${response.headers.get('content-type')}</pre>`;
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '⚠️ 异常';
+                    dataEl.innerHTML = `<pre>状态码: ${response.status}</pre>`;
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 离线';
+                dataEl.innerHTML = `<pre>错误: ${error.message}</pre>`;
+            }
+        }
+
+        // 数据持久化测试
+        async function testPersistence() {
+            const statusEl = document.getElementById('persistence-status');
+            const dataEl = document.getElementById('persistence-data');
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = '测试中...';
+            
+            try {
+                // 获取两次数据，验证是否一致
+                const response1 = await fetch(`${API_BASE}/api/v1/scans/latest`);
+                const data1 = await response1.json();
+                
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+                
+                const response2 = await fetch(`${API_BASE}/api/v1/scans/latest`);
+                const data2 = await response2.json();
+                
+                if (data1.success && data2.success && 
+                    data1.data?.scan_id === data2.data?.scan_id) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ 数据一致';
+                    dataEl.innerHTML = `<pre>扫描ID: ${data1.data.scan_id}
+第一次获取: ${data1.data.statistics?.total_mods || 0} 个模组
+第二次获取: ${data2.data.statistics?.total_mods || 0} 个模组
+结论: 数据持久化正常</pre>`;
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '⚠️ 数据不一致';
+                    dataEl.innerHTML = `<pre>第一次: ${JSON.stringify(data1.data?.scan_id)}
+第二次: ${JSON.stringify(data2.data?.scan_id)}</pre>`;
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 失败';
+                dataEl.innerHTML = `<pre>错误: ${error.message}</pre>`;
+            }
+        }
+
+        // 页面加载时自动运行所有测试
+        window.onload = async () => {
+            console.log('开始自动测试...');
+            await testHealthCheck();
+            await testLatestScan();
+            await testScanHistory();
+            await testFrontend();
+            await testPersistence();
+            console.log('测试完成！');
+        };
+    </script>
+</body>
+</html>

@@ -3,16 +3,11 @@
 提供简化的统一接口
 """
 
-from .mc_l10n_facade import (
-    MCL10nFacade,
-    ScanResult,
-    TranslationResult,
-    SyncResult
-)
+from .mc_l10n_facade import MCL10nFacade, ScanResult, SyncResult, TranslationResult
 
 __all__ = [
-    'MCL10nFacade',
-    'ScanResult',
-    'TranslationResult',
-    'SyncResult',
+    "MCL10nFacade",
+    "ScanResult",
+    "TranslationResult",
+    "SyncResult",
 ]

@@ -1,17 +1,17 @@
-﻿import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CssBaseline from '@mui/material/CssBaseline';
-import { Toaster } from 'react-hot-toast';
+﻿import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import CssBaseline from '@mui/material/CssBaseline'
+import { Toaster } from 'react-hot-toast'
 
-import App from './App';
-import { ErrorBoundary } from './components/common';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { NotificationProvider } from './hooks/useNotification';
-import './index.css';
-import './assets/fonts/minecraft.css';
-import './i18n';
+import App from './App'
+import { ErrorBoundary } from './components/common'
+import { ThemeProvider } from './contexts/ThemeContext'
+import { NotificationProvider } from './hooks/useNotification'
+import './index.css'
+import './assets/fonts/minecraft.css'
+import './i18n'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -25,27 +25,27 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
+})
 
 // Development configuration
-const isDevelopment = import.meta.env.DEV;
-const DISABLE_STRICT_MODE = true; // 临时禁用Strict Mode修复DOM错误
+const isDevelopment = import.meta.env.DEV
+const DISABLE_STRICT_MODE = true // 临时禁用Strict Mode修复DOM错误
 
 // Remove loading spinner when app is ready
 const removeLoadingSpinner = () => {
-  document.body.classList.add('app-ready');
-};
+  document.body.classList.add('app-ready')
+}
 
 const AppContent = () => (
   <ErrorBoundary
     onError={(error, errorInfo) => {
-      console.error('Application error:', error, errorInfo);
+      console.error('Application error:', error, errorInfo)
     }}
-    errorTitle="应用出现错误"
-    errorDescription="很抱歉，TH Suite MC L10n 遇到了意外错误。"
-    reloadButtonText="刷新页面"
-    homeButtonText="返回首页"
-    reportButtonText="报告错误"
+    errorTitle='应用出现错误'
+    errorDescription='很抱歉，TH Suite MC L10n 遇到了意外错误。'
+    reloadButtonText='刷新页面'
+    homeButtonText='返回首页'
+    reportButtonText='报告错误'
   >
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -55,7 +55,7 @@ const AppContent = () => (
             <App onReady={removeLoadingSpinner} />
           </NotificationProvider>
           <Toaster
-            position="top-right"
+            position='top-right'
             toastOptions={{
               duration: 4000,
               style: {
@@ -82,7 +82,7 @@ const AppContent = () => (
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-);
+)
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   isDevelopment && !DISABLE_STRICT_MODE ? (
@@ -91,5 +91,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </React.StrictMode>
   ) : (
     <AppContent />
-  )
-);
+  ),
+)

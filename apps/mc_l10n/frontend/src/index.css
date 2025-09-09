@@ -4,8 +4,12 @@
 
 /* 加载动画 */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @layer base {
@@ -71,7 +75,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -79,12 +84,26 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    'Noto Sans SC',
+    'Source Han Sans SC',
+    'Microsoft YaHei',
+    '微软雅黑',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #E3F2FD 0%, #FAFAFA 50%, #FFF8E1 100%);
+  background: linear-gradient(135deg, #e3f2fd 0%, #fafafa 50%, #fff8e1 100%);
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -233,12 +252,7 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.4),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   animation: loading 1.5s infinite;
 }
 
@@ -420,7 +434,8 @@ body {
 
 /* 脉冲动画 */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -434,7 +449,8 @@ body {
 
 /* 浮动动画 */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -457,7 +473,7 @@ body {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -474,13 +490,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #00BCD4, #1976D2);
+  background: linear-gradient(135deg, #00bcd4, #1976d2);
   border-radius: 8px;
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #1976D2, #3F51B5);
+  background: linear-gradient(135deg, #1976d2, #3f51b5);
 }
 
 /* 玻璃效果工具类 */
@@ -492,7 +508,7 @@ body {
 
 /* 渐变文字 */
 .gradient-text {
-  background: linear-gradient(135deg, #00BCD4 0%, #1976D2 100%);
+  background: linear-gradient(135deg, #00bcd4 0%, #1976d2 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -503,7 +519,7 @@ body {
 .modern-button {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #00BCD4 0%, #1976D2 100%);
+  background: linear-gradient(135deg, #00bcd4 0%, #1976d2 100%);
   border: none;
   border-radius: 16px;
   color: white;
@@ -520,7 +536,7 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -552,7 +568,7 @@ body {
   body {
     font-size: 14px;
   }
-  
+
   .modern-button {
     padding: 10px 20px;
     font-size: 14px;
@@ -565,7 +581,7 @@ body {
     background: linear-gradient(135deg, rgba(33, 33, 33, 0.9) 0%, rgba(66, 66, 66, 0.7) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .loading-skeleton {
     background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
     background-size: 200% 100%;
@@ -574,7 +590,7 @@ body {
 
 /* 焦点样式增强 */
 *:focus-visible {
-  outline: 2px solid #00BCD4;
+  outline: 2px solid #00bcd4;
   outline-offset: 2px;
   border-radius: 4px;
 }

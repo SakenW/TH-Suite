@@ -3,7 +3,7 @@
  * 多样化的进度展示组件，支持线性、圆形、步骤等形式
  */
 
-import React from 'react';
+import React from 'react'
 import {
   Box,
   LinearProgress,
@@ -16,50 +16,44 @@ import {
   StepLabel,
   StepConnector,
   Chip,
-} from '@mui/material';
-import { useTheme, alpha, styled } from '@mui/material/styles';
-import {
-  CheckCircle,
-  Circle,
-  Clock,
-  Zap,
-  TrendingUp,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+} from '@mui/material'
+import { useTheme, alpha, styled } from '@mui/material/styles'
+import { CheckCircle, Circle, Clock, Zap, TrendingUp } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProgressIndicatorProps {
   // 基础属性
-  value: number; // 0-100
-  variant?: 'linear' | 'circular' | 'card' | 'stepper' | 'mini' | 'dashboard';
-  size?: 'small' | 'medium' | 'large';
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
-  
+  value: number // 0-100
+  variant?: 'linear' | 'circular' | 'card' | 'stepper' | 'mini' | 'dashboard'
+  size?: 'small' | 'medium' | 'large'
+  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'
+
   // 显示选项
-  showValue?: boolean;
-  showLabel?: boolean;
-  label?: string;
-  buffer?: number; // 缓冲进度 (仅限linear)
-  
+  showValue?: boolean
+  showLabel?: boolean
+  label?: string
+  buffer?: number // 缓冲进度 (仅限linear)
+
   // 步骤进度 (仅限stepper)
   steps?: Array<{
-    label: string;
-    description?: string;
-    completed?: boolean;
-    active?: boolean;
-  }>;
-  
+    label: string
+    description?: string
+    completed?: boolean
+    active?: boolean
+  }>
+
   // 卡片样式属性
-  title?: string;
-  subtitle?: string;
-  icon?: React.ReactNode;
-  animated?: boolean;
-  
+  title?: string
+  subtitle?: string
+  icon?: React.ReactNode
+  animated?: boolean
+
   // 仪表板样式属性
   segments?: Array<{
-    label: string;
-    value: number;
-    color: string;
-  }>;
+    label: string
+    value: number
+    color: string
+  }>
 }
 
 // 自定义步骤连接器
@@ -74,7 +68,7 @@ const CustomStepConnector = styled(StepConnector)(({ theme }) => ({
       borderColor: theme.palette.success.main,
     },
   },
-}));
+}))
 
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   value,
@@ -92,49 +86,58 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   animated = false,
   segments = [],
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const getColorValue = (colorName: string) => {
     switch (colorName) {
-      case 'secondary': return theme.palette.secondary.main;
-      case 'success': return theme.palette.success.main;
-      case 'warning': return theme.palette.warning.main;
-      case 'error': return theme.palette.error.main;
-      case 'info': return theme.palette.info.main;
+      case 'secondary':
+        return theme.palette.secondary.main
+      case 'success':
+        return theme.palette.success.main
+      case 'warning':
+        return theme.palette.warning.main
+      case 'error':
+        return theme.palette.error.main
+      case 'info':
+        return theme.palette.info.main
       case 'primary':
-      default: return theme.palette.primary.main;
+      default:
+        return theme.palette.primary.main
     }
-  };
+  }
 
   const getSize = () => {
     switch (size) {
-      case 'small': return { width: 100, height: 4, circular: 32 };
-      case 'large': return { width: 300, height: 8, circular: 80 };
+      case 'small':
+        return { width: 100, height: 4, circular: 32 }
+      case 'large':
+        return { width: 300, height: 8, circular: 80 }
       case 'medium':
-      default: return { width: 200, height: 6, circular: 56 };
+      default:
+        return { width: 200, height: 6, circular: 56 }
     }
-  };
+  }
 
-  const sizeConfig = getSize();
-  const colorValue = getColorValue(color);
+  const sizeConfig = getSize()
+  const colorValue = getColorValue(color)
 
-  const formatValue = (val: number) => `${Math.round(val)}%`;
+  const formatValue = (val: number) => `${Math.round(val)}%`
 
   const renderLinearProgress = () => (
     <Box sx={{ width: '100%' }}>
-      {(showLabel && label) && (
+      {showLabel && label && (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant='body2' color='text.secondary'>
             {label}
           </Typography>
           {showValue && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               {formatValue(value)}
             </Typography>
           )}
         </Box>
       )}
-      
+
       <LinearProgress
         variant={buffer !== undefined ? 'buffer' : 'determinate'}
         value={value}
@@ -155,21 +158,21 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           }),
         }}
       />
-      
+
       {showValue && !label && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             {formatValue(value)}
           </Typography>
         </Box>
       )}
     </Box>
-  );
+  )
 
   const renderCircularProgress = () => (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
       <CircularProgress
-        variant="determinate"
+        variant='determinate'
         value={100}
         size={sizeConfig.circular}
         sx={{
@@ -179,7 +182,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         thickness={size === 'small' ? 3 : size === 'large' ? 6 : 4}
       />
       <CircularProgress
-        variant="determinate"
+        variant='determinate'
         value={value}
         size={sizeConfig.circular}
         sx={{
@@ -204,16 +207,16 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         >
           <Typography
             variant={size === 'small' ? 'caption' : size === 'large' ? 'h6' : 'body2'}
-            component="div"
-            color="text.secondary"
+            component='div'
+            color='text.secondary'
             sx={{ fontWeight: 600 }}
           >
             {formatValue(value)}
           </Typography>
           {label && (
             <Typography
-              variant="caption"
-              color="text.secondary"
+              variant='caption'
+              color='text.secondary'
               sx={{ fontSize: size === 'small' ? '0.6rem' : '0.7rem' }}
             >
               {label}
@@ -222,7 +225,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         </Box>
       )}
     </Box>
-  );
+  )
 
   const renderCardProgress = () => (
     <Card
@@ -252,12 +255,12 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           )}
           <Box sx={{ flexGrow: 1 }}>
             {title && (
-              <Typography variant="h6" sx={{ fontWeight: 700, color: colorValue, mb: 0.5 }}>
+              <Typography variant='h6' sx={{ fontWeight: 700, color: colorValue, mb: 0.5 }}>
                 {title}
               </Typography>
             )}
             {subtitle && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 {subtitle}
               </Typography>
             )}
@@ -265,7 +268,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           {showValue && (
             <Chip
               label={formatValue(value)}
-              size="small"
+              size='small'
               sx={{
                 backgroundColor: alpha(colorValue, 0.1),
                 color: colorValue,
@@ -274,9 +277,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             />
           )}
         </Box>
-        
+
         <LinearProgress
-          variant="determinate"
+          variant='determinate'
           value={value}
           sx={{
             height: 8,
@@ -291,29 +294,29 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         />
       </CardContent>
     </Card>
-  );
+  )
 
   const renderStepperProgress = () => {
-    const activeStep = steps.findIndex(step => step.active);
-    const completedSteps = steps.filter(step => step.completed).length;
-    const progressValue = (completedSteps / steps.length) * 100;
+    const activeStep = steps.findIndex(step => step.active)
+    const completedSteps = steps.filter(step => step.completed).length
+    const progressValue = (completedSteps / steps.length) * 100
 
     return (
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography variant='h6' sx={{ fontWeight: 600 }}>
             {title || '进度步骤'}
           </Typography>
           <Chip
             label={`${completedSteps}/${steps.length}`}
-            size="small"
+            size='small'
             color={completedSteps === steps.length ? 'success' : 'primary'}
-            variant="outlined"
+            variant='outlined'
           />
         </Box>
 
         <LinearProgress
-          variant="determinate"
+          variant='determinate'
           value={progressValue}
           sx={{
             mb: 3,
@@ -343,8 +346,8 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                       backgroundColor: completed
                         ? theme.palette.success.main
                         : active
-                        ? theme.palette.primary.main
-                        : theme.palette.grey[300],
+                          ? theme.palette.primary.main
+                          : theme.palette.grey[300],
                       color: 'white',
                     }}
                   >
@@ -353,7 +356,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                     ) : active ? (
                       <Circle size={14} />
                     ) : (
-                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
                         {index + 1}
                       </Typography>
                     )}
@@ -362,20 +365,20 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
               >
                 <Box>
                   <Typography
-                    variant="body2"
+                    variant='body2'
                     sx={{
                       fontWeight: 600,
                       color: step.completed
                         ? theme.palette.success.main
                         : step.active
-                        ? theme.palette.primary.main
-                        : theme.palette.text.secondary,
+                          ? theme.palette.primary.main
+                          : theme.palette.text.secondary,
                     }}
                   >
                     {step.label}
                   </Typography>
                   {step.description && (
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant='caption' color='text.secondary'>
                       {step.description}
                     </Typography>
                   )}
@@ -385,14 +388,14 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           ))}
         </Stepper>
       </Box>
-    );
-  };
+    )
+  }
 
   const renderMiniProgress = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Box sx={{ flexGrow: 1, minWidth: 60 }}>
         <LinearProgress
-          variant="determinate"
+          variant='determinate'
           value={value}
           sx={{
             height: 4,
@@ -407,15 +410,15 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       </Box>
       {showValue && (
         <Typography
-          variant="caption"
-          color="text.secondary"
+          variant='caption'
+          color='text.secondary'
           sx={{ fontWeight: 600, minWidth: 35, textAlign: 'right' }}
         >
           {formatValue(value)}
         </Typography>
       )}
     </Box>
-  );
+  )
 
   const renderDashboardProgress = () => (
     <Card sx={{ borderRadius: 3 }}>
@@ -424,23 +427,23 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {icon || <TrendingUp size={24} color={colorValue} />}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant='h6' sx={{ fontWeight: 700 }}>
                 {title || '总体进度'}
               </Typography>
               {subtitle && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {subtitle}
                 </Typography>
               )}
             </Box>
           </Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: colorValue }}>
+          <Typography variant='h4' sx={{ fontWeight: 800, color: colorValue }}>
             {formatValue(value)}
           </Typography>
         </Box>
 
         <LinearProgress
-          variant="determinate"
+          variant='determinate'
           value={value}
           sx={{
             height: 12,
@@ -457,7 +460,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
         {segments.length > 0 && (
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ mb: 2, fontWeight: 600 }}>
               详细分布
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -470,16 +473,23 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="body2" color="text.secondary">
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 0.5,
+                      }}
+                    >
+                      <Typography variant='body2' color='text.secondary'>
                         {segment.label}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: segment.color }}>
+                      <Typography variant='body2' sx={{ fontWeight: 600, color: segment.color }}>
                         {formatValue(segment.value)}
                       </Typography>
                     </Box>
                     <LinearProgress
-                      variant="determinate"
+                      variant='determinate'
                       value={segment.value}
                       sx={{
                         height: 6,
@@ -499,21 +509,21 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         )}
       </CardContent>
     </Card>
-  );
+  )
 
   switch (variant) {
     case 'circular':
-      return renderCircularProgress();
+      return renderCircularProgress()
     case 'card':
-      return renderCardProgress();
+      return renderCardProgress()
     case 'stepper':
-      return renderStepperProgress();
+      return renderStepperProgress()
     case 'mini':
-      return renderMiniProgress();
+      return renderMiniProgress()
     case 'dashboard':
-      return renderDashboardProgress();
+      return renderDashboardProgress()
     case 'linear':
     default:
-      return renderLinearProgress();
+      return renderLinearProgress()
   }
-};
+}

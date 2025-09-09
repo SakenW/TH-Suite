@@ -5,6 +5,7 @@ TH Suite MC L10n 前端应用，基于 Tauri + React + TypeScript 构建的 Mine
 ## ✨ 最新更新 (2025.01)
 
 ### Minecraft 主题 UI 重构
+
 - 🎨 **全新 Minecraft 风格界面**: 像素化设计，游戏化体验
 - 🎮 **自定义组件库**: MinecraftButton、MinecraftCard、MinecraftProgress 等
 - ✨ **动画效果**: 粒子效果、方块动画、游戏化过渡
@@ -62,6 +63,7 @@ src-tauri/              # Tauri 后端
 ## 功能特性
 
 ### 核心功能
+
 - 🔍 **模组扫描**: 智能扫描和识别 Minecraft 模组与资源包
 - 📦 **资源提取**: 从 JAR 文件和压缩包中提取语言文件
 - 🌐 **翻译管理**: 管理和编辑本地化内容
@@ -70,6 +72,7 @@ src-tauri/              # Tauri 后端
 - 🏆 **成就系统**: 游戏化的任务完成追踪
 
 ### Minecraft 主题特性
+
 - 🎮 **游戏化界面**: 完全的 Minecraft 视觉风格
 - 🧱 **方块元素**: 草方块、钻石、金块等图标系统
 - ⚡ **粒子效果**: 动态粒子和爆炸效果
@@ -78,6 +81,7 @@ src-tauri/              # Tauri 后端
 - 💎 **材质按钮**: 不同材质风格的交互按钮
 
 ### 界面特性
+
 - 🌟 **沉浸式体验**: 完整的 Minecraft 游戏体验
 - 🎯 **快捷操作**: 游戏化的功能导航
 - 📈 **实时统计**: 动态更新的数据展示
@@ -85,6 +89,7 @@ src-tauri/              # Tauri 后端
 - 🔔 **游戏通知**: Minecraft 风格的提示信息
 
 ### 技术特性
+
 - 🚀 **高性能**: Tauri 提供原生性能
 - 🔒 **安全**: 严格的 CSP 策略和权限控制
 - 💾 **数据持久化**: 本地存储用户设置和项目历史
@@ -126,6 +131,7 @@ npm run tauri build
 ## Minecraft 组件使用指南
 
 ### MinecraftButton
+
 ```tsx
 import { MinecraftButton } from '@components/minecraft';
 
@@ -142,11 +148,12 @@ import { MinecraftButton } from '@components/minecraft';
 ```
 
 ### MinecraftCard
+
 ```tsx
-import { MinecraftCard } from '@components/minecraft';
+import { MinecraftCard } from '@components/minecraft'
 
 // 不同卡片风格
-<MinecraftCard variant="chest" title="宝箱" icon="gold">
+;<MinecraftCard variant='chest' title='宝箱' icon='gold'>
   内容
 </MinecraftCard>
 
@@ -154,17 +161,12 @@ import { MinecraftCard } from '@components/minecraft';
 ```
 
 ### MinecraftProgress
+
 ```tsx
-import { MinecraftProgress } from '@components/minecraft';
+import { MinecraftProgress } from '@components/minecraft'
 
 // 不同进度条风格
-<MinecraftProgress 
-  value={75} 
-  max={100} 
-  variant="experience"
-  label="经验值"
-  animated
-/>
+;<MinecraftProgress value={75} max={100} variant='experience' label='经验值' animated />
 
 // 可用风格: experience, health, hunger, armor, loading
 ```

@@ -3,25 +3,29 @@
  * 模拟 Minecraft 游戏内的经验条、生命值条等
  */
 
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { minecraftColors } from '../../theme/minecraft/colors';
-import { typography } from '../../theme/minecraft/typography';
-import { createExperienceBar, createHealthBar, createArmorBar } from '../../theme/minecraft/textures';
+import React, { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { minecraftColors } from '../../theme/minecraft/colors'
+import { typography } from '../../theme/minecraft/typography'
+import {
+  createExperienceBar,
+  createHealthBar,
+  createArmorBar,
+} from '../../theme/minecraft/textures'
 
 export interface MCProgressProps {
-  value: number;
-  max?: number;
-  variant?: 'experience' | 'health' | 'hunger' | 'armor' | 'default' | 'loading';
-  size?: 'small' | 'medium' | 'large';
-  showLabel?: boolean;
-  showPercentage?: boolean;
-  animated?: boolean;
-  striped?: boolean;
-  indeterminate?: boolean;
-  label?: string;
-  className?: string;
-  style?: React.CSSProperties;
+  value: number
+  max?: number
+  variant?: 'experience' | 'health' | 'hunger' | 'armor' | 'default' | 'loading'
+  size?: 'small' | 'medium' | 'large'
+  showLabel?: boolean
+  showPercentage?: boolean
+  animated?: boolean
+  striped?: boolean
+  indeterminate?: boolean
+  label?: string
+  className?: string
+  style?: React.CSSProperties
 }
 
 const MCProgress: React.FC<MCProgressProps> = ({
@@ -38,53 +42,53 @@ const MCProgress: React.FC<MCProgressProps> = ({
   className = '',
   style = {},
 }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+  const [displayValue, setDisplayValue] = useState(0)
+  const percentage = Math.min(100, Math.max(0, (value / max) * 100))
 
   // 动画显示数值
   useEffect(() => {
     if (animated && !indeterminate) {
       const timer = setTimeout(() => {
-        setDisplayValue(percentage);
-      }, 100);
-      return () => clearTimeout(timer);
+        setDisplayValue(percentage)
+      }, 100)
+      return () => clearTimeout(timer)
     } else {
-      setDisplayValue(percentage);
+      setDisplayValue(percentage)
     }
-  }, [percentage, animated, indeterminate]);
+  }, [percentage, animated, indeterminate])
 
   // 获取变体颜色
   const getVariantColor = () => {
     switch (variant) {
       case 'experience':
-        return minecraftColors.ui.progress.experience;
+        return minecraftColors.ui.progress.experience
       case 'health':
-        return minecraftColors.ui.progress.health;
+        return minecraftColors.ui.progress.health
       case 'hunger':
-        return minecraftColors.ui.progress.hunger;
+        return minecraftColors.ui.progress.hunger
       case 'armor':
-        return minecraftColors.ui.progress.armor;
+        return minecraftColors.ui.progress.armor
       case 'loading':
-        return minecraftColors.primary.diamond;
+        return minecraftColors.primary.diamond
       default:
-        return minecraftColors.ui.progress.fill;
+        return minecraftColors.ui.progress.fill
     }
-  };
+  }
 
   // 获取尺寸
   const getSize = () => {
     switch (size) {
       case 'small':
-        return { height: '8px', fontSize: typography.fontSize.tiny };
+        return { height: '8px', fontSize: typography.fontSize.tiny }
       case 'large':
-        return { height: '24px', fontSize: typography.fontSize.medium };
+        return { height: '24px', fontSize: typography.fontSize.medium }
       default:
-        return { height: '16px', fontSize: typography.fontSize.small };
+        return { height: '16px', fontSize: typography.fontSize.small }
     }
-  };
+  }
 
-  const sizeStyles = getSize();
-  const color = getVariantColor();
+  const sizeStyles = getSize()
+  const color = getVariantColor()
 
   // 容器样式
   const containerStyles: React.CSSProperties = {
@@ -100,13 +104,14 @@ const MCProgress: React.FC<MCProgressProps> = ({
     imageRendering: 'pixelated',
     overflow: 'hidden',
     ...style,
-  };
+  }
 
   // 进度条样式
   const barStyles: React.CSSProperties = {
     height: '100%',
     backgroundColor: color,
-    backgroundImage: striped ? `
+    backgroundImage: striped
+      ? `
       repeating-linear-gradient(
         45deg,
         transparent,
@@ -114,27 +119,31 @@ const MCProgress: React.FC<MCProgressProps> = ({
         rgba(255, 255, 255, 0.1) 10px,
         rgba(255, 255, 255, 0.1) 20px
       )
-    ` : 'none',
+    `
+      : 'none',
     backgroundSize: striped ? '20px 20px' : 'auto',
     transition: animated && !indeterminate ? 'width 0.3s ease' : 'none',
     position: 'relative',
     overflow: 'hidden',
-  };
+  }
 
   // 闪光效果（用于经验条等）
-  const glowStyles: React.CSSProperties = variant === 'experience' ? {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(90deg, 
+  const glowStyles: React.CSSProperties =
+    variant === 'experience'
+      ? {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(90deg, 
       transparent 0%, 
       rgba(255, 255, 255, 0.3) 50%, 
       transparent 100%
     )`,
-    animation: 'shimmer 2s infinite',
-  } : {};
+          animation: 'shimmer 2s infinite',
+        }
+      : {}
 
   return (
     <div className={`mc-progress-container ${className}`}>
@@ -152,9 +161,7 @@ const MCProgress: React.FC<MCProgressProps> = ({
           }}
         >
           <span>{label || `${Math.round(value)}/${max}`}</span>
-          {showPercentage && (
-            <span>{Math.round(displayValue)}%</span>
-          )}
+          {showPercentage && <span>{Math.round(displayValue)}%</span>}
         </div>
       )}
 
@@ -188,7 +195,7 @@ const MCProgress: React.FC<MCProgressProps> = ({
             transition={animated ? { duration: 0.3, ease: 'easeOut' } : { duration: 0 }}
           >
             {variant === 'experience' && <div style={glowStyles} />}
-            
+
             {/* 条纹动画 */}
             {striped && animated && (
               <motion.div
@@ -249,17 +256,17 @@ const MCProgress: React.FC<MCProgressProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 // 经验等级显示组件
 export interface MCExperienceLevelProps {
-  level: number;
-  experience: number;
-  maxExperience: number;
-  size?: 'small' | 'medium' | 'large';
-  className?: string;
-  style?: React.CSSProperties;
+  level: number
+  experience: number
+  maxExperience: number
+  size?: 'small' | 'medium' | 'large'
+  className?: string
+  style?: React.CSSProperties
 }
 
 export const MCExperienceLevel: React.FC<MCExperienceLevelProps> = ({
@@ -273,15 +280,15 @@ export const MCExperienceLevel: React.FC<MCExperienceLevelProps> = ({
   const getSizeStyles = () => {
     switch (size) {
       case 'small':
-        return { fontSize: '16px', orbSize: '32px' };
+        return { fontSize: '16px', orbSize: '32px' }
       case 'large':
-        return { fontSize: '32px', orbSize: '64px' };
+        return { fontSize: '32px', orbSize: '64px' }
       default:
-        return { fontSize: '24px', orbSize: '48px' };
+        return { fontSize: '24px', orbSize: '48px' }
     }
-  };
+  }
 
-  const sizeStyles = getSizeStyles();
+  const sizeStyles = getSizeStyles()
 
   return (
     <div
@@ -337,28 +344,28 @@ export const MCExperienceLevel: React.FC<MCExperienceLevelProps> = ({
         <MCProgress
           value={experience}
           max={maxExperience}
-          variant="experience"
+          variant='experience'
           size={size}
           showLabel={true}
           animated={true}
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
 // 状态条组（生命值、饥饿值、护甲值）
 export interface MCStatusBarsProps {
-  health: number;
-  maxHealth?: number;
-  hunger: number;
-  maxHunger?: number;
-  armor?: number;
-  maxArmor?: number;
-  showLabels?: boolean;
-  vertical?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
+  health: number
+  maxHealth?: number
+  hunger: number
+  maxHunger?: number
+  armor?: number
+  maxArmor?: number
+  showLabels?: boolean
+  vertical?: boolean
+  className?: string
+  style?: React.CSSProperties
 }
 
 export const MCStatusBars: React.FC<MCStatusBarsProps> = ({
@@ -381,7 +388,7 @@ export const MCStatusBars: React.FC<MCStatusBarsProps> = ({
     backgroundColor: minecraftColors.ui.background.overlay,
     borderRadius: '4px',
     ...style,
-  };
+  }
 
   return (
     <div className={`mc-status-bars ${className}`} style={containerStyles}>
@@ -406,8 +413,8 @@ export const MCStatusBars: React.FC<MCStatusBarsProps> = ({
         <MCProgress
           value={health}
           max={maxHealth}
-          variant="health"
-          size="small"
+          variant='health'
+          size='small'
           showPercentage={false}
         />
       </div>
@@ -433,8 +440,8 @@ export const MCStatusBars: React.FC<MCStatusBarsProps> = ({
         <MCProgress
           value={hunger}
           max={maxHunger}
-          variant="hunger"
-          size="small"
+          variant='hunger'
+          size='small'
           showPercentage={false}
         />
       </div>
@@ -461,14 +468,14 @@ export const MCStatusBars: React.FC<MCStatusBarsProps> = ({
           <MCProgress
             value={armor}
             max={maxArmor}
-            variant="armor"
-            size="small"
+            variant='armor'
+            size='small'
             showPercentage={false}
           />
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MCProgress;
+export default MCProgress

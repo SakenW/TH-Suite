@@ -3,7 +3,7 @@
  * 提供统一的页面布局和导航结构
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Drawer,
@@ -26,8 +26,8 @@ import {
   Paper,
   Breadcrumbs,
   Link,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+} from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
 import {
   Menu as MenuIcon,
   Dashboard,
@@ -46,27 +46,27 @@ import {
   FileText,
   TrendingUp,
   HelpCircle,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useNavigate } from 'react-router-dom';
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  path: string;
-  badge?: number;
-  submenu?: NavItem[];
+  id: string
+  label: string
+  icon: React.ReactNode
+  path: string
+  badge?: number
+  submenu?: NavItem[]
 }
 
 interface MainLayoutProps {
-  children: React.ReactNode;
-  title?: string;
-  breadcrumbs?: Array<{ label: string; path?: string }>;
-  actions?: React.ReactNode;
+  children: React.ReactNode
+  title?: string
+  breadcrumbs?: Array<{ label: string; path?: string }>
+  actions?: React.ReactNode
 }
 
-const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH = 280
 
 const navigationItems: NavItem[] = [
   {
@@ -88,8 +88,18 @@ const navigationItems: NavItem[] = [
     icon: <Globe size={20} />,
     path: '/translations',
     submenu: [
-      { id: 'translations-list', label: '翻译列表', icon: <FileText size={16} />, path: '/translations' },
-      { id: 'translations-progress', label: '翻译进度', icon: <TrendingUp size={16} />, path: '/translations/progress' },
+      {
+        id: 'translations-list',
+        label: '翻译列表',
+        icon: <FileText size={16} />,
+        path: '/translations',
+      },
+      {
+        id: 'translations-progress',
+        label: '翻译进度',
+        icon: <TrendingUp size={16} />,
+        path: '/translations/progress',
+      },
     ],
   },
   {
@@ -98,7 +108,7 @@ const navigationItems: NavItem[] = [
     icon: <Settings size={20} />,
     path: '/settings',
   },
-];
+]
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
@@ -106,62 +116,60 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   breadcrumbs,
   actions,
 }) => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'))
 
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
-  const [notifications] = useState(5);
-  const [darkMode, setDarkMode] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null)
+  const [notifications] = useState(5)
+  const [darkMode, setDarkMode] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   // 检测当前路径并展开相应的菜单
   useEffect(() => {
-    const currentPath = location.pathname;
+    const currentPath = location.pathname
     navigationItems.forEach(item => {
       if (item.submenu?.some(sub => currentPath.startsWith(sub.path))) {
-        setExpandedItems(prev => prev.includes(item.id) ? prev : [...prev, item.id]);
+        setExpandedItems(prev => (prev.includes(item.id) ? prev : [...prev, item.id]))
       }
-    });
-  }, [location.pathname]);
+    })
+  }, [location.pathname])
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+    setMobileOpen(!mobileOpen)
+  }
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setUserMenuAnchor(event.currentTarget);
-  };
+    setUserMenuAnchor(event.currentTarget)
+  }
 
   const handleUserMenuClose = () => {
-    setUserMenuAnchor(null);
-  };
+    setUserMenuAnchor(null)
+  }
 
   const handleNavItemClick = (item: NavItem) => {
     if (item.submenu) {
-      setExpandedItems(prev => 
-        prev.includes(item.id) 
-          ? prev.filter(id => id !== item.id)
-          : [...prev, item.id]
-      );
+      setExpandedItems(prev =>
+        prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
+      )
     } else {
-      navigate(item.path);
+      navigate(item.path)
       if (isMobile) {
-        setMobileOpen(false);
+        setMobileOpen(false)
       }
     }
-  };
+  }
 
   const isActiveRoute = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+    return location.pathname === path || location.pathname.startsWith(path + '/')
+  }
 
   const renderNavItem = (item: NavItem, depth = 0) => {
-    const isActive = isActiveRoute(item.path);
-    const isExpanded = expandedItems.includes(item.id);
-    const hasSubmenu = item.submenu && item.submenu.length > 0;
+    const isActive = isActiveRoute(item.path)
+    const isExpanded = expandedItems.includes(item.id)
+    const hasSubmenu = item.submenu && item.submenu.length > 0
 
     return (
       <Box key={item.id}>
@@ -202,7 +210,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {item.badge && item.badge > 0 && (
               <Badge
                 badgeContent={item.badge}
-                color="error"
+                color='error'
                 sx={{
                   '& .MuiBadge-badge': {
                     fontSize: '0.75rem',
@@ -213,7 +221,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               />
             )}
             {hasSubmenu && (
-              <IconButton size="small" sx={{ ml: 1 }}>
+              <IconButton size='small' sx={{ ml: 1 }}>
                 <motion.div
                   animate={{ rotate: isExpanded ? 90 : 0 }}
                   transition={{ duration: 0.2 }}
@@ -238,15 +246,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           )}
         </AnimatePresence>
       </Box>
-    );
-  };
+    )
+  }
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Logo 区域 */}
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontWeight: 700,
             background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -257,7 +265,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         >
           MC L10n
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant='caption' color='text.secondary'>
           Minecraft 本地化工具
         </Typography>
       </Box>
@@ -266,9 +274,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* 导航菜单 */}
       <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
-        <List>
-          {navigationItems.map(item => renderNavItem(item))}
-        </List>
+        <List>{navigationItems.map(item => renderNavItem(item))}</List>
       </Box>
 
       {/* 底部信息 */}
@@ -280,22 +286,22 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
           }}
         >
-          <Typography variant="caption" color="text.secondary" display="block">
+          <Typography variant='caption' color='text.secondary' display='block'>
             当前版本
           </Typography>
-          <Typography variant="body2" fontWeight={600}>
+          <Typography variant='body2' fontWeight={600}>
             v1.0.0-beta
           </Typography>
         </Paper>
       </Box>
     </Box>
-  );
+  )
 
   return (
     <Box sx={{ display: 'flex' }}>
       {/* 应用栏 */}
       <AppBar
-        position="fixed"
+        position='fixed'
         sx={{
           width: { lg: `calc(100% - ${DRAWER_WIDTH}px)` },
           ml: { lg: `${DRAWER_WIDTH}px` },
@@ -307,9 +313,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       >
         <Toolbar>
           <IconButton
-            color="inherit"
-            aria-label="打开导航"
-            edge="start"
+            color='inherit'
+            aria-label='打开导航'
+            edge='start'
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { lg: 'none' } }}
           >
@@ -318,13 +324,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
           <Box sx={{ flex: 1 }}>
             {breadcrumbs && breadcrumbs.length > 0 && (
-              <Breadcrumbs
-                separator={<ChevronRight size={16} />}
-                sx={{ mb: 0.5 }}
-              >
+              <Breadcrumbs separator={<ChevronRight size={16} />} sx={{ mb: 0.5 }}>
                 <Link
-                  component="button"
-                  variant="body2"
+                  component='button'
+                  variant='body2'
                   onClick={() => navigate('/dashboard')}
                   sx={{
                     display: 'flex',
@@ -340,7 +343,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 {breadcrumbs.map((breadcrumb, index) => (
                   <Typography
                     key={index}
-                    variant="body2"
+                    variant='body2'
                     color={index === breadcrumbs.length - 1 ? 'text.primary' : 'text.secondary'}
                     sx={{ fontWeight: index === breadcrumbs.length - 1 ? 600 : 400 }}
                   >
@@ -350,59 +353,46 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </Breadcrumbs>
             )}
             {title && (
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' sx={{ fontWeight: 600 }}>
                 {title}
               </Typography>
             )}
           </Box>
 
-          {actions && (
-            <Box sx={{ mr: 2 }}>
-              {actions}
-            </Box>
-          )}
+          {actions && <Box sx={{ mr: 2 }}>{actions}</Box>}
 
           {/* 顶部操作按钮 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="搜索">
-              <IconButton size="small">
+            <Tooltip title='搜索'>
+              <IconButton size='small'>
                 <Search size={18} />
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="通知">
-              <IconButton size="small">
-                <Badge badgeContent={notifications} color="error">
+            <Tooltip title='通知'>
+              <IconButton size='small'>
+                <Badge badgeContent={notifications} color='error'>
                   <Bell size={18} />
                 </Badge>
               </IconButton>
             </Tooltip>
 
             <Tooltip title={darkMode ? '切换到亮色模式' : '切换到暗色模式'}>
-              <IconButton 
-                size="small" 
-                onClick={() => setDarkMode(!darkMode)}
-              >
+              <IconButton size='small' onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="帮助">
-              <IconButton size="small">
+            <Tooltip title='帮助'>
+              <IconButton size='small'>
                 <HelpCircle size={18} />
               </IconButton>
             </Tooltip>
 
             {/* 用户菜单 */}
-            <Tooltip title="用户菜单">
-              <IconButton
-                size="small"
-                onClick={handleUserMenuOpen}
-                sx={{ ml: 1 }}
-              >
-                <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-                  U
-                </Avatar>
+            <Tooltip title='用户菜单'>
+              <IconButton size='small' onClick={handleUserMenuOpen} sx={{ ml: 1 }}>
+                <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>U</Avatar>
               </IconButton>
             </Tooltip>
           </Box>
@@ -410,12 +400,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </AppBar>
 
       {/* 侧边栏 */}
-      <Box
-        component="nav"
-        sx={{ width: { lg: DRAWER_WIDTH }, flexShrink: { lg: 0 } }}
-      >
+      <Box component='nav' sx={{ width: { lg: DRAWER_WIDTH }, flexShrink: { lg: 0 } }}>
         <Drawer
-          variant="temporary"
+          variant='temporary'
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
@@ -430,7 +417,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           {drawer}
         </Drawer>
         <Drawer
-          variant="permanent"
+          variant='permanent'
           sx={{
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
@@ -447,7 +434,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* 主内容区域 */}
       <Box
-        component="main"
+        component='main'
         sx={{
           flexGrow: 1,
           width: { lg: `calc(100% - ${DRAWER_WIDTH}px)` },
@@ -458,8 +445,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         }}
       >
         <Toolbar />
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             flex: 1,
             overflow: 'auto',
             p: 3,
@@ -503,22 +490,22 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <ListItemIcon>
             <User size={18} />
           </ListItemIcon>
-          <ListItemText primary="个人资料" />
+          <ListItemText primary='个人资料' />
         </MenuItem>
         <MenuItem onClick={handleUserMenuClose}>
           <ListItemIcon>
             <Settings size={18} />
           </ListItemIcon>
-          <ListItemText primary="设置" />
+          <ListItemText primary='设置' />
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleUserMenuClose}>
           <ListItemIcon>
             <LogOut size={18} />
           </ListItemIcon>
-          <ListItemText primary="退出登录" />
+          <ListItemText primary='退出登录' />
         </MenuItem>
       </Menu>
     </Box>
-  );
-};
+  )
+}

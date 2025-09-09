@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class JobStatus(str, Enum):
@@ -57,8 +57,9 @@ class ScanRequestSchema(BaseModel):
         None, description="Output file path for inventory (optional)"
     )
 
-    @validator("directory")
-    def validate_directory(self, v):
+    @field_validator("directory")
+    @classmethod
+    def validate_directory(cls, v):
         if not v or not v.strip():
             raise ValueError("Directory path cannot be empty")
         return v.strip()
@@ -78,8 +79,9 @@ class ExtractRequestSchema(BaseModel):
         True, description="Whether to validate translation keys for consistency"
     )
 
-    @validator("inventory_file")
-    def validate_inventory_file(self, v):
+    @field_validator("inventory_file")
+    @classmethod
+    def validate_inventory_file(cls, v):
         if not v or not v.strip():
             raise ValueError("Inventory file path cannot be empty")
         return v.strip()
@@ -98,14 +100,16 @@ class BuildRequestSchema(BaseModel):
         None, description="Additional metadata for the build"
     )
 
-    @validator("segments_file")
-    def validate_segments_file(self, v):
+    @field_validator("segments_file")
+    @classmethod
+    def validate_segments_file(cls, v):
         if not v or not v.strip():
             raise ValueError("Segments file path cannot be empty")
         return v.strip()
 
-    @validator("output_path")
-    def validate_output_path(self, v):
+    @field_validator("output_path")
+    @classmethod
+    def validate_output_path(cls, v):
         if not v or not v.strip():
             raise ValueError("Output path cannot be empty")
         return v.strip()
@@ -182,14 +186,16 @@ class InventoryItemSchema(BaseModel):
     format: str = Field(..., description="File format (json, lang, etc.)")
     size: int = Field(..., description="File size in bytes")
 
-    @validator("modid")
-    def validate_modid(self, v):
+    @field_validator("modid")
+    @classmethod
+    def validate_modid(cls, v):
         if not v or not v.strip():
             raise ValueError("Mod ID cannot be empty")
         return v.strip().lower()
 
-    @validator("locale")
-    def validate_locale(self, v):
+    @field_validator("locale")
+    @classmethod
+    def validate_locale(cls, v):
         if not v or not v.strip():
             raise ValueError("Locale cannot be empty")
         return v.strip().lower()
@@ -205,8 +211,9 @@ class InventorySchema(BaseModel):
     total_files: int = Field(..., description="Total number of files")
     items: list[InventoryItemSchema] = Field(..., description="Inventory items")
 
-    @validator("items")
-    def validate_items(self, v):
+    @field_validator("items")
+    @classmethod
+    def validate_items(cls, v):
         if not v:
             raise ValueError("Inventory must contain at least one item")
         return v
@@ -223,8 +230,9 @@ class SegmentSchema(BaseModel):
     file_path: str | None = Field(None, description="Source file path")
     line_number: int | None = Field(None, description="Line number in source file")
 
-    @validator("key")
-    def validate_key(self, v):
+    @field_validator("key")
+    @classmethod
+    def validate_key(cls, v):
         if not v or not v.strip():
             raise ValueError("Translation key cannot be empty")
         return v.strip()
@@ -261,8 +269,9 @@ class ProgressMessageSchema(WebSocketMessageSchema):
     progress: int = Field(..., description="Progress percentage (0-100)")
     message: str = Field(..., description="Progress message")
 
-    @validator("progress")
-    def validate_progress(self, v):
+    @field_validator("progress")
+    @classmethod
+    def validate_progress(cls, v):
         if v < 0 or v > 100:
             raise ValueError("Progress must be between 0 and 100")
         return v
@@ -321,8 +330,9 @@ class AppConfigSchema(BaseModel):
     )
     temp_dir: str | None = Field(None, description="Temporary directory path")
 
-    @validator("log_level")
-    def validate_log_level(self, v):
+    @field_validator("log_level")
+    @classmethod
+    def validate_log_level(cls, v):
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in valid_levels:
             raise ValueError(f"Log level must be one of: {valid_levels}")

@@ -3,7 +3,7 @@
  * 提供统一的页面内容布局和间距
  */
 
-import React from 'react';
+import React from 'react'
 import {
   Box,
   Container,
@@ -15,46 +15,46 @@ import {
   Stack,
   Fade,
   useMediaQuery,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+} from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
+import { ChevronRight, ArrowLeft } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface PageAction {
-  label: string;
-  onClick: () => void;
-  variant?: 'primary' | 'secondary' | 'outlined';
-  disabled?: boolean;
-  icon?: React.ReactNode;
+  label: string
+  onClick: () => void
+  variant?: 'primary' | 'secondary' | 'outlined'
+  disabled?: boolean
+  icon?: React.ReactNode
 }
 
 interface PageBreadcrumb {
-  label: string;
-  path?: string;
-  onClick?: () => void;
+  label: string
+  path?: string
+  onClick?: () => void
 }
 
 interface PageHeaderProps {
-  title: string;
-  subtitle?: string;
-  description?: string;
-  breadcrumbs?: PageBreadcrumb[];
-  actions?: PageAction[];
-  tags?: string[];
+  title: string
+  subtitle?: string
+  description?: string
+  breadcrumbs?: PageBreadcrumb[]
+  actions?: PageAction[]
+  tags?: string[]
   backAction?: {
-    label?: string;
-    onClick: () => void;
-  };
+    label?: string
+    onClick: () => void
+  }
 }
 
 interface PageContainerProps {
-  children: React.ReactNode;
-  header?: PageHeaderProps;
-  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false;
-  disableGutters?: boolean;
-  background?: 'default' | 'paper' | 'transparent';
-  padding?: number | string;
-  animate?: boolean;
+  children: React.ReactNode
+  header?: PageHeaderProps
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false
+  disableGutters?: boolean
+  background?: 'default' | 'paper' | 'transparent'
+  padding?: number | string
+  animate?: boolean
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -66,22 +66,19 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   tags,
   backAction,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
     <Box sx={{ mb: 4 }}>
       {/* 面包屑导航 */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <Breadcrumbs
-          separator={<ChevronRight size={16} />}
-          sx={{ mb: 2 }}
-        >
+        <Breadcrumbs separator={<ChevronRight size={16} />} sx={{ mb: 2 }}>
           {breadcrumbs.map((breadcrumb, index) => (
             <Link
               key={index}
-              component="button"
-              variant="body2"
+              component='button'
+              variant='body2'
               onClick={breadcrumb.onClick}
               sx={{
                 textDecoration: 'none',
@@ -104,8 +101,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       {backAction && (
         <Box sx={{ mb: 2 }}>
           <Link
-            component="button"
-            variant="body2"
+            component='button'
+            variant='body2'
             onClick={backAction.onClick}
             sx={{
               display: 'flex',
@@ -143,7 +140,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             transition={{ duration: 0.5 }}
           >
             <Typography
-              variant="h4"
+              variant='h4'
               sx={{
                 fontWeight: 700,
                 mb: subtitle ? 0.5 : 0,
@@ -156,20 +153,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
               {title}
             </Typography>
             {subtitle && (
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ fontWeight: 400, mb: 1 }}
-              >
+              <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400, mb: 1 }}>
                 {subtitle}
               </Typography>
             )}
             {description && (
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ maxWidth: 600 }}
-              >
+              <Typography variant='body1' color='text.secondary' sx={{ maxWidth: 600 }}>
                 {description}
               </Typography>
             )}
@@ -191,7 +180,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Box
-                  component="button"
+                  component='button'
                   onClick={action.onClick}
                   disabled={action.disabled}
                   sx={{
@@ -265,7 +254,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
       {/* 标签 */}
       {tags && tags.length > 0 && (
-        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+        <Stack direction='row' spacing={1} flexWrap='wrap' gap={1}>
           {tags.map((tag, index) => (
             <motion.div
               key={index}
@@ -275,8 +264,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             >
               <Chip
                 label={tag}
-                size="small"
-                variant="outlined"
+                size='small'
+                variant='outlined'
                 sx={{
                   backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   borderColor: alpha(theme.palette.primary.main, 0.2),
@@ -288,8 +277,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         </Stack>
       )}
     </Box>
-  );
-};
+  )
+}
 
 export const PageContainer: React.FC<PageContainerProps> = ({
   children,
@@ -300,19 +289,19 @@ export const PageContainer: React.FC<PageContainerProps> = ({
   padding,
   animate = true,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const getBackgroundColor = () => {
     switch (background) {
       case 'paper':
-        return theme.palette.background.paper;
+        return theme.palette.background.paper
       case 'transparent':
-        return 'transparent';
+        return 'transparent'
       case 'default':
       default:
-        return theme.palette.background.default;
+        return theme.palette.background.default
     }
-  };
+  }
 
   const containerContent = (
     <Box
@@ -330,7 +319,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
         }}
       >
         {header && <PageHeader {...header} />}
-        
+
         <Box sx={{ position: 'relative' }}>
           {animate ? (
             <motion.div
@@ -346,7 +335,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
         </Box>
       </Container>
     </Box>
-  );
+  )
 
   return background === 'paper' ? (
     <Paper elevation={0} sx={{ minHeight: '100vh' }}>
@@ -354,5 +343,5 @@ export const PageContainer: React.FC<PageContainerProps> = ({
     </Paper>
   ) : (
     containerContent
-  );
-};
+  )
+}

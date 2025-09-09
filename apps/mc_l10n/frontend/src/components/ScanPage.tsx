@@ -1,36 +1,36 @@
-import React, { useState } from 'react';
-import { fileService, ScanResult } from '../services/fileService';
+import React, { useState } from 'react'
+import { fileService, ScanResult } from '../services/fileService'
 
 const ScanPage: React.FC = () => {
-  const [selectedPath, setSelectedPath] = useState<string>('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string>('')
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null)
 
   const handleSelectDirectory = async () => {
     try {
-      const path = await fileService.selectDirectory();
+      const path = await fileService.selectDirectory()
       if (path) {
-        setSelectedPath(path);
-        setScanResult(null); // 清除之前的扫描结果
+        setSelectedPath(path)
+        setScanResult(null) // 清除之前的扫描结果
       }
     } catch (error) {
-      console.error('Failed to select directory:', error);
+      console.error('Failed to select directory:', error)
     }
-  };
+  }
 
   const handleStartScan = async () => {
-    if (!selectedPath) return;
+    if (!selectedPath) return
 
-    setIsScanning(true);
+    setIsScanning(true)
     try {
-      const result = await fileService.scanDirectory(selectedPath);
-      setScanResult(result);
+      const result = await fileService.scanDirectory(selectedPath)
+      setScanResult(result)
     } catch (error) {
-      console.error('Scan failed:', error);
+      console.error('Scan failed:', error)
     } finally {
-      setIsScanning(false);
+      setIsScanning(false)
     }
-  };
+  }
 
   const styles = {
     container: {
@@ -82,9 +82,14 @@ const ScanPage: React.FC = () => {
       fontWeight: '600',
       cursor: disabled ? 'not-allowed' : 'pointer',
       transition: 'all 0.2s ease',
-      backgroundColor: variant === 'primary' 
-        ? (disabled ? '#9CA3AF' : '#4F46E5')
-        : (disabled ? '#F3F4F6' : '#FFFFFF'),
+      backgroundColor:
+        variant === 'primary'
+          ? disabled
+            ? '#9CA3AF'
+            : '#4F46E5'
+          : disabled
+            ? '#F3F4F6'
+            : '#FFFFFF',
       color: variant === 'primary' ? 'white' : '#374151',
       border: variant === 'secondary' ? '1px solid #D1D5DB' : 'none',
       opacity: disabled ? 0.6 : 1,
@@ -151,7 +156,7 @@ const ScanPage: React.FC = () => {
       borderRadius: '50%',
       animation: 'spin 1s linear infinite',
     },
-  };
+  }
 
   return (
     <div style={styles.container}>
@@ -171,11 +176,9 @@ const ScanPage: React.FC = () => {
         </p>
 
         <div style={styles.subtitle}>选择目录</div>
-        
+
         {selectedPath ? (
-          <div style={styles.pathDisplay}>
-            📁 {selectedPath}
-          </div>
+          <div style={styles.pathDisplay}>📁 {selectedPath}</div>
         ) : (
           <div style={{ ...styles.pathDisplay, color: '#9CA3AF', fontStyle: 'italic' }}>
             未选择目录
@@ -183,13 +186,10 @@ const ScanPage: React.FC = () => {
         )}
 
         <div style={styles.buttonGroup}>
-          <button
-            onClick={handleSelectDirectory}
-            style={styles.button('primary')}
-          >
+          <button onClick={handleSelectDirectory} style={styles.button('primary')}>
             📂 选择目录
           </button>
-          
+
           <button
             onClick={handleStartScan}
             disabled={!selectedPath || isScanning}
@@ -219,24 +219,20 @@ const ScanPage: React.FC = () => {
             <div style={styles.resultCard('#059669')}>
               <div style={styles.resultTitle}>
                 🎮 JAR 文件
-                <span style={styles.resultCount('#059669')}>
-                  {scanResult.jarFiles.length}
-                </span>
+                <span style={styles.resultCount('#059669')}>{scanResult.jarFiles.length}</span>
               </div>
               <div style={styles.fileList}>
                 {scanResult.jarFiles.length > 0 ? (
                   scanResult.jarFiles.slice(0, 10).map((file, index) => (
                     <div key={index} style={styles.fileName}>
-                      📦 {fileService.getFileName(file.path)} 
+                      📦 {fileService.getFileName(file.path)}
                       <span style={{ color: '#9CA3AF', fontSize: '12px', marginLeft: '8px' }}>
                         ({fileService.formatFileSize(file.size)})
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>
-                    未找到 JAR 文件
-                  </div>
+                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>未找到 JAR 文件</div>
                 )}
                 {scanResult.jarFiles.length > 10 && (
                   <div style={{ color: '#6B7280', fontSize: '12px', paddingTop: '8px' }}>
@@ -250,9 +246,7 @@ const ScanPage: React.FC = () => {
             <div style={styles.resultCard('#DC2626')}>
               <div style={styles.resultTitle}>
                 🌐 语言文件
-                <span style={styles.resultCount('#DC2626')}>
-                  {scanResult.langFiles.length}
-                </span>
+                <span style={styles.resultCount('#DC2626')}>{scanResult.langFiles.length}</span>
               </div>
               <div style={styles.fileList}>
                 {scanResult.langFiles.length > 0 ? (
@@ -265,9 +259,7 @@ const ScanPage: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>
-                    未找到语言文件
-                  </div>
+                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>未找到语言文件</div>
                 )}
                 {scanResult.langFiles.length > 10 && (
                   <div style={{ color: '#6B7280', fontSize: '12px', paddingTop: '8px' }}>
@@ -281,9 +273,7 @@ const ScanPage: React.FC = () => {
             <div style={styles.resultCard('#7C2D12')}>
               <div style={styles.resultTitle}>
                 📋 整合包文件
-                <span style={styles.resultCount('#7C2D12')}>
-                  {scanResult.modpackFiles.length}
-                </span>
+                <span style={styles.resultCount('#7C2D12')}>{scanResult.modpackFiles.length}</span>
               </div>
               <div style={styles.fileList}>
                 {scanResult.modpackFiles.length > 0 ? (
@@ -296,9 +286,7 @@ const ScanPage: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>
-                    未找到整合包配置文件
-                  </div>
+                  <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>未找到整合包配置文件</div>
                 )}
                 {scanResult.modpackFiles.length > 10 && (
                   <div style={{ color: '#6B7280', fontSize: '12px', paddingTop: '8px' }}>
@@ -325,7 +313,7 @@ const ScanPage: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ScanPage;
+export default ScanPage

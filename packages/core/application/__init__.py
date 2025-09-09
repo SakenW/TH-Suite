@@ -11,9 +11,12 @@
 
 from .commands.command import Command, CommandBus
 from .dto.base_dto import BaseDTO
-from .exceptions.base_exception import BaseException, BusinessException
+from .exceptions.base_exception import BaseAppError, BusinessError
 from .queries.query import Query, QueryBus
 from .services.base_service import BaseService, IApplicationService
+
+# For backward compatibility
+BusinessException = BusinessError
 
 __all__ = [
     "BaseService",
@@ -24,7 +27,7 @@ __all__ = [
     "Query",
     "QueryHandler",
     "QueryBus",
-    "BaseException",
+    "BaseAppError",
     "BusinessException",
     "BaseDTO",
 ]

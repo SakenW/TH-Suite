@@ -4,27 +4,24 @@
 """
 
 # 导出关键模块
+from .cache.memory_cache import MemoryCacheRepository
+from .minecraft.mod_scanner import MinecraftModScanner
 from .persistence.sqlite_repositories import (
+    SqliteEventRepository,
     SqliteModRepository,
+    SqliteScanResultRepository,
     SqliteTranslationProjectRepository,
     SqliteTranslationRepository,
-    SqliteEventRepository,
-    SqliteScanResultRepository
 )
-
-from .cache.memory_cache import MemoryCacheRepository
-
-from .minecraft.mod_scanner import MinecraftModScanner
 
 __all__ = [
     # Repositories
-    'SqliteModRepository',
-    'SqliteTranslationProjectRepository',
-    'SqliteTranslationRepository',
-    'SqliteEventRepository',
-    'SqliteScanResultRepository',
-    'MemoryCacheRepository',
-    
+    "SqliteModRepository",
+    "SqliteTranslationProjectRepository",
+    "SqliteTranslationRepository",
+    "SqliteEventRepository",
+    "SqliteScanResultRepository",
+    "MemoryCacheRepository",
     # Scanners
-    'MinecraftModScanner'
+    "MinecraftModScanner",
 ]

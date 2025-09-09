@@ -4,6 +4,9 @@
 定义应用层的异常类
 """
 
-from .base_exception import BaseException, BusinessException
+from .base_exception import BaseAppError, BusinessError
 
-__all__ = ["BaseException", "BusinessException"]
+# For backward compatibility
+BusinessException = BusinessError
+
+__all__ = ["BaseAppError", "BusinessException", "BusinessError"]

@@ -5,8 +5,9 @@
   "identifier": "com.thsuite.mcl10n",
   "build": {
     "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist",
-    "devUrl": "http://127.0.0.1:15173"
+    "devUrl": "http://127.0.0.1:18001"
   },
   "app": {
     "withGlobalTauri": true,
@@ -20,27 +21,92 @@
         "resizable": true,
         "fullscreen": false,
         "center": true,
-        "devtools": true
+        "devtools": true,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true
       }
     ],
     "security": {
-      "csp": "default-src 'self' tauri:; img-src 'self' asset: https://asset.localhost tauri:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com tauri:; font-src 'self' https://fonts.gstatic.com tauri:; script-src 'self' 'unsafe-eval' tauri:; connect-src 'self' ws://localhost:* http://localhost:* tauri:",
-      "capabilities": ["default"]
+      "csp": "default-src 'self' tauri: asset: data:; img-src 'self' asset: data: https: tauri:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com tauri:; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: tauri:; script-src 'self' tauri:; connect-src 'self' ws://localhost:* http://localhost:* https://api.trans-hub.cn wss://api.trans-hub.cn tauri:",
+      "capabilities": [
+        "default",
+        "dialog-ask",
+        "dialog-confirm",
+        "dialog-message",
+        "dialog-open",
+        "dialog-save",
+        "fs-read-file",
+        "fs-write-file",
+        "fs-read-dir",
+        "fs-create-dir",
+        "fs-copy-file",
+        "fs-remove-file",
+        "shell-execute",
+        "notification-show",
+        "window-state-manage"
+      ]
+    },
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
     "category": "DeveloperTool",
-    "copyright": "",
-    "longDescription": "TransHub Suite Minecraft Localization Tool - A powerful tool for managing and translating Minecraft mod language files.",
-    "shortDescription": "TransHub Suite MC L10n",
+    "copyright": "Copyright © 2025 TransHub Suite",
+    "longDescription": "TransHub Suite Minecraft Localization Tool - A powerful desktop application for managing and translating Minecraft mod language files with seamless integration to the Trans-Hub translation platform.",
+    "shortDescription": "Professional Minecraft Localization Tool",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "TransHub Suite",
+    "resources": ["../dist/**/*"],
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "dialog": {
+      "all": true,
+      "ask": true,
+      "confirm": true,
+      "message": true,
+      "open": true,
+      "save": true
+    },
+    "fs": {
+      "all": false,
+      "readFile": true,
+      "writeFile": true,
+      "readDir": true,
+      "copyFile": true,
+      "createDir": true,
+      "removeFile": true,
+      "scope": ["$HOME/**/*", "$DOCUMENT/**/*", "$DESKTOP/**/*", "$DOWNLOAD/**/*"]
+    },
+    "shell": {
+      "all": false,
+      "execute": true,
+      "sidecar": false,
+      "scope": [
+        {
+          "name": "open-url",
+          "cmd": "open",
+          "args": ["$URL"]
+        }
+      ]
+    },
+    "notification": {
+      "all": true
+    },
+    "window-state": {
+      "filename": "window-state.json"
+    }
   }
 }

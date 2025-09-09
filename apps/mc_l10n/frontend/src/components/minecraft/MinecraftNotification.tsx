@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, IconButton, Portal } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react'
+import { Box, Typography, IconButton, Portal } from '@mui/material'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle,
   XCircle,
@@ -18,39 +18,45 @@ import {
   Save,
   Shield,
   Sword,
-  Gem
-} from 'lucide-react';
-import { minecraftColors } from '../../theme/minecraftTheme';
-import { MinecraftBlock } from '../MinecraftComponents';
+  Gem,
+} from 'lucide-react'
+import { minecraftColors } from '../../theme/minecraftTheme'
+import { MinecraftBlock } from '../MinecraftComponents'
 
-export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'achievement' | 'system';
+export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'achievement' | 'system'
 
 export interface NotificationOptions {
-  id?: string;
-  title: string;
-  message?: string;
-  type?: NotificationType;
-  duration?: number;
-  icon?: React.ReactNode;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
-  sound?: boolean;
-  persistent?: boolean;
+  id?: string
+  title: string
+  message?: string
+  type?: NotificationType
+  duration?: number
+  icon?: React.ReactNode
+  position?:
+    | 'top-right'
+    | 'top-left'
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'top-center'
+    | 'bottom-center'
+  sound?: boolean
+  persistent?: boolean
   actions?: Array<{
-    label: string;
-    onClick: () => void;
-    style?: 'primary' | 'secondary';
-  }>;
-  onClose?: () => void;
-  progress?: number;
+    label: string
+    onClick: () => void
+    style?: 'primary' | 'secondary'
+  }>
+  onClose?: () => void
+  progress?: number
   minecraft?: {
-    block?: 'grass' | 'stone' | 'diamond' | 'gold' | 'iron' | 'emerald' | 'redstone';
-    particle?: boolean;
-    glow?: boolean;
-  };
+    block?: 'grass' | 'stone' | 'diamond' | 'gold' | 'iron' | 'emerald' | 'redstone'
+    particle?: boolean
+    glow?: boolean
+  }
 }
 
 interface MinecraftNotificationProps extends NotificationOptions {
-  onRemove: () => void;
+  onRemove: () => void
 }
 
 const typeConfig = {
@@ -58,39 +64,39 @@ const typeConfig = {
     icon: <CheckCircle size={20} />,
     color: minecraftColors.emerald,
     block: 'emerald' as const,
-    title: '成功'
+    title: '成功',
   },
   error: {
     icon: <XCircle size={20} />,
     color: minecraftColors.redstoneRed,
     block: 'redstone' as const,
-    title: '错误'
+    title: '错误',
   },
   warning: {
     icon: <AlertCircle size={20} />,
     color: minecraftColors.goldYellow,
     block: 'gold' as const,
-    title: '警告'
+    title: '警告',
   },
   info: {
     icon: <Info size={20} />,
     color: minecraftColors.diamondBlue,
     block: 'diamond' as const,
-    title: '信息'
+    title: '信息',
   },
   achievement: {
     icon: <Trophy size={20} />,
     color: minecraftColors.goldYellow,
     block: 'gold' as const,
-    title: '成就解锁'
+    title: '成就解锁',
   },
   system: {
     icon: <Zap size={20} />,
     color: minecraftColors.iron,
     block: 'iron' as const,
-    title: '系统'
-  }
-};
+    title: '系统',
+  },
+}
 
 export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
   title,
@@ -103,29 +109,29 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
   onClose,
   onRemove,
   progress,
-  minecraft = {}
+  minecraft = {},
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(duration);
-  const config = typeConfig[type];
-  const displayIcon = icon || config.icon;
-  const blockType = minecraft.block || config.block;
+  const [isHovered, setIsHovered] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(duration)
+  const config = typeConfig[type]
+  const displayIcon = icon || config.icon
+  const blockType = minecraft.block || config.block
 
   useEffect(() => {
     if (!persistent && !isHovered && timeLeft > 0) {
       const timer = setTimeout(() => {
-        setTimeLeft(prev => prev - 100);
-      }, 100);
+        setTimeLeft(prev => prev - 100)
+      }, 100)
 
       if (timeLeft <= 100) {
-        onRemove();
+        onRemove()
       }
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [persistent, isHovered, timeLeft, onRemove]);
+  }, [persistent, isHovered, timeLeft, onRemove])
 
-  const progressPercentage = persistent ? 0 : ((duration - timeLeft) / duration) * 100;
+  const progressPercentage = persistent ? 0 : ((duration - timeLeft) / duration) * 100
 
   return (
     <motion.div
@@ -153,12 +159,12 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
             right: 0,
             height: '3px',
             background: `linear-gradient(90deg, transparent, ${config.color}, transparent)`,
-            animation: minecraft.glow ? 'shimmer 2s infinite' : 'none'
+            animation: minecraft.glow ? 'shimmer 2s infinite' : 'none',
           },
           '@keyframes shimmer': {
             '0%': { transform: 'translateX(-100%)' },
-            '100%': { transform: 'translateX(100%)' }
-          }
+            '100%': { transform: 'translateX(100%)' },
+          },
         }}
       >
         {/* 进度条 */}
@@ -172,7 +178,7 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
               width: `${100 - progressPercentage}%`,
               bgcolor: config.color,
               opacity: 0.5,
-              transition: 'width 0.1s linear'
+              transition: 'width 0.1s linear',
             }}
           />
         )}
@@ -199,8 +205,8 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                   inset: -2,
                   border: `1px solid ${config.color}44`,
                   borderRadius: 0,
-                  pointerEvents: 'none'
-                }
+                  pointerEvents: 'none',
+                },
               }}
             >
               {type === 'achievement' ? (
@@ -213,14 +219,14 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
             {/* 文本内容 */}
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
-                variant="subtitle2"
+                variant='subtitle2'
                 sx={{
                   fontFamily: '"Minecraft", monospace',
                   color: '#FFFFFF',
                   mb: message ? 0.5 : 0,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5
+                  gap: 0.5,
                 }}
               >
                 {title}
@@ -230,11 +236,11 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
               </Typography>
               {message && (
                 <Typography
-                  variant="caption"
+                  variant='caption'
                   sx={{
                     color: 'rgba(255,255,255,0.7)',
                     display: 'block',
-                    lineHeight: 1.4
+                    lineHeight: 1.4,
                   }}
                 >
                   {message}
@@ -249,7 +255,7 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                       height: 4,
                       bgcolor: 'rgba(255,255,255,0.1)',
                       borderRadius: 0,
-                      overflow: 'hidden'
+                      overflow: 'hidden',
                     }}
                   >
                     <Box
@@ -257,11 +263,14 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                         height: '100%',
                         width: `${progress}%`,
                         bgcolor: config.color,
-                        transition: 'width 0.3s ease'
+                        transition: 'width 0.3s ease',
                       }}
                     />
                   </Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
+                  <Typography
+                    variant='caption'
+                    sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}
+                  >
                     {progress}%
                   </Typography>
                 </Box>
@@ -273,7 +282,7 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                   {actions.map((action, index) => (
                     <Box
                       key={index}
-                      component="button"
+                      component='button'
                       onClick={action.onClick}
                       sx={{
                         px: 1.5,
@@ -288,8 +297,8 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                         transition: 'all 0.2s',
                         '&:hover': {
                           bgcolor: `${config.color}44`,
-                          transform: 'translateY(-1px)'
-                        }
+                          transform: 'translateY(-1px)',
+                        },
                       }}
                     >
                       {action.label}
@@ -302,17 +311,17 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
             {/* 关闭按钮 */}
             {(persistent || isHovered) && (
               <IconButton
-                size="small"
+                size='small'
                 onClick={() => {
-                  onClose?.();
-                  onRemove();
+                  onClose?.()
+                  onRemove()
                 }}
                 sx={{
                   color: 'rgba(255,255,255,0.5)',
                   '&:hover': {
                     color: '#FFFFFF',
-                    bgcolor: 'rgba(255,255,255,0.1)'
-                  }
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                  },
                 }}
               >
                 <X size={16} />
@@ -337,47 +346,47 @@ export const MinecraftNotification: React.FC<MinecraftNotificationProps> = ({
                 height: 4,
                 bgcolor: minecraftColors.goldYellow,
                 borderRadius: '50%',
-                animation: 'particle 2s infinite'
+                animation: 'particle 2s infinite',
               },
               '&::before': {
-                animationDelay: '0s'
+                animationDelay: '0s',
               },
               '&::after': {
-                animationDelay: '1s'
+                animationDelay: '1s',
               },
               '@keyframes particle': {
                 '0%': {
                   transform: 'translate(0, 0) scale(0)',
-                  opacity: 1
+                  opacity: 1,
                 },
                 '50%': {
                   transform: 'translate(30px, -30px) scale(1)',
-                  opacity: 0.5
+                  opacity: 0.5,
                 },
                 '100%': {
                   transform: 'translate(60px, -60px) scale(0)',
-                  opacity: 0
-                }
-              }
+                  opacity: 0,
+                },
+              },
             }}
           />
         )}
       </Box>
     </motion.div>
-  );
-};
+  )
+}
 
 // 通知容器组件
 interface NotificationContainerProps {
-  notifications: NotificationOptions[];
-  position?: NotificationOptions['position'];
-  onRemove: (id: string) => void;
+  notifications: NotificationOptions[]
+  position?: NotificationOptions['position']
+  onRemove: (id: string) => void
 }
 
 export const NotificationContainer: React.FC<NotificationContainerProps> = ({
   notifications,
   position = 'top-right',
-  onRemove
+  onRemove,
 }) => {
   const positionStyles = {
     'top-right': { top: 80, right: 20 },
@@ -385,8 +394,8 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
     'bottom-right': { bottom: 20, right: 20 },
     'bottom-left': { bottom: 20, left: 20 },
     'top-center': { top: 80, left: '50%', transform: 'translateX(-50%)' },
-    'bottom-center': { bottom: 20, left: '50%', transform: 'translateX(-50%)' }
-  };
+    'bottom-center': { bottom: 20, left: '50%', transform: 'translateX(-50%)' },
+  }
 
   return (
     <Portal>
@@ -400,12 +409,12 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
           gap: 1.5,
           pointerEvents: 'none',
           '& > *': {
-            pointerEvents: 'auto'
-          }
+            pointerEvents: 'auto',
+          },
         }}
       >
         <AnimatePresence>
-          {notifications.map((notification) => (
+          {notifications.map(notification => (
             <MinecraftNotification
               key={notification.id}
               {...notification}
@@ -415,5 +424,5 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
         </AnimatePresence>
       </Box>
     </Portal>
-  );
-};
+  )
+}

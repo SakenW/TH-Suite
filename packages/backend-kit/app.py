@@ -36,7 +36,9 @@ class THToolsApp:
         self.log_file = log_file
 
         # Initialize logging
-        setup_logging(log_level=log_level, log_format="json" if not debug else "console")
+        setup_logging(
+            log_level=log_level, log_format="json" if not debug else "console"
+        )
         self.logger = get_logger("thtools.app")
 
         # Initialize WebSocket manager

@@ -4,27 +4,27 @@
  */
 
 export interface ServiceDefinition<T = any> {
-  factory: (...deps: any[]) => T | Promise<T>;
-  singleton?: boolean;
-  dependencies?: string[];
+  factory: (...deps: any[]) => T | Promise<T>
+  singleton?: boolean
+  dependencies?: string[]
 }
 
 export interface ServiceRegistry {
-  apiClient: ServiceDefinition;
-  projectService: ServiceDefinition;
-  scanService: ServiceDefinition;
+  apiClient: ServiceDefinition
+  projectService: ServiceDefinition
+  scanService: ServiceDefinition
 }
 
 export interface ServiceResult<T = any> {
-  success: boolean;
-  data?: T;
-  error?: ServiceError;
-  metadata?: Record<string, any>;
+  success: boolean
+  data?: T
+  error?: ServiceError
+  metadata?: Record<string, any>
 }
 
 export interface ServiceError {
-  code: string;
-  message: string;
-  details?: any;
-  timestamp?: Date;
+  code: string
+  message: string
+  details?: any
+  timestamp?: Date
 }

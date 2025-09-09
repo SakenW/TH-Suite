@@ -1,6 +1,6 @@
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import React from 'react'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 
 // 创建一个独立的主题用于设计预览
 const previewTheme = createTheme({
@@ -26,10 +26,10 @@ const previewTheme = createTheme({
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
-});
+})
 
 interface DesignPreviewWrapperProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function DesignPreviewWrapper({ children }: DesignPreviewWrapperProps) {
@@ -38,5 +38,5 @@ export default function DesignPreviewWrapper({ children }: DesignPreviewWrapperP
       <CssBaseline />
       {children}
     </ThemeProvider>
-  );
+  )
 }

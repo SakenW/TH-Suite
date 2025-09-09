@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Drawer,
   List,
@@ -17,7 +17,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-} from '@mui/material';
+} from '@mui/material'
 import {
   Home,
   Search,
@@ -33,27 +33,27 @@ import {
   Languages,
   Database,
   TestTube,
-} from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore } from '@stores/appStore';
-import { useCommonTranslation } from '@hooks/useTranslation';
+} from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useAppStore } from '@stores/appStore'
+import { useCommonTranslation } from '@hooks/useTranslation'
 // import { LanguageSwitcher, type LanguageOption } from '@th-suite/ui-kit'; // 暂时注释掉
 
 interface SidebarProps {
-  open: boolean;
-  width: number;
-  collapsedWidth: number;
-  isMobile: boolean;
-  onClose: () => void;
+  open: boolean
+  width: number
+  collapsedWidth: number
+  isMobile: boolean
+  onClose: () => void
 }
 
 interface NavigationItem {
-  id: string;
-  labelKey: string;
-  path: string;
-  icon: React.ReactNode;
-  descriptionKey?: string;
+  id: string
+  labelKey: string
+  path: string
+  icon: React.ReactNode
+  descriptionKey?: string
 }
 
 const navigationItems: NavigationItem[] = [
@@ -134,14 +134,20 @@ const navigationItems: NavigationItem[] = [
     icon: <TestTube size={20} />,
     descriptionKey: '测试实时进度组件',
   },
-];
+]
 
 function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProps) {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { recentProjects, setCurrentProject, currentProject, hasActiveProject, canShowProjectFeatures } = useAppStore();
-  const { t: tCommon, currentLanguage, i18n } = useCommonTranslation();
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const {
+    recentProjects,
+    setCurrentProject,
+    currentProject,
+    hasActiveProject,
+    canShowProjectFeatures,
+  } = useAppStore()
+  const { t: tCommon, currentLanguage, i18n } = useCommonTranslation()
 
   const languages = [
     { code: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '简体中文' },
@@ -152,31 +158,31 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
     { code: 'de-DE', name: 'German', nativeName: 'Deutsch' },
     { code: 'es-ES', name: 'Spanish', nativeName: 'Español' },
     { code: 'ru-RU', name: 'Russian', nativeName: 'Русский' },
-  ];
+  ]
 
   const handleLanguageChange = async (languageCode: string) => {
     try {
-      await i18n.changeLanguage(languageCode);
+      await i18n.changeLanguage(languageCode)
     } catch (error) {
-      console.error('Failed to change language:', error);
+      console.error('Failed to change language:', error)
     }
-  };
+  }
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    navigate(path)
     if (isMobile) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const handleProjectSelect = (project: any) => {
-    setCurrentProject(project);
+    setCurrentProject(project)
     // Navigate to appropriate page based on project type
-    navigate(`/${project.type}`);
+    navigate(`/${project.type}`)
     if (isMobile) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const drawerContent = (
     <Box
@@ -231,7 +237,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                 transition={{ duration: 0.2 }}
               >
                 <Typography
-                  variant="h6"
+                  variant='h6'
                   sx={{
                     fontWeight: 600,
                     color: theme.palette.text.primary,
@@ -249,18 +255,25 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
       {/* Navigation */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         <List sx={{ paddingTop: 2 }}>
-          {navigationItems.map((item) => {
+          {navigationItems.map(item => {
             // 条件导航：只有在有项目时才显示项目相关功能
-            const projectRequiredItems = ['scan', 'extract', 'export', 'transfer', 'build', 'security'];
-            const isProjectRequired = projectRequiredItems.includes(item.id);
-            
+            const projectRequiredItems = [
+              'scan',
+              'extract',
+              'export',
+              'transfer',
+              'build',
+              'security',
+            ]
+            const isProjectRequired = projectRequiredItems.includes(item.id)
+
             // 使用新的状态管理函数来控制可见性
             if (isProjectRequired && !canShowProjectFeatures()) {
-              return null;
+              return null
             }
-            
-            const isActive = location.pathname === item.path;
-            
+
+            const isActive = location.pathname === item.path
+
             const listItem = (
               <ListItem key={item.id} disablePadding>
                 <ListItemButton
@@ -274,9 +287,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                     backgroundColor: isActive
                       ? alpha(theme.palette.primary.main, 0.1)
                       : 'transparent',
-                    color: isActive
-                      ? theme.palette.primary.main
-                      : theme.palette.text.primary,
+                    color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
                     '&:hover': {
                       backgroundColor: isActive
                         ? alpha(theme.palette.primary.main, 0.15)
@@ -317,7 +328,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                   </AnimatePresence>
                 </ListItemButton>
               </ListItem>
-            );
+            )
 
             return open ? (
               listItem
@@ -325,12 +336,12 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
               <Tooltip
                 key={item.id}
                 title={item.descriptionKey ? tCommon(item.descriptionKey) : tCommon(item.labelKey)}
-                placement="right"
+                placement='right'
                 arrow
               >
                 {listItem}
               </Tooltip>
-            );
+            )
           })}
         </List>
 
@@ -346,7 +357,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
               <Divider sx={{ marginY: 2 }} />
               <Box sx={{ paddingX: 3, paddingBottom: 1 }}>
                 <Typography
-                  variant="caption"
+                  variant='caption'
                   sx={{
                     color: theme.palette.text.secondary,
                     fontWeight: 600,
@@ -358,7 +369,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                 </Typography>
               </Box>
               <List dense>
-                {recentProjects.slice(0, 5).map((project) => (
+                {recentProjects.slice(0, 5).map(project => (
                   <ListItem key={project.id} disablePadding>
                     <ListItemButton
                       onClick={() => handleProjectSelect(project)}
@@ -399,43 +410,46 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
       <Box sx={{ padding: open ? 2 : 1, borderTop: `1px solid ${theme.palette.divider}` }}>
         {open ? (
           <Box sx={{ marginBottom: 1 }}>
-            <Typography variant="caption" sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1, 
-              marginBottom: 1,
-              fontSize: '0.8rem',
-              color: 'text.secondary'
-            }}>
+            <Typography
+              variant='caption'
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                marginBottom: 1,
+                fontSize: '0.8rem',
+                color: 'text.secondary',
+              }}
+            >
               <Languages size={16} />
               {tCommon('common.language')}
             </Typography>
-            <FormControl fullWidth size="small">
-            <Select
-              value={currentLanguage}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              sx={{
-                fontSize: '0.85rem',
-                '& .MuiSelect-select': {
-                  paddingY: 1,
-                },
-              }}
-            >
-              {languages.map((lang) => (
-                <MenuItem key={lang.code} value={lang.code} sx={{ fontSize: '0.85rem' }}>
-                  {lang.nativeName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl fullWidth size='small'>
+              <Select
+                value={currentLanguage}
+                onChange={e => handleLanguageChange(e.target.value)}
+                sx={{
+                  fontSize: '0.85rem',
+                  '& .MuiSelect-select': {
+                    paddingY: 1,
+                  },
+                }}
+              >
+                {languages.map(lang => (
+                  <MenuItem key={lang.code} value={lang.code} sx={{ fontSize: '0.85rem' }}>
+                    {lang.nativeName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Tooltip title={tCommon('common.language')} placement="right" arrow>
-              <FormControl size="small" sx={{ minWidth: 40 }}>
+            <Tooltip title={tCommon('common.language')} placement='right' arrow>
+              <FormControl size='small' sx={{ minWidth: 40 }}>
                 <Select
                   value={currentLanguage}
-                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  onChange={e => handleLanguageChange(e.target.value)}
                   displayEmpty
                   sx={{
                     '& .MuiSelect-select': {
@@ -449,12 +463,12 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                       border: 'none',
                     },
                   }}
-                  renderValue={(value) => {
-                    const lang = languages.find(l => l.code === value);
-                    return <Languages size={16} />;
+                  renderValue={value => {
+                    const lang = languages.find(l => l.code === value)
+                    return <Languages size={16} />
                   }}
                 >
-                  {languages.map((lang) => (
+                  {languages.map(lang => (
                     <MenuItem key={lang.code} value={lang.code} sx={{ fontSize: '0.85rem' }}>
                       {lang.nativeName}
                     </MenuItem>
@@ -476,9 +490,10 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                 sx={{
                   minHeight: 48,
                   paddingX: 3,
-                  color: location.pathname === '/settings'
-                    ? theme.palette.primary.main
-                    : theme.palette.text.primary,
+                  color:
+                    location.pathname === '/settings'
+                      ? theme.palette.primary.main
+                      : theme.palette.text.primary,
                 }}
               >
                 <ListItemIcon
@@ -501,16 +516,17 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
                 />
               </ListItemButton>
             ) : (
-              <Tooltip title={tCommon('pages.settings')} placement="right" arrow>
+              <Tooltip title={tCommon('pages.settings')} placement='right' arrow>
                 <ListItemButton
                   onClick={() => handleNavigate('/settings')}
                   sx={{
                     minHeight: 48,
                     justifyContent: 'center',
                     paddingX: 2,
-                    color: location.pathname === '/settings'
-                      ? theme.palette.primary.main
-                      : theme.palette.text.primary,
+                    color:
+                      location.pathname === '/settings'
+                        ? theme.palette.primary.main
+                        : theme.palette.text.primary,
                   }}
                 >
                   <Settings size={20} />
@@ -521,7 +537,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
         </List>
       </Box>
     </Box>
-  );
+  )
 
   return (
     <Drawer
@@ -548,7 +564,7 @@ function Sidebar({ open, width, collapsedWidth, isMobile, onClose }: SidebarProp
     >
       {drawerContent}
     </Drawer>
-  );
+  )
 }
 
-export default Sidebar;
+export default Sidebar

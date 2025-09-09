@@ -3,10 +3,11 @@
 提供翻译条目的CRUD操作、导入导出和批量操作功能
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
 import logging
+from typing import Any
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -19,34 +20,37 @@ router = APIRouter(
 
 class TranslationEntry(BaseModel):
     """翻译条目模型"""
+
     key: str
     source_text: str
-    translated_text: Optional[str] = None
+    translated_text: str | None = None
     language: str
-    mod_id: Optional[str] = None
-    namespace: Optional[str] = None
+    mod_id: str | None = None
+    namespace: str | None = None
 
 
 class TranslationUpdate(BaseModel):
     """翻译更新模型"""
+
     translated_text: str
-    comment: Optional[str] = None
+    comment: str | None = None
 
 
 class TranslationQuery(BaseModel):
     """翻译查询模型"""
-    mod_id: Optional[str] = None
-    language: Optional[str] = None
+
+    mod_id: str | None = None
+    language: str | None = None
     translated_only: bool = False
     untranslated_only: bool = False
-    search_text: Optional[str] = None
+    search_text: str | None = None
 
 
-@router.get("/test", response_model=Dict[str, Any])
+@router.get("/test", response_model=dict[str, Any])
 async def translation_test_endpoint():
     """
     翻译路由测试端点
-    
+
     用于验证翻译路由是否正常工作
     """
     return {
@@ -59,21 +63,21 @@ async def translation_test_endpoint():
             "POST /api/v1/translations/search",
             "PUT /api/v1/translations/{key}",
             "POST /api/v1/translations/import",
-            "GET /api/v1/translations/export"
-        ]
+            "GET /api/v1/translations/export",
+        ],
     }
 
 
-@router.get("/", response_model=Dict[str, Any])
+@router.get("/", response_model=dict[str, Any])
 async def list_translations(
-    mod_id: Optional[str] = None,
-    language: Optional[str] = None,
+    mod_id: str | None = None,
+    language: str | None = None,
     limit: int = 100,
-    offset: int = 0
+    offset: int = 0,
 ):
     """
     获取翻译条目列表
-    
+
     Args:
         mod_id: 过滤指定模组的翻译
         language: 过滤指定语言的翻译
@@ -89,23 +93,20 @@ async def list_translations(
                 "total": 0,
                 "limit": limit,
                 "offset": offset,
-                "filters": {
-                    "mod_id": mod_id,
-                    "language": language
-                }
+                "filters": {"mod_id": mod_id, "language": language},
             },
-            "message": "翻译列表获取成功"
+            "message": "翻译列表获取成功",
         }
     except Exception as e:
         logger.error(f"获取翻译列表失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/search", response_model=Dict[str, Any])
+@router.post("/search", response_model=dict[str, Any])
 async def search_translations(query: TranslationQuery):
     """
     搜索翻译条目
-    
+
     Args:
         query: 搜索条件
     """
@@ -113,23 +114,19 @@ async def search_translations(query: TranslationQuery):
         # TODO: 实现实际的搜索逻辑
         return {
             "success": True,
-            "data": {
-                "translations": [],
-                "total": 0,
-                "query": query.dict()
-            },
-            "message": "翻译搜索完成"
+            "data": {"translations": [], "total": 0, "query": query.model_dump()},
+            "message": "翻译搜索完成",
         }
     except Exception as e:
         logger.error(f"搜索翻译失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{key}", response_model=Dict[str, Any])
+@router.put("/{key}", response_model=dict[str, Any])
 async def update_translation(key: str, update: TranslationUpdate):
     """
     更新翻译条目
-    
+
     Args:
         key: 翻译键
         update: 更新内容
@@ -142,20 +139,20 @@ async def update_translation(key: str, update: TranslationUpdate):
                 "key": key,
                 "translated_text": update.translated_text,
                 "comment": update.comment,
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             },
-            "message": f"翻译更新成功: {key}"
+            "message": f"翻译更新成功: {key}",
         }
     except Exception as e:
         logger.error(f"更新翻译失败 {key}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/import", response_model=Dict[str, Any])
+@router.post("/import", response_model=dict[str, Any])
 async def import_translations(file: UploadFile = File(...)):
     """
     导入翻译文件
-    
+
     Args:
         file: 上传的翻译文件（支持JSON、CSV等格式）
     """
@@ -163,7 +160,7 @@ async def import_translations(file: UploadFile = File(...)):
         # TODO: 实现实际的导入逻辑
         filename = file.filename
         content_type = file.content_type
-        
+
         return {
             "success": True,
             "data": {
@@ -171,24 +168,22 @@ async def import_translations(file: UploadFile = File(...)):
                 "content_type": content_type,
                 "imported_count": 0,
                 "updated_count": 0,
-                "skipped_count": 0
+                "skipped_count": 0,
             },
-            "message": f"翻译导入完成: {filename}"
+            "message": f"翻译导入完成: {filename}",
         }
     except Exception as e:
         logger.error(f"导入翻译失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/export", response_model=Dict[str, Any])
+@router.get("/export", response_model=dict[str, Any])
 async def export_translations(
-    format: str = "json",
-    mod_id: Optional[str] = None,
-    language: Optional[str] = None
+    format: str = "json", mod_id: str | None = None, language: str | None = None
 ):
     """
     导出翻译文件
-    
+
     Args:
         format: 导出格式（json、csv、xlsx等）
         mod_id: 指定模组ID
@@ -201,21 +196,18 @@ async def export_translations(
             "data": {
                 "export_url": f"/exports/translations_{format}_export.{format}",
                 "format": format,
-                "filters": {
-                    "mod_id": mod_id,
-                    "language": language
-                },
+                "filters": {"mod_id": mod_id, "language": language},
                 "exported_count": 0,
-                "created_at": "2024-01-01T00:00:00Z"
+                "created_at": "2024-01-01T00:00:00Z",
             },
-            "message": f"翻译导出完成: {format}格式"
+            "message": f"翻译导出完成: {format}格式",
         }
     except Exception as e:
         logger.error(f"导出翻译失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/statistics", response_model=Dict[str, Any])
+@router.get("/statistics", response_model=dict[str, Any])
 async def get_translation_statistics():
     """
     获取翻译统计信息
@@ -231,9 +223,9 @@ async def get_translation_statistics():
                 "translation_progress": 0.0,
                 "languages": {},
                 "mods": {},
-                "last_updated": "2024-01-01T00:00:00Z"
+                "last_updated": "2024-01-01T00:00:00Z",
             },
-            "message": "翻译统计信息获取成功"
+            "message": "翻译统计信息获取成功",
         }
     except Exception as e:
         logger.error(f"获取翻译统计失败: {e}")

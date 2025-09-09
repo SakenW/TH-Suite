@@ -4,18 +4,15 @@
 提供完整的数据库管理和分析界面
 """
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-import sqlite3
-import json
-from pathlib import Path
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-import uvicorn
 import argparse
-from collections import defaultdict
+import sqlite3
+from datetime import datetime
+from pathlib import Path
+
+import uvicorn
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 app = FastAPI(title="MC L10n Database Manager", version="2.0.0")
 
@@ -35,7 +32,9 @@ DB_PATH = "mc_l10n_unified.db"
 def get_db_connection():
     """获取数据库连接"""
     if not Path(DB_PATH).exists():
-        raise HTTPException(status_code=404, detail=f"Database file not found: {DB_PATH}")
+        raise HTTPException(
+            status_code=404, detail=f"Database file not found: {DB_PATH}"
+        )
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -71,13 +70,13 @@ async def root():
                 --dark-bg: #1f2937;
                 --light-bg: #f9fafb;
             }
-            
+
             body {
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
                 background: var(--light-bg);
                 min-height: 100vh;
             }
-            
+
             /* 侧边栏样式 */
             .sidebar {
                 position: fixed;
@@ -92,7 +91,7 @@ async def root():
                 z-index: 1000;
                 box-shadow: 4px 0 20px rgba(0,0,0,0.1);
             }
-            
+
             .sidebar .logo {
                 display: flex;
                 align-items: center;
@@ -103,7 +102,7 @@ async def root():
                 padding-bottom: 20px;
                 border-bottom: 1px solid rgba(255,255,255,0.2);
             }
-            
+
             .nav-item {
                 display: flex;
                 align-items: center;
@@ -116,24 +115,24 @@ async def root():
                 color: rgba(255,255,255,0.9);
                 text-decoration: none;
             }
-            
+
             .nav-item:hover {
                 background: rgba(255,255,255,0.1);
                 transform: translateX(5px);
             }
-            
+
             .nav-item.active {
                 background: rgba(255,255,255,0.2);
                 font-weight: 600;
             }
-            
+
             /* 主内容区 */
             .main-content {
                 margin-left: 260px;
                 padding: 20px;
                 min-height: 100vh;
             }
-            
+
             /* 页面头部 */
             .page-header {
                 background: white;
@@ -145,14 +144,14 @@ async def root():
                 justify-content: space-between;
                 align-items: center;
             }
-            
+
             .page-title {
                 font-size: 1.8rem;
                 font-weight: 700;
                 color: var(--dark-bg);
                 margin: 0;
             }
-            
+
             /* 统计卡片 */
             .stat-card {
                 background: white;
@@ -163,12 +162,12 @@ async def root():
                 position: relative;
                 overflow: hidden;
             }
-            
+
             .stat-card:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             }
-            
+
             .stat-card::before {
                 content: '';
                 position: absolute;
@@ -178,7 +177,7 @@ async def root():
                 height: 4px;
                 background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
             }
-            
+
             .stat-value {
                 font-size: 2.5rem;
                 font-weight: 700;
@@ -187,7 +186,7 @@ async def root():
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            
+
             .stat-label {
                 color: #6b7280;
                 font-size: 0.9rem;
@@ -195,7 +194,7 @@ async def root():
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
-            
+
             .stat-change {
                 display: inline-block;
                 padding: 4px 8px;
@@ -204,17 +203,17 @@ async def root():
                 font-weight: 600;
                 margin-top: 8px;
             }
-            
+
             .stat-change.positive {
                 background: #d1fae5;
                 color: #065f46;
             }
-            
+
             .stat-change.negative {
                 background: #fee2e2;
                 color: #991b1b;
             }
-            
+
             /* 数据表格 */
             .data-table {
                 background: white;
@@ -222,7 +221,7 @@ async def root():
                 overflow: hidden;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             }
-            
+
             .table-header {
                 padding: 20px;
                 border-bottom: 1px solid #e5e7eb;
@@ -230,18 +229,18 @@ async def root():
                 justify-content: space-between;
                 align-items: center;
             }
-            
+
             .table-title {
                 font-size: 1.2rem;
                 font-weight: 600;
                 color: var(--dark-bg);
             }
-            
+
             table {
                 width: 100%;
                 border-collapse: collapse;
             }
-            
+
             th {
                 background: #f9fafb;
                 padding: 12px 20px;
@@ -253,23 +252,23 @@ async def root():
                 letter-spacing: 0.5px;
                 border-bottom: 2px solid #e5e7eb;
             }
-            
+
             td {
                 padding: 16px 20px;
                 border-bottom: 1px solid #f3f4f6;
                 color: #374151;
             }
-            
+
             tr:hover {
                 background: #f9fafb;
             }
-            
+
             /* 搜索框 */
             .search-box {
                 position: relative;
                 width: 300px;
             }
-            
+
             .search-input {
                 width: 100%;
                 padding: 10px 40px 10px 16px;
@@ -278,13 +277,13 @@ async def root():
                 font-size: 0.9rem;
                 transition: all 0.3s;
             }
-            
+
             .search-input:focus {
                 outline: none;
                 border-color: var(--primary-color);
                 box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
             }
-            
+
             .search-icon {
                 position: absolute;
                 right: 12px;
@@ -292,7 +291,7 @@ async def root():
                 transform: translateY(-50%);
                 color: #9ca3af;
             }
-            
+
             /* 按钮样式 */
             .btn-primary {
                 background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -303,12 +302,12 @@ async def root():
                 font-weight: 600;
                 transition: all 0.3s;
             }
-            
+
             .btn-primary:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
             }
-            
+
             /* 标签样式 */
             .badge-status {
                 padding: 6px 12px;
@@ -317,27 +316,27 @@ async def root():
                 font-weight: 600;
                 display: inline-block;
             }
-            
+
             .badge-success {
                 background: #d1fae5;
                 color: #065f46;
             }
-            
+
             .badge-warning {
                 background: #fed7aa;
                 color: #92400e;
             }
-            
+
             .badge-danger {
                 background: #fee2e2;
                 color: #991b1b;
             }
-            
+
             .badge-info {
                 background: #dbeafe;
                 color: #1e40af;
             }
-            
+
             /* 进度条 */
             .progress-bar-container {
                 width: 100%;
@@ -346,13 +345,13 @@ async def root():
                 border-radius: 10px;
                 overflow: hidden;
             }
-            
+
             .progress-bar-fill {
                 height: 100%;
                 background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
                 transition: width 0.3s;
             }
-            
+
             /* 图表容器 */
             .chart-container {
                 background: white;
@@ -361,7 +360,7 @@ async def root():
                 box-shadow: 0 2px 10px rgba(0,0,0,0.05);
                 height: 400px;
             }
-            
+
             /* 加载动画 */
             .loading-spinner {
                 display: inline-block;
@@ -372,63 +371,63 @@ async def root():
                 border-top-color: var(--primary-color);
                 animation: spin 1s ease-in-out infinite;
             }
-            
+
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
-            
+
             /* 响应式设计 */
             @media (max-width: 768px) {
                 .sidebar {
                     width: 70px;
                     padding: 20px 10px;
                 }
-                
+
                 .sidebar .nav-text {
                     display: none;
                 }
-                
+
                 .main-content {
                     margin-left: 70px;
                 }
-                
+
                 .page-header {
                     flex-direction: column;
                     align-items: flex-start;
                 }
-                
+
                 .search-box {
                     width: 100%;
                     margin-top: 10px;
                 }
             }
-            
+
             /* 暗黑模式 */
             @media (prefers-color-scheme: dark) {
                 body {
                     background: #111827;
                     color: #f9fafb;
                 }
-                
+
                 .stat-card, .data-table, .page-header, .chart-container {
                     background: #1f2937;
                     color: #f9fafb;
                 }
-                
+
                 th {
                     background: #111827;
                     color: #9ca3af;
                 }
-                
+
                 td {
                     color: #d1d5db;
                     border-bottom-color: #374151;
                 }
-                
+
                 tr:hover {
                     background: #374151;
                 }
-                
+
                 .search-input {
                     background: #374151;
                     border-color: #4b5563;
@@ -444,7 +443,7 @@ async def root():
                 <i class="bi bi-database-fill"></i>
                 <span>MC L10n</span>
             </div>
-            
+
             <nav>
                 <a class="nav-item active" onclick="showPage('dashboard')">
                     <i class="bi bi-speedometer2"></i>
@@ -476,7 +475,7 @@ async def root():
                 </a>
             </nav>
         </div>
-        
+
         <!-- 主内容区 -->
         <div class="main-content">
             <!-- 仪表板页面 -->
@@ -488,7 +487,7 @@ async def root():
                         <i class="bi bi-search search-icon"></i>
                     </div>
                 </div>
-                
+
                 <!-- 统计卡片 -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
@@ -520,7 +519,7 @@ async def root():
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 最近扫描和TOP模组 -->
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -543,7 +542,7 @@ async def root():
                     </div>
                 </div>
             </div>
-            
+
             <!-- 项目管理页面 -->
             <div id="projects" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -554,7 +553,7 @@ async def root():
                 </div>
                 <div id="projects-list"></div>
             </div>
-            
+
             <!-- 模组中心页面 -->
             <div id="mods" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -566,7 +565,7 @@ async def root():
                 </div>
                 <div id="mods-list"></div>
             </div>
-            
+
             <!-- 扫描管理页面 -->
             <div id="scans" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -577,7 +576,7 @@ async def root():
                 </div>
                 <div id="scans-list"></div>
             </div>
-            
+
             <!-- 语言文件页面 -->
             <div id="languages" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -591,7 +590,7 @@ async def root():
                 </div>
                 <div id="languages-list"></div>
             </div>
-            
+
             <!-- 数据分析页面 -->
             <div id="analytics" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -616,7 +615,7 @@ async def root():
                     </div>
                 </div>
             </div>
-            
+
             <!-- 工具箱页面 -->
             <div id="tools" class="page-content" style="display:none;">
                 <div class="page-header">
@@ -658,37 +657,37 @@ async def root():
                 </div>
             </div>
         </div>
-        
+
         <!-- 引入Bootstrap和Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        
+
         <script>
             // 当前页面
             let currentPage = 'dashboard';
-            
+
             // 页面切换
             function showPage(page) {
                 // 隐藏所有页面
                 document.querySelectorAll('.page-content').forEach(p => {
                     p.style.display = 'none';
                 });
-                
+
                 // 显示选中页面
                 document.getElementById(page).style.display = 'block';
-                
+
                 // 更新导航状态
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 event.currentTarget.classList.add('active');
-                
+
                 currentPage = page;
-                
+
                 // 加载页面数据
                 loadPageData(page);
             }
-            
+
             // 加载页面数据
             async function loadPageData(page) {
                 switch(page) {
@@ -712,7 +711,7 @@ async def root():
                         break;
                 }
             }
-            
+
             // 加载仪表板数据
             async function loadDashboard() {
                 try {
@@ -722,11 +721,11 @@ async def root():
                     document.getElementById('total-mods').textContent = stats.total_mods || 0;
                     document.getElementById('total-languages').textContent = stats.total_languages || 0;
                     document.getElementById('total-keys').textContent = stats.total_keys || 0;
-                    
+
                     // 加载最近扫描
                     const recentScans = await fetch('/api/v2/scans/recent?limit=5').then(r => r.json());
                     displayRecentScans(recentScans);
-                    
+
                     // 加载TOP模组
                     const topMods = await fetch('/api/v2/mods/top?limit=10').then(r => r.json());
                     displayTopMods(topMods);
@@ -734,13 +733,13 @@ async def root():
                     console.error('Error loading dashboard:', error);
                 }
             }
-            
+
             // 显示最近扫描
             function displayRecentScans(scans) {
                 let html = '<table class="table"><thead><tr>';
                 html += '<th>扫描ID</th><th>状态</th><th>进度</th><th>模组数</th><th>时间</th>';
                 html += '</tr></thead><tbody>';
-                
+
                 scans.forEach(scan => {
                     const statusBadge = getStatusBadge(scan.status);
                     html += `<tr>
@@ -755,17 +754,17 @@ async def root():
                         <td>${formatTime(scan.started_at)}</td>
                     </tr>`;
                 });
-                
+
                 html += '</tbody></table>';
                 document.getElementById('recent-scans').innerHTML = html;
             }
-            
+
             // 显示TOP模组
             function displayTopMods(mods) {
                 let html = '<table class="table"><thead><tr>';
                 html += '<th>#</th><th>模组名称</th><th>版本</th><th>翻译键</th>';
                 html += '</tr></thead><tbody>';
-                
+
                 mods.forEach((mod, index) => {
                     html += `<tr>
                         <td>${index + 1}</td>
@@ -774,11 +773,11 @@ async def root():
                         <td><span class="badge badge-info">${mod.keys_count}</span></td>
                     </tr>`;
                 });
-                
+
                 html += '</tbody></table>';
                 document.getElementById('top-mods').innerHTML = html;
             }
-            
+
             // 加载项目列表
             async function loadProjects() {
                 try {
@@ -788,7 +787,7 @@ async def root():
                     console.error('Error loading projects:', error);
                 }
             }
-            
+
             // 显示项目列表
             function displayProjects(projects) {
                 if (projects.length === 0) {
@@ -798,7 +797,7 @@ async def root():
                         </div>`;
                     return;
                 }
-                
+
                 let html = '<div class="row g-3">';
                 projects.forEach(project => {
                     html += `
@@ -816,7 +815,7 @@ async def root():
                 html += '</div>';
                 document.getElementById('projects-list').innerHTML = html;
             }
-            
+
             // 加载模组列表
             async function loadMods() {
                 try {
@@ -826,13 +825,13 @@ async def root():
                     console.error('Error loading mods:', error);
                 }
             }
-            
+
             // 显示模组列表
             function displayMods(mods) {
                 let html = '<div class="data-table"><table class="table"><thead><tr>';
                 html += '<th>模组ID</th><th>名称</th><th>版本</th><th>加载器</th><th>语言文件</th><th>操作</th>';
                 html += '</tr></thead><tbody>';
-                
+
                 mods.forEach(mod => {
                     html += `<tr>
                         <td><code>${mod.mod_id}</code></td>
@@ -845,11 +844,11 @@ async def root():
                         </td>
                     </tr>`;
                 });
-                
+
                 html += '</tbody></table></div>';
                 document.getElementById('mods-list').innerHTML = html;
             }
-            
+
             // 加载扫描列表
             async function loadScans() {
                 try {
@@ -859,13 +858,13 @@ async def root():
                     console.error('Error loading scans:', error);
                 }
             }
-            
+
             // 显示扫描列表
             function displayScans(scans) {
                 let html = '<div class="data-table"><table class="table"><thead><tr>';
                 html += '<th>扫描ID</th><th>状态</th><th>路径</th><th>模式</th><th>进度</th><th>开始时间</th><th>操作</th>';
                 html += '</tr></thead><tbody>';
-                
+
                 scans.forEach(scan => {
                     const statusBadge = getStatusBadge(scan.status);
                     html += `<tr>
@@ -885,11 +884,11 @@ async def root():
                         </td>
                     </tr>`;
                 });
-                
+
                 html += '</tbody></table></div>';
                 document.getElementById('scans-list').innerHTML = html;
             }
-            
+
             // 加载语言文件
             async function loadLanguages() {
                 try {
@@ -899,13 +898,13 @@ async def root():
                     console.error('Error loading languages:', error);
                 }
             }
-            
+
             // 显示语言文件
             function displayLanguages(languages) {
                 let html = '<div class="data-table"><table class="table"><thead><tr>';
                 html += '<th>模组</th><th>语言代码</th><th>文件路径</th><th>键数量</th><th>操作</th>';
                 html += '</tr></thead><tbody>';
-                
+
                 languages.forEach(lang => {
                     html += `<tr>
                         <td>${lang.mod_name || lang.mod_id}</td>
@@ -917,17 +916,17 @@ async def root():
                         </td>
                     </tr>`;
                 });
-                
+
                 html += '</tbody></table></div>';
                 document.getElementById('languages-list').innerHTML = html;
             }
-            
+
             // 加载分析数据
             async function loadAnalytics() {
                 // 这里可以加载图表数据
                 console.log('Loading analytics...');
             }
-            
+
             // 获取状态徽章
             function getStatusBadge(status) {
                 const badges = {
@@ -938,14 +937,14 @@ async def root():
                 };
                 return badges[status] || status;
             }
-            
+
             // 格式化时间
             function formatTime(timestamp) {
                 if (!timestamp) return '-';
                 const date = new Date(timestamp);
                 return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN');
             }
-            
+
             // 导出数据
             async function exportData(format) {
                 try {
@@ -961,7 +960,7 @@ async def root():
                     alert('导出失败: ' + error.message);
                 }
             }
-            
+
             // 页面加载时初始化
             window.onload = function() {
                 loadDashboard();
@@ -975,31 +974,36 @@ async def root():
 
 # API v2 端点
 
+
 @app.get("/api/v2/stats")
 async def get_stats():
     """获取统计数据"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         # 获取各项统计
         stats = {}
-        
-        cursor.execute("SELECT COUNT(DISTINCT scan_id) FROM scan_sessions WHERE status = 'completed'")
-        stats['total_scans'] = cursor.fetchone()[0] or 0
-        
+
+        cursor.execute(
+            "SELECT COUNT(DISTINCT scan_id) FROM scan_sessions WHERE status = 'completed'"
+        )
+        stats["total_scans"] = cursor.fetchone()[0] or 0
+
         cursor.execute("SELECT COUNT(*) FROM scan_results")
-        stats['total_results'] = cursor.fetchone()[0] or 0
-        
-        cursor.execute("SELECT COUNT(DISTINCT mod_id) FROM scan_results WHERE mod_id IS NOT NULL")
-        stats['total_mods'] = cursor.fetchone()[0] or 0
-        
+        stats["total_results"] = cursor.fetchone()[0] or 0
+
+        cursor.execute(
+            "SELECT COUNT(DISTINCT mod_id) FROM scan_results WHERE mod_id IS NOT NULL"
+        )
+        stats["total_mods"] = cursor.fetchone()[0] or 0
+
         cursor.execute("SELECT COUNT(DISTINCT language_code) FROM scan_results")
-        stats['total_languages'] = cursor.fetchone()[0] or 0
-        
+        stats["total_languages"] = cursor.fetchone()[0] or 0
+
         cursor.execute("SELECT SUM(keys_count) FROM scan_results")
-        stats['total_keys'] = cursor.fetchone()[0] or 0
-        
+        stats["total_keys"] = cursor.fetchone()[0] or 0
+
         return stats
     finally:
         conn.close()
@@ -1010,14 +1014,17 @@ async def get_recent_scans(limit: int = Query(5, ge=1, le=50)):
     """获取最近的扫描会话"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
-        cursor.execute("""
-            SELECT * FROM scan_sessions 
-            ORDER BY started_at DESC 
+        cursor.execute(
+            """
+            SELECT * FROM scan_sessions
+            ORDER BY started_at DESC
             LIMIT ?
-        """, (limit,))
-        
+        """,
+            (limit,),
+        )
+
         return [dict(row) for row in cursor.fetchall()]
     finally:
         conn.close()
@@ -1028,10 +1035,11 @@ async def get_top_mods(limit: int = Query(10, ge=1, le=100)):
     """获取TOP模组"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
-        cursor.execute("""
-            SELECT 
+        cursor.execute(
+            """
+            SELECT
                 mod_id,
                 mod_name,
                 mod_version,
@@ -1042,8 +1050,10 @@ async def get_top_mods(limit: int = Query(10, ge=1, le=100)):
             GROUP BY mod_id, mod_name, mod_version
             ORDER BY keys_count DESC
             LIMIT ?
-        """, (limit,))
-        
+        """,
+            (limit,),
+        )
+
         return [dict(row) for row in cursor.fetchall()]
     finally:
         conn.close()
@@ -1054,7 +1064,7 @@ async def get_projects():
     """获取项目列表"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         cursor.execute("SELECT * FROM projects ORDER BY updated_at DESC")
         return [dict(row) for row in cursor.fetchall()]
@@ -1063,14 +1073,11 @@ async def get_projects():
 
 
 @app.get("/api/v2/mods")
-async def get_mods(
-    search: Optional[str] = None,
-    limit: int = Query(100, ge=1, le=500)
-):
+async def get_mods(search: str | None = None, limit: int = Query(100, ge=1, le=500)):
     """获取模组列表"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         query = """
             SELECT DISTINCT
@@ -1080,16 +1087,16 @@ async def get_mods(
                 COUNT(DISTINCT sr.language_code) as language_count
             FROM scan_results sr
         """
-        
+
         params = []
         if search:
             query += " WHERE sr.mod_name LIKE ? OR sr.mod_id LIKE ?"
             params.extend([f"%{search}%", f"%{search}%"])
-        
+
         query += " GROUP BY sr.mod_id, sr.mod_name, sr.mod_version"
         query += " ORDER BY language_count DESC LIMIT ?"
         params.append(limit)
-        
+
         cursor.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
     finally:
@@ -1101,14 +1108,17 @@ async def get_scans(limit: int = Query(50, ge=1, le=200)):
     """获取扫描列表"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
-        cursor.execute("""
-            SELECT * FROM scan_sessions 
-            ORDER BY started_at DESC 
+        cursor.execute(
+            """
+            SELECT * FROM scan_sessions
+            ORDER BY started_at DESC
             LIMIT ?
-        """, (limit,))
-        
+        """,
+            (limit,),
+        )
+
         return [dict(row) for row in cursor.fetchall()]
     finally:
         conn.close()
@@ -1116,16 +1126,15 @@ async def get_scans(limit: int = Query(50, ge=1, le=200)):
 
 @app.get("/api/v2/languages")
 async def get_languages_v2(
-    language: Optional[str] = None,
-    limit: int = Query(100, ge=1, le=500)
+    language: str | None = None, limit: int = Query(100, ge=1, le=500)
 ):
     """获取语言文件列表"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         query = """
-            SELECT 
+            SELECT
                 mod_id,
                 mod_name,
                 language_code,
@@ -1133,15 +1142,15 @@ async def get_languages_v2(
                 keys_count
             FROM scan_results
         """
-        
+
         params = []
         if language:
             query += " WHERE language_code = ?"
             params.append(language)
-        
+
         query += " ORDER BY keys_count DESC LIMIT ?"
         params.append(limit)
-        
+
         cursor.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
     finally:
@@ -1153,47 +1162,47 @@ async def export_data_v2(format: str = Query("json", pattern="^(json|csv)$")):
     """导出数据"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         # 获取所有数据
         cursor.execute("SELECT * FROM scan_sessions ORDER BY started_at DESC")
         sessions = [dict(row) for row in cursor.fetchall()]
-        
+
         cursor.execute("SELECT * FROM scan_results ORDER BY keys_count DESC")
         results = [dict(row) for row in cursor.fetchall()]
-        
+
         if format == "json":
             data = {
                 "export_time": datetime.now().isoformat(),
                 "sessions": sessions,
-                "results": results
+                "results": results,
             }
             return JSONResponse(
                 content=data,
                 headers={
                     "Content-Disposition": f"attachment; filename=mc_l10n_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                }
+                },
             )
         else:
             # CSV格式导出（简化版）
             import csv
             import io
-            
+
             output = io.StringIO()
             writer = csv.writer(output)
-            
+
             # 写入扫描结果
             if results:
                 writer.writerow(results[0].keys())
                 for result in results:
                     writer.writerow(result.values())
-            
+
             return Response(
                 content=output.getvalue(),
                 media_type="text/csv",
                 headers={
                     "Content-Disposition": f"attachment; filename=mc_l10n_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-                }
+                },
             )
     finally:
         conn.close()
@@ -1201,21 +1210,21 @@ async def export_data_v2(format: str = Query("json", pattern="^(json|csv)$")):
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description='MC L10n 高级Web数据库管理器')
-    parser.add_argument('--db', default='mc_l10n_unified.db', help='数据库文件路径')
-    parser.add_argument('--port', type=int, default=18080, help='Web服务端口')
-    parser.add_argument('--host', default='127.0.0.1', help='监听地址')
-    
+    parser = argparse.ArgumentParser(description="MC L10n 高级Web数据库管理器")
+    parser.add_argument("--db", default="mc_l10n_unified.db", help="数据库文件路径")
+    parser.add_argument("--port", type=int, default=18080, help="Web服务端口")
+    parser.add_argument("--host", default="127.0.0.1", help="监听地址")
+
     args = parser.parse_args()
-    
+
     global DB_PATH
     DB_PATH = args.db
-    
+
     # 检查数据库文件
     if not Path(DB_PATH).exists():
         print(f"❌ 数据库文件不存在: {DB_PATH}")
         return
-    
+
     print(f"""
     ╔══════════════════════════════════════════════════════════╗
     ║     🎮 MC L10n 高级数据库管理中心 v2.0.0                ║
@@ -1233,7 +1242,7 @@ def main():
     ║  按 Ctrl+C 停止服务器                                    ║
     ╚══════════════════════════════════════════════════════════╝
     """)
-    
+
     # 启动服务器
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 

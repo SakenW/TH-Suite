@@ -158,33 +158,33 @@
       "capabilities": "功能支持"
     },
     "languages": {
-       "title": "可用语言",
-       "available": "可用",
-       "partial": "部分可用",
-       "unavailable": "不可用",
-       "lastUpdated": "最后更新",
-       "fileCount": "文件数量",
-       "size": "大小",
-       "refresh": "刷新语言列表",
-       "loading": "获取语言信息中..."
-     },
+      "title": "可用语言",
+      "available": "可用",
+      "partial": "部分可用",
+      "unavailable": "不可用",
+      "lastUpdated": "最后更新",
+      "fileCount": "文件数量",
+      "size": "大小",
+      "refresh": "刷新语言列表",
+      "loading": "获取语言信息中..."
+    },
     "cache": {
-       "title": "缓存管理",
-       "type": "类型",
-       "size": "大小",
-       "entries": "条目数",
-       "hitRate": "命中率",
-       "clear": "清除缓存",
-       "refresh": "刷新缓存信息",
-       "loading": "获取缓存信息中..."
-     },
+      "title": "缓存管理",
+      "type": "类型",
+      "size": "大小",
+      "entries": "条目数",
+      "hitRate": "命中率",
+      "clear": "清除缓存",
+      "refresh": "刷新缓存信息",
+      "loading": "获取缓存信息中..."
+    },
     "actions": {
-       "checkStatus": "检查状态",
-       "refreshLanguages": "刷新语言",
-       "clearCache": "清除缓存",
-       "configure": "配置服务器",
-       "actions": "操作"
-     }
+      "checkStatus": "检查状态",
+      "refreshLanguages": "刷新语言",
+      "clearCache": "清除缓存",
+      "configure": "配置服务器",
+      "actions": "操作"
+    }
   },
   "transfer": {
     "title": "上传下载",
@@ -307,10 +307,10 @@
         "best": "最佳"
       },
       "placeholders": {
-          "customName": "留空使用默认名称",
-          "outputPath": "选择输出目录"
-        },
-        "select": "选择"
+        "customName": "留空使用默认名称",
+        "outputPath": "选择输出目录"
+      },
+      "select": "选择"
     },
     "control": {
       "title": "构建控制",

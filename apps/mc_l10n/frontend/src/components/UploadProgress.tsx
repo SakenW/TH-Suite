@@ -3,7 +3,7 @@
  * 显示文件上传进度和状态
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -14,8 +14,8 @@ import {
   Paper,
   Grid,
   Button,
-  Alert
-} from '@mui/material';
+  Alert,
+} from '@mui/material'
 import {
   Cloud,
   UploadCloud,
@@ -31,23 +31,23 @@ import {
   AlertCircle,
   Zap,
   Clock,
-  HardDrive
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MinecraftCard } from './minecraft/MinecraftCard';
-import { MinecraftButton } from './minecraft/MinecraftButton';
-import { MinecraftProgress } from './minecraft/MinecraftProgress';
-import { minecraftColors } from '../theme/minecraftTheme';
-import type { UploadProgress as UploadProgressType } from '../services/transhubService';
+  HardDrive,
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MinecraftCard } from './minecraft/MinecraftCard'
+import { MinecraftButton } from './minecraft/MinecraftButton'
+import { MinecraftProgress } from './minecraft/MinecraftProgress'
+import { minecraftColors } from '../theme/minecraftTheme'
+import type { UploadProgress as UploadProgressType } from '../services/transhubService'
 
 interface UploadProgressProps {
-  progress: UploadProgressType | null;
-  onCancel?: () => void;
-  onRetry?: () => void;
-  onPause?: () => void;
-  onResume?: () => void;
-  showDetails?: boolean;
-  compact?: boolean;
+  progress: UploadProgressType | null
+  onCancel?: () => void
+  onRetry?: () => void
+  onPause?: () => void
+  onResume?: () => void
+  showDetails?: boolean
+  compact?: boolean
 }
 
 export const UploadProgress: React.FC<UploadProgressProps> = ({
@@ -57,84 +57,84 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   onPause,
   onResume,
   showDetails = true,
-  compact = false
+  compact = false,
 }) => {
-  const [expanded, setExpanded] = useState(!compact);
-  const [isPaused, setIsPaused] = useState(false);
+  const [expanded, setExpanded] = useState(!compact)
+  const [isPaused, setIsPaused] = useState(false)
 
   if (!progress) {
-    return null;
+    return null
   }
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
 
   const formatTime = (seconds: number): string => {
-    if (!seconds || seconds <= 0) return '--:--';
-    if (seconds < 60) return `${Math.floor(seconds)}秒`;
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}分${secs}秒`;
-  };
+    if (!seconds || seconds <= 0) return '--:--'
+    if (seconds < 60) return `${Math.floor(seconds)}秒`
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}分${secs}秒`
+  }
 
   const formatSpeed = (bytesPerSecond: number): string => {
-    if (!bytesPerSecond || bytesPerSecond <= 0) return '-- /秒';
-    return `${formatBytes(bytesPerSecond)}/秒`;
-  };
+    if (!bytesPerSecond || bytesPerSecond <= 0) return '-- /秒'
+    return `${formatBytes(bytesPerSecond)}/秒`
+  }
 
   const getStatusIcon = () => {
     switch (progress.status) {
       case 'preparing':
-        return <RefreshCw size={16} className="animate-spin" />;
+        return <RefreshCw size={16} className='animate-spin' />
       case 'uploading':
-        return <UploadCloud size={16} />;
+        return <UploadCloud size={16} />
       case 'completed':
-        return <CheckCircle size={16} />;
+        return <CheckCircle size={16} />
       case 'failed':
-        return <XCircle size={16} />;
+        return <XCircle size={16} />
       case 'retrying':
-        return <RefreshCw size={16} className="animate-spin" />;
+        return <RefreshCw size={16} className='animate-spin' />
       default:
-        return <Cloud size={16} />;
+        return <Cloud size={16} />
     }
-  };
+  }
 
   const getStatusColor = () => {
     switch (progress.status) {
       case 'completed':
-        return minecraftColors.emerald;
+        return minecraftColors.emerald
       case 'failed':
-        return minecraftColors.redstoneRed;
+        return minecraftColors.redstoneRed
       case 'retrying':
-        return minecraftColors.goldYellow;
+        return minecraftColors.goldYellow
       case 'uploading':
-        return minecraftColors.diamondBlue;
+        return minecraftColors.diamondBlue
       default:
-        return minecraftColors.iron;
+        return minecraftColors.iron
     }
-  };
+  }
 
   const getStatusText = () => {
     switch (progress.status) {
       case 'preparing':
-        return '准备上传';
+        return '准备上传'
       case 'uploading':
-        return `上传中 (${progress.currentChunk}/${progress.totalChunks})`;
+        return `上传中 (${progress.currentChunk}/${progress.totalChunks})`
       case 'completed':
-        return '上传完成';
+        return '上传完成'
       case 'failed':
-        return '上传失败';
+        return '上传失败'
       case 'retrying':
-        return '重试中';
+        return '重试中'
       default:
-        return '未知状态';
+        return '未知状态'
     }
-  };
+  }
 
   if (compact && !expanded) {
     // 紧凑模式
@@ -144,42 +144,37 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
           p: 1.5,
           bgcolor: 'rgba(15, 23, 42, 0.9)',
           border: '2px solid #2A2A4E',
-          borderRadius: 0
+          borderRadius: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ color: getStatusColor() }}>
-            {getStatusIcon()}
-          </Box>
+          <Box sx={{ color: getStatusColor() }}>{getStatusIcon()}</Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="caption" sx={{ fontFamily: '"Minecraft", monospace' }}>
+            <Typography variant='caption' sx={{ fontFamily: '"Minecraft", monospace' }}>
               {getStatusText()}
             </Typography>
             <LinearProgress
-              variant="determinate"
+              variant='determinate'
               value={progress.percentage}
               sx={{
                 height: 4,
                 mt: 0.5,
                 bgcolor: 'rgba(255,255,255,0.1)',
                 '& .MuiLinearProgress-bar': {
-                  bgcolor: getStatusColor()
-                }
+                  bgcolor: getStatusColor(),
+                },
               }}
             />
           </Box>
-          <Typography variant="caption" sx={{ fontFamily: '"Minecraft", monospace' }}>
+          <Typography variant='caption' sx={{ fontFamily: '"Minecraft", monospace' }}>
             {progress.percentage.toFixed(0)}%
           </Typography>
-          <IconButton
-            size="small"
-            onClick={() => setExpanded(!expanded)}
-          >
+          <IconButton size='small' onClick={() => setExpanded(!expanded)}>
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </IconButton>
         </Box>
       </Paper>
-    );
+    )
   }
 
   return (
@@ -192,21 +187,21 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
       >
         <MinecraftCard
           variant={progress.status === 'failed' ? 'redstone' : 'enchantment'}
-          title="上传进度"
+          title='上传进度'
           icon={progress.status === 'completed' ? 'emerald' : 'diamond'}
         >
           <Box sx={{ p: 2 }}>
             {/* 状态栏 */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ color: getStatusColor() }}>
-                  {getStatusIcon()}
-                </Box>
+                <Box sx={{ color: getStatusColor() }}>{getStatusIcon()}</Box>
                 <Typography
                   sx={{
                     fontFamily: '"Minecraft", monospace',
                     fontSize: '14px',
-                    color: getStatusColor()
+                    color: getStatusColor(),
                   }}
                 >
                   {getStatusText()}
@@ -215,14 +210,14 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
               <Box sx={{ display: 'flex', gap: 1 }}>
                 {progress.status === 'uploading' && onPause && (
                   <IconButton
-                    size="small"
+                    size='small'
                     onClick={() => {
                       if (isPaused && onResume) {
-                        onResume();
-                        setIsPaused(false);
+                        onResume()
+                        setIsPaused(false)
                       } else if (onPause) {
-                        onPause();
-                        setIsPaused(true);
+                        onPause()
+                        setIsPaused(true)
                       }
                     }}
                   >
@@ -230,12 +225,12 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                   </IconButton>
                 )}
                 {progress.status === 'failed' && onRetry && (
-                  <IconButton size="small" onClick={onRetry}>
+                  <IconButton size='small' onClick={onRetry}>
                     <RefreshCw size={16} />
                   </IconButton>
                 )}
                 {onCancel && progress.status !== 'completed' && (
-                  <IconButton size="small" onClick={onCancel}>
+                  <IconButton size='small' onClick={onCancel}>
                     <X size={16} />
                   </IconButton>
                 )}
@@ -246,20 +241,20 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
             <MinecraftProgress
               value={progress.percentage}
               max={100}
-              variant="experience"
+              variant='experience'
               label={`${progress.percentage.toFixed(1)}%`}
               animated
-              size="large"
+              size='large'
             />
 
             {/* 错误信息 */}
             {progress.error && (
               <Alert
-                severity="error"
+                severity='error'
                 sx={{
                   mt: 2,
                   bgcolor: 'rgba(244, 67, 54, 0.1)',
-                  border: '1px solid #F44336'
+                  border: '1px solid #F44336',
                 }}
               >
                 {progress.error}
@@ -273,13 +268,10 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                   <Grid item xs={6} md={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <HardDrive size={20} style={{ color: minecraftColors.iron }} />
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         已上传
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontFamily: '"Minecraft", monospace' }}
-                      >
+                      <Typography variant='body2' sx={{ fontFamily: '"Minecraft", monospace' }}>
                         {formatBytes(progress.bytesUploaded)}
                       </Typography>
                     </Box>
@@ -287,13 +279,10 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                   <Grid item xs={6} md={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Zap size={20} style={{ color: minecraftColors.goldYellow }} />
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         速度
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontFamily: '"Minecraft", monospace' }}
-                      >
+                      <Typography variant='body2' sx={{ fontFamily: '"Minecraft", monospace' }}>
                         {formatSpeed(progress.speed)}
                       </Typography>
                     </Box>
@@ -301,13 +290,10 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                   <Grid item xs={6} md={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Clock size={20} style={{ color: minecraftColors.diamondBlue }} />
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         剩余时间
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontFamily: '"Minecraft", monospace' }}
-                      >
+                      <Typography variant='body2' sx={{ fontFamily: '"Minecraft", monospace' }}>
                         {formatTime(progress.remainingTime)}
                       </Typography>
                     </Box>
@@ -315,13 +301,10 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                   <Grid item xs={6} md={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Cloud size={20} style={{ color: minecraftColors.emerald }} />
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant='caption' color='text.secondary'>
                         分片进度
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontFamily: '"Minecraft", monospace' }}
-                      >
+                      <Typography variant='body2' sx={{ fontFamily: '"Minecraft", monospace' }}>
                         {progress.completedChunks}/{progress.totalChunks}
                       </Typography>
                     </Box>
@@ -334,7 +317,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
             {progress.status === 'completed' && (
               <Box sx={{ mt: 2, textAlign: 'center' }}>
                 <MinecraftButton
-                  minecraftStyle="emerald"
+                  minecraftStyle='emerald'
                   startIcon={<CheckCircle size={16} />}
                   onClick={onCancel}
                 >
@@ -346,16 +329,13 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
             {progress.status === 'failed' && (
               <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
                 <MinecraftButton
-                  minecraftStyle="gold"
+                  minecraftStyle='gold'
                   startIcon={<RefreshCw size={16} />}
                   onClick={onRetry}
                 >
                   重试
                 </MinecraftButton>
-                <MinecraftButton
-                  minecraftStyle="stone"
-                  onClick={onCancel}
-                >
+                <MinecraftButton minecraftStyle='stone' onClick={onCancel}>
                   取消
                 </MinecraftButton>
               </Box>
@@ -364,7 +344,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
         </MinecraftCard>
       </motion.div>
     </AnimatePresence>
-  );
-};
+  )
+}
 
-export default UploadProgress;
+export default UploadProgress

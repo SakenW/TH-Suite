@@ -16,12 +16,14 @@ from fastapi.testclient import TestClient
 
 backend_dir = Path(__file__).parent.parent
 if str(backend_dir) not in sys.path:
-    from main import app
-    from src.mc_l10n.domain.scan_models import ProjectInfo, ScanResult
-
-    from packages.core import LoaderType, ProjectType, ScanError
-
     sys.path.insert(0, str(backend_dir))
+
+from api.routes.mod_routes import ModInfo  # noqa: E402
+from api.routes.project_routes import ProjectInfo  # noqa: E402
+from main import app  # noqa: E402
+from src.application.dto import ScanResultDTO as ScanResult  # noqa: E402
+
+from packages.core import LoaderType, ProjectType, ScanError  # noqa: E402
 
 
 class TestScanAPI:
@@ -207,7 +209,7 @@ class TestScanAPI:
     @patch("src.mc_l10n.api.scan_router.get_scan_service")
     def test_scan_single_mod_success(self, mock_get_service, client, sample_fabric_mod):
         """测试成功扫描单个MOD文件"""
-        from src.mc_l10n.domain.scan_models import ModInfo
+        # ModInfo should be available from the main imports or packages
 
         mock_service = AsyncMock()
 

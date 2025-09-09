@@ -12,15 +12,17 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
-from src.mc_l10n.application.services.scan_service import ScanService
-from src.mc_l10n.domain.scan_models import ScanProgress
-from src.mc_l10n.infrastructure.parsers import ParserFactory
-from src.mc_l10n.infrastructure.scanners import (
+from application.services.scan_application_service import (
+    ScanApplicationService as ScanService,
+)
+
+from packages.adapters.minecraft.scanner import (
     MinecraftModScanner,
     MinecraftProjectScanner,
 )
-
 from packages.core import LoaderType, ProjectType, ScanError
+from packages.core.data.models import ScanProgress
+from packages.parsers import ParserFactory
 
 
 class TestScanService:

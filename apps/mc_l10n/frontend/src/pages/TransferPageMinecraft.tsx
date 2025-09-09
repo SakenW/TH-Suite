@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -19,9 +19,9 @@ import {
   MenuItem,
   Alert,
   Divider,
-  Badge
-} from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+  Badge,
+} from '@mui/material'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload,
   Download,
@@ -49,38 +49,38 @@ import {
   Eye,
   Hash,
   Package,
-  Globe
-} from 'lucide-react';
-import toast from 'react-hot-toast';
+  Globe,
+} from 'lucide-react'
+import toast from 'react-hot-toast'
 
-import { MinecraftButton } from '../components/minecraft/MinecraftButton';
-import { MinecraftCard } from '../components/minecraft/MinecraftCard';
-import { MinecraftProgress } from '../components/minecraft/MinecraftProgress';
-import { MinecraftBlock } from '../components/MinecraftComponents';
+import { MinecraftButton } from '../components/minecraft/MinecraftButton'
+import { MinecraftCard } from '../components/minecraft/MinecraftCard'
+import { MinecraftProgress } from '../components/minecraft/MinecraftProgress'
+import { MinecraftBlock } from '../components/MinecraftComponents'
 
 interface TransferTask {
-  id: string;
-  type: 'upload' | 'download' | 'sync';
-  name: string;
-  project: string;
-  status: 'pending' | 'transferring' | 'completed' | 'error' | 'paused';
-  progress: number;
-  speed: number; // KB/s
-  size: number; // bytes
-  transferred: number; // bytes
-  remainingTime: number; // seconds
-  error?: string;
-  conflicts?: number;
-  direction?: 'local_to_server' | 'server_to_local' | 'bidirectional';
-  createdAt: string;
+  id: string
+  type: 'upload' | 'download' | 'sync'
+  name: string
+  project: string
+  status: 'pending' | 'transferring' | 'completed' | 'error' | 'paused'
+  progress: number
+  speed: number // KB/s
+  size: number // bytes
+  transferred: number // bytes
+  remainingTime: number // seconds
+  error?: string
+  conflicts?: number
+  direction?: 'local_to_server' | 'server_to_local' | 'bidirectional'
+  createdAt: string
 }
 
 interface ServerStatus {
-  connected: boolean;
-  latency: number;
-  bandwidth: number;
-  activeConnections: number;
-  queuedTasks: number;
+  connected: boolean
+  latency: number
+  bandwidth: number
+  activeConnections: number
+  queuedTasks: number
 }
 
 const mockTasks: TransferTask[] = [
@@ -96,7 +96,7 @@ const mockTasks: TransferTask[] = [
     transferred: 16640000,
     remainingTime: 8,
     direction: 'local_to_server',
-    createdAt: '2025-01-01 14:30'
+    createdAt: '2025-01-01 14:30',
   },
   {
     id: '2',
@@ -110,7 +110,7 @@ const mockTasks: TransferTask[] = [
     transferred: 8400000,
     remainingTime: 0,
     direction: 'server_to_local',
-    createdAt: '2025-01-01 14:25'
+    createdAt: '2025-01-01 14:25',
   },
   {
     id: '3',
@@ -125,140 +125,154 @@ const mockTasks: TransferTask[] = [
     remainingTime: 0,
     conflicts: 3,
     direction: 'bidirectional',
-    createdAt: '2025-01-01 14:35'
-  }
-];
+    createdAt: '2025-01-01 14:35',
+  },
+]
 
 export default function TransferPageMinecraft() {
-  const [tasks, setTasks] = useState<TransferTask[]>(mockTasks);
+  const [tasks, setTasks] = useState<TransferTask[]>(mockTasks)
   const [serverStatus, setServerStatus] = useState<ServerStatus>({
     connected: true,
     latency: 45,
     bandwidth: 2048,
     activeConnections: 3,
-    queuedTasks: 5
-  });
-  const [filterType, setFilterType] = useState<'all' | 'upload' | 'download' | 'sync'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTask, setSelectedTask] = useState<TransferTask | null>(null);
+    queuedTasks: 5,
+  })
+  const [filterType, setFilterType] = useState<'all' | 'upload' | 'download' | 'sync'>('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedTask, setSelectedTask] = useState<TransferTask | null>(null)
 
   const handleStartTransfer = (taskId: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id === taskId) {
-        return { ...task, status: 'transferring', progress: 0 };
-      }
-      return task;
-    }));
+    setTasks(prev =>
+      prev.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status: 'transferring', progress: 0 }
+        }
+        return task
+      }),
+    )
 
     // 模拟传输进度
     const interval = setInterval(() => {
-      setTasks(prev => prev.map(task => {
-        if (task.id === taskId && task.status === 'transferring') {
-          const newProgress = Math.min(100, task.progress + Math.random() * 10);
-          const newTransferred = (task.size * newProgress) / 100;
-          const remainingBytes = task.size - newTransferred;
-          const remainingTime = Math.max(0, Math.floor(remainingBytes / (task.speed * 1024)));
-          
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            toast.success(`${task.name} 传输完成！`, { icon: '✅' });
-            return { 
-              ...task, 
-              status: 'completed', 
-              progress: 100,
-              transferred: task.size,
-              remainingTime: 0,
-              speed: 0
-            };
+      setTasks(prev =>
+        prev.map(task => {
+          if (task.id === taskId && task.status === 'transferring') {
+            const newProgress = Math.min(100, task.progress + Math.random() * 10)
+            const newTransferred = (task.size * newProgress) / 100
+            const remainingBytes = task.size - newTransferred
+            const remainingTime = Math.max(0, Math.floor(remainingBytes / (task.speed * 1024)))
+
+            if (newProgress >= 100) {
+              clearInterval(interval)
+              toast.success(`${task.name} 传输完成！`, { icon: '✅' })
+              return {
+                ...task,
+                status: 'completed',
+                progress: 100,
+                transferred: task.size,
+                remainingTime: 0,
+                speed: 0,
+              }
+            }
+
+            return {
+              ...task,
+              progress: newProgress,
+              transferred: newTransferred,
+              remainingTime,
+              speed: 800 + Math.random() * 500,
+            }
           }
-          
-          return { 
-            ...task, 
-            progress: newProgress,
-            transferred: newTransferred,
-            remainingTime,
-            speed: 800 + Math.random() * 500
-          };
-        }
-        return task;
-      }));
-    }, 500);
-  };
+          return task
+        }),
+      )
+    }, 500)
+  }
 
   const handlePauseTransfer = (taskId: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id === taskId) {
-        return { ...task, status: 'paused', speed: 0 };
-      }
-      return task;
-    }));
-    toast.success('传输已暂停', { icon: '⏸️' });
-  };
+    setTasks(prev =>
+      prev.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status: 'paused', speed: 0 }
+        }
+        return task
+      }),
+    )
+    toast.success('传输已暂停', { icon: '⏸️' })
+  }
 
   const handleResumeTransfer = (taskId: string) => {
-    handleStartTransfer(taskId);
-    toast.success('继续传输', { icon: '▶️' });
-  };
+    handleStartTransfer(taskId)
+    toast.success('继续传输', { icon: '▶️' })
+  }
 
   const handleCancelTransfer = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
-    toast.success('传输已取消', { icon: '❌' });
-  };
+    setTasks(prev => prev.filter(task => task.id !== taskId))
+    toast.success('传输已取消', { icon: '❌' })
+  }
 
   const handleRetryTransfer = (taskId: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id === taskId) {
-        return { ...task, status: 'pending', progress: 0, transferred: 0, error: undefined };
-      }
-      return task;
-    }));
-    setTimeout(() => handleStartTransfer(taskId), 500);
-  };
+    setTasks(prev =>
+      prev.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status: 'pending', progress: 0, transferred: 0, error: undefined }
+        }
+        return task
+      }),
+    )
+    setTimeout(() => handleStartTransfer(taskId), 500)
+  }
 
   const handleResolveConflicts = (task: TransferTask) => {
-    toast.info(`解决 ${task.conflicts} 个冲突...`, { icon: '🔧' });
-    setSelectedTask(task);
-  };
+    toast.info(`解决 ${task.conflicts} 个冲突...`, { icon: '🔧' })
+    setSelectedTask(task)
+  }
 
   const formatSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(2)} KB`;
-  };
+    const mb = bytes / (1024 * 1024)
+    return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(2)} KB`
+  }
 
   const formatSpeed = (kbps: number) => {
-    return kbps >= 1024 ? `${(kbps / 1024).toFixed(1)} MB/s` : `${kbps.toFixed(0)} KB/s`;
-  };
+    return kbps >= 1024 ? `${(kbps / 1024).toFixed(1)} MB/s` : `${kbps.toFixed(0)} KB/s`
+  }
 
   const formatTime = (seconds: number) => {
-    if (seconds <= 0) return '--:--';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    if (seconds <= 0) return '--:--'
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle size={16} color="#4CAF50" />;
-      case 'transferring': return <Clock size={16} color="#2196F3" />;
-      case 'error': return <XCircle size={16} color="#F44336" />;
-      case 'paused': return <Pause size={16} color="#FF9800" />;
-      default: return <AlertTriangle size={16} color="#9E9E9E" />;
+      case 'completed':
+        return <CheckCircle size={16} color='#4CAF50' />
+      case 'transferring':
+        return <Clock size={16} color='#2196F3' />
+      case 'error':
+        return <XCircle size={16} color='#F44336' />
+      case 'paused':
+        return <Pause size={16} color='#FF9800' />
+      default:
+        return <AlertTriangle size={16} color='#9E9E9E' />
     }
-  };
+  }
 
   const getTypeIcon = (type: string, direction?: string) => {
-    if (type === 'sync') return <RefreshCw size={20} color="#9C27B0" />;
-    if (type === 'upload' || direction === 'local_to_server') 
-      return <Upload size={20} color="#4CAF50" />;
-    return <Download size={20} color="#2196F3" />;
-  };
+    if (type === 'sync') return <RefreshCw size={20} color='#9C27B0' />
+    if (type === 'upload' || direction === 'local_to_server')
+      return <Upload size={20} color='#4CAF50' />
+    return <Download size={20} color='#2196F3' />
+  }
 
   const filteredTasks = tasks.filter(task => {
-    const matchesFilter = filterType === 'all' || task.type === filterType;
-    const matchesSearch = task.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.project.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+    const matchesFilter = filterType === 'all' || task.type === filterType
+    const matchesSearch =
+      task.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.project.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesFilter && matchesSearch
+  })
 
   return (
     <Box sx={{ p: 3 }}>
@@ -270,7 +284,7 @@ export default function TransferPageMinecraft() {
       >
         <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h3"
+            variant='h3'
             sx={{
               fontFamily: '"Minecraft", "Press Start 2P", monospace',
               fontSize: { xs: '24px', md: '32px' },
@@ -301,10 +315,10 @@ export default function TransferPageMinecraft() {
       {/* 服务器状态 */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12}>
-          <MinecraftCard 
-            variant="enchantment" 
-            title="服务器状态" 
-            icon="diamond"
+          <MinecraftCard
+            variant='enchantment'
+            title='服务器状态'
+            icon='diamond'
             glowing={serverStatus.connected}
           >
             <Box sx={{ p: 2 }}>
@@ -312,9 +326,9 @@ export default function TransferPageMinecraft() {
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
                     {serverStatus.connected ? (
-                      <Wifi size={24} color="#4CAF50" />
+                      <Wifi size={24} color='#4CAF50' />
                     ) : (
-                      <WifiOff size={24} color="#F44336" />
+                      <WifiOff size={24} color='#F44336' />
                     )}
                     <Typography
                       sx={{
@@ -330,7 +344,7 @@ export default function TransferPageMinecraft() {
                 </Grid>
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Zap size={24} color="#FFD700" />
+                    <Zap size={24} color='#FFD700' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -354,7 +368,7 @@ export default function TransferPageMinecraft() {
                 </Grid>
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <ArrowUp size={24} color="#2196F3" />
+                    <ArrowUp size={24} color='#2196F3' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -378,7 +392,7 @@ export default function TransferPageMinecraft() {
                 </Grid>
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <GitBranch size={24} color="#9C27B0" />
+                    <GitBranch size={24} color='#9C27B0' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -402,7 +416,7 @@ export default function TransferPageMinecraft() {
                 </Grid>
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Clock size={24} color="#FF9800" />
+                    <Clock size={24} color='#FF9800' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -427,11 +441,11 @@ export default function TransferPageMinecraft() {
                 <Grid item xs={6} md={2}>
                   <Box sx={{ textAlign: 'center' }}>
                     <MinecraftButton
-                      minecraftStyle="emerald"
-                      size="small"
+                      minecraftStyle='emerald'
+                      size='small'
                       onClick={() => {
-                        setServerStatus(prev => ({ ...prev, connected: !prev.connected }));
-                        toast.success(serverStatus.connected ? '已断开连接' : '已连接到服务器');
+                        setServerStatus(prev => ({ ...prev, connected: !prev.connected }))
+                        toast.success(serverStatus.connected ? '已断开连接' : '已连接到服务器')
                       }}
                     >
                       {serverStatus.connected ? '断开' : '连接'}
@@ -449,12 +463,12 @@ export default function TransferPageMinecraft() {
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
-            placeholder="搜索任务..."
+            placeholder='搜索任务...'
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position='start'>
                   <Search size={20} />
                 </InputAdornment>
               ),
@@ -465,7 +479,7 @@ export default function TransferPageMinecraft() {
                 border: '2px solid #4A4A4A',
                 borderRadius: 0,
                 '& fieldset': { border: 'none' },
-              }
+              },
             }}
           />
         </Grid>
@@ -473,7 +487,7 @@ export default function TransferPageMinecraft() {
           <FormControl fullWidth>
             <Select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as any)}
+              onChange={e => setFilterType(e.target.value as any)}
               sx={{
                 fontFamily: '"Minecraft", monospace',
                 fontSize: '14px',
@@ -483,17 +497,17 @@ export default function TransferPageMinecraft() {
                 '& fieldset': { border: 'none' },
               }}
             >
-              <MenuItem value="all">全部</MenuItem>
-              <MenuItem value="upload">上传</MenuItem>
-              <MenuItem value="download">下载</MenuItem>
-              <MenuItem value="sync">同步</MenuItem>
+              <MenuItem value='all'>全部</MenuItem>
+              <MenuItem value='upload'>上传</MenuItem>
+              <MenuItem value='download'>下载</MenuItem>
+              <MenuItem value='sync'>同步</MenuItem>
             </Select>
           </FormControl>
         </Grid>
         <Grid item xs={6} md={2}>
           <MinecraftButton
             fullWidth
-            minecraftStyle="diamond"
+            minecraftStyle='diamond'
             onClick={() => toast.info('检查更新...')}
             startIcon={<RefreshCw size={16} />}
           >
@@ -503,7 +517,7 @@ export default function TransferPageMinecraft() {
         <Grid item xs={6} md={2}>
           <MinecraftButton
             fullWidth
-            minecraftStyle="gold"
+            minecraftStyle='gold'
             onClick={() => toast.info('创建新任务...')}
             startIcon={<Upload size={16} />}
           >
@@ -513,7 +527,7 @@ export default function TransferPageMinecraft() {
         <Grid item xs={6} md={2}>
           <MinecraftButton
             fullWidth
-            minecraftStyle="emerald"
+            minecraftStyle='emerald'
             onClick={() => toast.info('同步所有...')}
             startIcon={<GitMerge size={16} />}
             glowing
@@ -524,7 +538,7 @@ export default function TransferPageMinecraft() {
       </Grid>
 
       {/* 任务列表 */}
-      <MinecraftCard variant="chest" title="传输任务" icon="gold">
+      <MinecraftCard variant='chest' title='传输任务' icon='gold'>
         <Box sx={{ p: 2 }}>
           <List>
             <AnimatePresence>
@@ -542,17 +556,18 @@ export default function TransferPageMinecraft() {
                       p: 2,
                       background: 'rgba(0,0,0,0.3)',
                       border: `2px solid ${
-                        task.status === 'completed' ? '#4CAF50' :
-                        task.status === 'transferring' ? '#2196F3' :
-                        task.status === 'error' ? '#F44336' :
-                        '#4A4A4A'
+                        task.status === 'completed'
+                          ? '#4CAF50'
+                          : task.status === 'transferring'
+                            ? '#2196F3'
+                            : task.status === 'error'
+                              ? '#F44336'
+                              : '#4A4A4A'
                       }`,
                       borderRadius: 0,
                     }}
                   >
-                    <ListItemIcon>
-                      {getTypeIcon(task.type, task.direction)}
-                    </ListItemIcon>
+                    <ListItemIcon>{getTypeIcon(task.type, task.direction)}</ListItemIcon>
                     <ListItemText
                       primary={
                         <Box>
@@ -571,7 +586,7 @@ export default function TransferPageMinecraft() {
                             {task.conflicts && task.conflicts > 0 && (
                               <Chip
                                 label={`${task.conflicts} 冲突`}
-                                size="small"
+                                size='small'
                                 sx={{
                                   fontFamily: '"Minecraft", monospace',
                                   fontSize: '10px',
@@ -612,8 +627,8 @@ export default function TransferPageMinecraft() {
                             <>
                               <MinecraftProgress
                                 value={task.progress}
-                                variant="loading"
-                                size="small"
+                                variant='loading'
+                                size='small'
                                 animated={task.status === 'transferring'}
                               />
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
@@ -655,8 +670,8 @@ export default function TransferPageMinecraft() {
                             <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
                               <Chip
                                 icon={<CheckCircle size={14} />}
-                                label="已完成"
-                                size="small"
+                                label='已完成'
+                                size='small'
                                 sx={{
                                   fontFamily: '"Minecraft", monospace',
                                   fontSize: '10px',
@@ -679,7 +694,7 @@ export default function TransferPageMinecraft() {
                           )}
                           {task.error && (
                             <Alert
-                              severity="error"
+                              severity='error'
                               sx={{
                                 mt: 1,
                                 py: 0.5,
@@ -699,55 +714,40 @@ export default function TransferPageMinecraft() {
                     <ListItemSecondaryAction>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         {task.status === 'pending' && (
-                          <Tooltip title="开始">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleStartTransfer(task.id)}
-                            >
+                          <Tooltip title='开始'>
+                            <IconButton size='small' onClick={() => handleStartTransfer(task.id)}>
                               <Play size={16} />
                             </IconButton>
                           </Tooltip>
                         )}
                         {task.status === 'transferring' && (
-                          <Tooltip title="暂停">
-                            <IconButton
-                              size="small"
-                              onClick={() => handlePauseTransfer(task.id)}
-                            >
+                          <Tooltip title='暂停'>
+                            <IconButton size='small' onClick={() => handlePauseTransfer(task.id)}>
                               <Pause size={16} />
                             </IconButton>
                           </Tooltip>
                         )}
                         {task.status === 'paused' && (
-                          <Tooltip title="继续">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResumeTransfer(task.id)}
-                            >
+                          <Tooltip title='继续'>
+                            <IconButton size='small' onClick={() => handleResumeTransfer(task.id)}>
                               <Play size={16} />
                             </IconButton>
                           </Tooltip>
                         )}
                         {task.status === 'error' && (
-                          <Tooltip title="重试">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleRetryTransfer(task.id)}
-                            >
+                          <Tooltip title='重试'>
+                            <IconButton size='small' onClick={() => handleRetryTransfer(task.id)}>
                               <RefreshCw size={16} />
                             </IconButton>
                           </Tooltip>
                         )}
-                        <Tooltip title="详情">
-                          <IconButton size="small">
+                        <Tooltip title='详情'>
+                          <IconButton size='small'>
                             <Eye size={16} />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="取消">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleCancelTransfer(task.id)}
-                          >
+                        <Tooltip title='取消'>
+                          <IconButton size='small' onClick={() => handleCancelTransfer(task.id)}>
                             <XCircle size={16} />
                           </IconButton>
                         </Tooltip>
@@ -790,9 +790,9 @@ export default function TransferPageMinecraft() {
       {/* 传输统计 */}
       <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={6} md={3}>
-          <MinecraftCard variant="inventory">
+          <MinecraftCard variant='inventory'>
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Upload size={24} color="#4CAF50" />
+              <Upload size={24} color='#4CAF50' />
               <Typography
                 sx={{
                   fontFamily: '"Minecraft", monospace',
@@ -816,9 +816,9 @@ export default function TransferPageMinecraft() {
           </MinecraftCard>
         </Grid>
         <Grid item xs={6} md={3}>
-          <MinecraftCard variant="inventory">
+          <MinecraftCard variant='inventory'>
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Download size={24} color="#2196F3" />
+              <Download size={24} color='#2196F3' />
               <Typography
                 sx={{
                   fontFamily: '"Minecraft", monospace',
@@ -842,9 +842,9 @@ export default function TransferPageMinecraft() {
           </MinecraftCard>
         </Grid>
         <Grid item xs={6} md={3}>
-          <MinecraftCard variant="inventory">
+          <MinecraftCard variant='inventory'>
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <RefreshCw size={24} color="#9C27B0" />
+              <RefreshCw size={24} color='#9C27B0' />
               <Typography
                 sx={{
                   fontFamily: '"Minecraft", monospace',
@@ -868,9 +868,9 @@ export default function TransferPageMinecraft() {
           </MinecraftCard>
         </Grid>
         <Grid item xs={6} md={3}>
-          <MinecraftCard variant="inventory">
+          <MinecraftCard variant='inventory'>
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Package size={24} color="#FFD700" />
+              <Package size={24} color='#FFD700' />
               <Typography
                 sx={{
                   fontFamily: '"Minecraft", monospace',
@@ -895,5 +895,5 @@ export default function TransferPageMinecraft() {
         </Grid>
       </Grid>
     </Box>
-  );
+  )
 }

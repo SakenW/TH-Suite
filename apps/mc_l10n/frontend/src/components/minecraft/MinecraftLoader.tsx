@@ -1,12 +1,12 @@
-import React from 'react';
-import { Box, Typography, keyframes } from '@mui/material';
-import { motion } from 'framer-motion';
+import React from 'react'
+import { Box, Typography, keyframes } from '@mui/material'
+import { motion } from 'framer-motion'
 
 interface MinecraftLoaderProps {
-  text?: string;
-  variant?: 'blocks' | 'creeper' | 'portal' | 'crafting' | 'chest';
-  size?: 'small' | 'medium' | 'large';
-  fullScreen?: boolean;
+  text?: string
+  variant?: 'blocks' | 'creeper' | 'portal' | 'crafting' | 'chest'
+  size?: 'small' | 'medium' | 'large'
+  fullScreen?: boolean
 }
 
 // 方块旋转动画
@@ -14,7 +14,7 @@ const blockSpin = keyframes`
   0% { transform: rotateY(0deg) rotateX(0deg); }
   50% { transform: rotateY(180deg) rotateX(180deg); }
   100% { transform: rotateY(360deg) rotateX(360deg); }
-`;
+`
 
 // 苦力怕脉动动画
 const creeperPulse = keyframes`
@@ -22,7 +22,7 @@ const creeperPulse = keyframes`
   25% { transform: scale(1.1); filter: brightness(1.2); }
   50% { transform: scale(0.9); filter: brightness(0.8); }
   75% { transform: scale(1.05); filter: brightness(1.5); }
-`;
+`
 
 // 传送门波动动画
 const portalWave = keyframes`
@@ -30,7 +30,7 @@ const portalWave = keyframes`
   33% { transform: scale(1.2) rotate(120deg); opacity: 1; }
   66% { transform: scale(0.8) rotate(240deg); opacity: 0.6; }
   100% { transform: scale(1) rotate(360deg); opacity: 0.8; }
-`;
+`
 
 // 工作台组装动画
 const craftingAssemble = keyframes`
@@ -39,33 +39,33 @@ const craftingAssemble = keyframes`
   50% { transform: translateY(0) rotate(180deg); }
   75% { transform: translateY(-10px) rotate(270deg); }
   100% { transform: translateY(0) rotate(360deg); }
-`;
+`
 
 // 箱子开合动画
 const chestOpen = keyframes`
   0%, 100% { transform: rotateX(0deg); }
   50% { transform: rotateX(-25deg); }
-`;
+`
 
 export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
   text = '加载中...',
   variant = 'blocks',
   size = 'medium',
-  fullScreen = false
+  fullScreen = false,
 }) => {
   const getSizeStyles = () => {
     switch (size) {
       case 'small':
-        return { blockSize: 20, fontSize: '12px', gap: 8 };
+        return { blockSize: 20, fontSize: '12px', gap: 8 }
       case 'large':
-        return { blockSize: 60, fontSize: '18px', gap: 20 };
+        return { blockSize: 60, fontSize: '18px', gap: 20 }
       case 'medium':
       default:
-        return { blockSize: 40, fontSize: '14px', gap: 12 };
+        return { blockSize: 40, fontSize: '14px', gap: 12 }
     }
-  };
+  }
 
-  const sizeStyles = getSizeStyles();
+  const sizeStyles = getSizeStyles()
 
   const renderLoader = () => {
     switch (variant) {
@@ -109,7 +109,7 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
               </motion.div>
             ))}
           </Box>
-        );
+        )
 
       case 'creeper':
         return (
@@ -182,11 +182,17 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
               }}
             />
           </Box>
-        );
+        )
 
       case 'portal':
         return (
-          <Box sx={{ position: 'relative', width: sizeStyles.blockSize * 2, height: sizeStyles.blockSize * 2 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: sizeStyles.blockSize * 2,
+              height: sizeStyles.blockSize * 2,
+            }}
+          >
             {[0, 1, 2].map(ring => (
               <Box
                 key={ring}
@@ -222,18 +228,24 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
               }}
             />
           </Box>
-        );
+        )
 
       case 'crafting':
         return (
-          <Box sx={{ position: 'relative', width: sizeStyles.blockSize * 2, height: sizeStyles.blockSize * 2 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: sizeStyles.blockSize * 2,
+              height: sizeStyles.blockSize * 2,
+            }}
+          >
             {/* 3x3 工作台网格 */}
             {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => {
-              const row = Math.floor(index / 3);
-              const col = index % 3;
-              const colors = ['#8B6239', '#C6A57A', '#D7CCC8'];
-              const color = colors[index % 3];
-              
+              const row = Math.floor(index / 3)
+              const col = index % 3
+              const colors = ['#8B6239', '#C6A57A', '#D7CCC8']
+              const color = colors[index % 3]
+
               return (
                 <Box
                   key={index}
@@ -251,14 +263,20 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
                     boxShadow: '1px 1px 4px rgba(0,0,0,0.3)',
                   }}
                 />
-              );
+              )
             })}
           </Box>
-        );
+        )
 
       case 'chest':
         return (
-          <Box sx={{ position: 'relative', width: sizeStyles.blockSize * 2, height: sizeStyles.blockSize * 1.5 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: sizeStyles.blockSize * 2,
+              height: sizeStyles.blockSize * 1.5,
+            }}
+          >
             {/* 箱子盖子 */}
             <Box
               sx={{
@@ -315,12 +333,12 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
               }}
             />
           </Box>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const content = (
     <Box
@@ -373,7 +391,7 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
         ))}
       </Box>
     </Box>
-  );
+  )
 
   if (fullScreen) {
     return (
@@ -394,10 +412,10 @@ export const MinecraftLoader: React.FC<MinecraftLoaderProps> = ({
       >
         {content}
       </Box>
-    );
+    )
   }
 
-  return content;
-};
+  return content
+}
 
-export default MinecraftLoader;
+export default MinecraftLoader

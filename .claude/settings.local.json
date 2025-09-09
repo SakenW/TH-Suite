@@ -83,7 +83,19 @@
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
       "Bash(git gc:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(pnpm info:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run build:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm install:*)",
+      "Bash(time npm run build)",
+      "Bash(npm run check:all:*)",
+      "Bash(npm run format:check:*)",
+      "Bash(npm run format:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)"
     ],
     "deny": [],
     "ask": []

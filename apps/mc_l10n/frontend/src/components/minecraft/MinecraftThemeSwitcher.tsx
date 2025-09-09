@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Box,
   Typography,
@@ -13,17 +13,22 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
-} from '@mui/material';
-import { Sun, Moon, Gamepad2, Contrast, Palette, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { MinecraftCard } from './MinecraftCard';
-import { MinecraftButton } from './MinecraftButton';
-import { MinecraftBlock } from '../MinecraftComponents';
-import { useTheme, ThemeMode, ColorScheme } from '../../contexts/ThemeContext';
-import { minecraftColors } from '../../theme/minecraftTheme';
-import { useNotification } from '../../hooks/useNotification';
+} from '@mui/material'
+import { Sun, Moon, Gamepad2, Contrast, Palette, Check } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { MinecraftCard } from './MinecraftCard'
+import { MinecraftButton } from './MinecraftButton'
+import { MinecraftBlock } from '../MinecraftComponents'
+import { useTheme, ThemeMode, ColorScheme } from '../../contexts/ThemeContext'
+import { minecraftColors } from '../../theme/minecraftTheme'
+import { useNotification } from '../../hooks/useNotification'
 
-const themeModes: { value: ThemeMode; label: string; icon: React.ReactNode; description: string }[] = [
+const themeModes: {
+  value: ThemeMode
+  label: string
+  icon: React.ReactNode
+  description: string
+}[] = [
   {
     value: 'minecraft',
     label: 'Minecraft',
@@ -48,7 +53,7 @@ const themeModes: { value: ThemeMode; label: string; icon: React.ReactNode; desc
     icon: <Contrast size={24} />,
     description: '提高可读性的高对比度主题',
   },
-];
+]
 
 const colorSchemes: { value: ColorScheme; label: string; colors: string[]; block?: string }[] = [
   {
@@ -81,26 +86,32 @@ const colorSchemes: { value: ColorScheme; label: string; colors: string[]; block
     colors: ['#4A4A4A', minecraftColors.netheriteGray, minecraftColors.goldYellow],
     block: 'iron',
   },
-];
+]
 
 export const MinecraftThemeSwitcher: React.FC = () => {
-  const { themeMode, colorScheme, setThemeMode, setColorScheme } = useTheme();
-  const notification = useNotification();
+  const { themeMode, colorScheme, setThemeMode, setColorScheme } = useTheme()
+  const notification = useNotification()
 
   const handleThemeModeChange = (mode: ThemeMode) => {
-    setThemeMode(mode);
-    notification.success('主题已切换', `已切换到${themeModes.find(t => t.value === mode)?.label}主题`);
-  };
+    setThemeMode(mode)
+    notification.success(
+      '主题已切换',
+      `已切换到${themeModes.find(t => t.value === mode)?.label}主题`,
+    )
+  }
 
   const handleColorSchemeChange = (scheme: ColorScheme) => {
-    setColorScheme(scheme);
-    notification.info('配色方案已更改', `已切换到${colorSchemes.find(c => c.value === scheme)?.label}配色`);
-  };
+    setColorScheme(scheme)
+    notification.info(
+      '配色方案已更改',
+      `已切换到${colorSchemes.find(c => c.value === scheme)?.label}配色`,
+    )
+  }
 
   return (
     <Box>
       <Typography
-        variant="h5"
+        variant='h5'
         sx={{
           fontFamily: '"Minecraft", monospace',
           color: minecraftColors.goldYellow,
@@ -115,9 +126,9 @@ export const MinecraftThemeSwitcher: React.FC = () => {
       </Typography>
 
       {/* 主题模式选择 */}
-      <MinecraftCard minecraftStyle="stone" sx={{ mb: 3 }}>
+      <MinecraftCard minecraftStyle='stone' sx={{ mb: 3 }}>
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontFamily: '"Minecraft", monospace',
             color: '#FFFFFF',
@@ -126,18 +137,18 @@ export const MinecraftThemeSwitcher: React.FC = () => {
         >
           主题模式
         </Typography>
-        
+
         <Grid container spacing={2}>
-          {themeModes.map((mode) => (
+          {themeModes.map(mode => (
             <Grid item xs={12} sm={6} md={3} key={mode.value}>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Card
                   sx={{
                     bgcolor: themeMode === mode.value ? 'rgba(255,255,255,0.1)' : 'transparent',
-                    border: themeMode === mode.value ? `2px solid ${minecraftColors.emerald}` : '2px solid transparent',
+                    border:
+                      themeMode === mode.value
+                        ? `2px solid ${minecraftColors.emerald}`
+                        : '2px solid transparent',
                     borderRadius: 0,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
@@ -150,8 +161,19 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                 >
                   <CardActionArea>
                     <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <Box sx={{ color: themeMode === mode.value ? minecraftColors.emerald : '#FFFFFF' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          mb: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            color: themeMode === mode.value ? minecraftColors.emerald : '#FFFFFF',
+                          }}
+                        >
                           {mode.icon}
                         </Box>
                         {themeMode === mode.value && (
@@ -159,7 +181,7 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                         )}
                       </Box>
                       <Typography
-                        variant="subtitle1"
+                        variant='subtitle1'
                         sx={{
                           fontFamily: '"Minecraft", monospace',
                           color: '#FFFFFF',
@@ -169,7 +191,7 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                         {mode.label}
                       </Typography>
                       <Typography
-                        variant="caption"
+                        variant='caption'
                         sx={{
                           color: 'rgba(255,255,255,0.6)',
                           fontSize: '11px',
@@ -187,9 +209,9 @@ export const MinecraftThemeSwitcher: React.FC = () => {
       </MinecraftCard>
 
       {/* 配色方案选择 */}
-      <MinecraftCard minecraftStyle="iron" sx={{ mb: 3 }}>
+      <MinecraftCard minecraftStyle='iron' sx={{ mb: 3 }}>
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontFamily: '"Minecraft", monospace',
             color: '#FFFFFF',
@@ -198,21 +220,22 @@ export const MinecraftThemeSwitcher: React.FC = () => {
         >
           配色方案
         </Typography>
-        
+
         <Grid container spacing={2}>
-          {colorSchemes.map((scheme) => (
+          {colorSchemes.map(scheme => (
             <Grid item xs={6} sm={4} md={2.4} key={scheme.value}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Box
                   sx={{
                     p: 2,
-                    border: colorScheme === scheme.value ? `2px solid ${scheme.colors[0]}` : '2px solid rgba(255,255,255,0.1)',
+                    border:
+                      colorScheme === scheme.value
+                        ? `2px solid ${scheme.colors[0]}`
+                        : '2px solid rgba(255,255,255,0.1)',
                     borderRadius: 0,
                     cursor: 'pointer',
-                    bgcolor: colorScheme === scheme.value ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    bgcolor:
+                      colorScheme === scheme.value ? 'rgba(255,255,255,0.05)' : 'transparent',
                     transition: 'all 0.2s',
                     textAlign: 'center',
                     '&:hover': {
@@ -225,10 +248,14 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                   {/* 方块图标 */}
                   {scheme.block && (
                     <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                      <MinecraftBlock type={scheme.block as any} size={32} animated={colorScheme === scheme.value} />
+                      <MinecraftBlock
+                        type={scheme.block as any}
+                        size={32}
+                        animated={colorScheme === scheme.value}
+                      />
                     </Box>
                   )}
-                  
+
                   {/* 颜色展示 */}
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, mb: 1 }}>
                     {scheme.colors.map((color, index) => (
@@ -243,10 +270,10 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                       />
                     ))}
                   </Box>
-                  
+
                   {/* 名称 */}
                   <Typography
-                    variant="caption"
+                    variant='caption'
                     sx={{
                       fontFamily: '"Minecraft", monospace',
                       color: colorScheme === scheme.value ? scheme.colors[0] : '#FFFFFF',
@@ -255,7 +282,7 @@ export const MinecraftThemeSwitcher: React.FC = () => {
                   >
                     {scheme.label}
                   </Typography>
-                  
+
                   {/* 选中标记 */}
                   {colorScheme === scheme.value && (
                     <Box sx={{ mt: 0.5 }}>
@@ -270,9 +297,9 @@ export const MinecraftThemeSwitcher: React.FC = () => {
       </MinecraftCard>
 
       {/* 预览区域 */}
-      <MinecraftCard minecraftStyle="gold">
+      <MinecraftCard minecraftStyle='gold'>
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontFamily: '"Minecraft", monospace',
             color: '#FFFFFF',
@@ -281,39 +308,50 @@ export const MinecraftThemeSwitcher: React.FC = () => {
         >
           主题预览
         </Typography>
-        
+
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <MinecraftButton minecraftStyle="emerald" fullWidth sx={{ mb: 1 }}>
+            <MinecraftButton minecraftStyle='emerald' fullWidth sx={{ mb: 1 }}>
               主要按钮
             </MinecraftButton>
-            <MinecraftButton minecraftStyle="stone" fullWidth sx={{ mb: 1 }}>
+            <MinecraftButton minecraftStyle='stone' fullWidth sx={{ mb: 1 }}>
               次要按钮
             </MinecraftButton>
-            <MinecraftButton minecraftStyle="gold" fullWidth disabled>
+            <MinecraftButton minecraftStyle='gold' fullWidth disabled>
               禁用按钮
             </MinecraftButton>
           </Grid>
           <Grid item xs={12} md={6}>
             <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 0, mb: 1 }}>
-              <Typography variant="body2" color="text.primary">
+              <Typography variant='body2' color='text.primary'>
                 主要文本颜色
               </Typography>
             </Box>
             <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 0 }}>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 次要文本颜色
               </Typography>
             </Box>
           </Grid>
         </Grid>
-        
-        <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <Typography variant="caption" color="text.secondary">
-            当前主题: <Chip label={`${themeModes.find(t => t.value === themeMode)?.label} + ${colorSchemes.find(c => c.value === colorScheme)?.label}`} size="small" />
+
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            bgcolor: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <Typography variant='caption' color='text.secondary'>
+            当前主题:{' '}
+            <Chip
+              label={`${themeModes.find(t => t.value === themeMode)?.label} + ${colorSchemes.find(c => c.value === colorScheme)?.label}`}
+              size='small'
+            />
           </Typography>
         </Box>
       </MinecraftCard>
     </Box>
-  );
-};
+  )
+}

@@ -1,10 +1,10 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import LanguageDetector from 'i18next-browser-languagedetector'
 
 // 导入翻译资源
-import zhCN from './locales/zh-CN.json';
-import enUS from './locales/en-US.json';
+import zhCN from './locales/zh-CN.json'
+import enUS from './locales/en-US.json'
 
 i18n
   .use(LanguageDetector)
@@ -23,6 +23,6 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-  });
+  })
 
-export default i18n;
+export default i18n

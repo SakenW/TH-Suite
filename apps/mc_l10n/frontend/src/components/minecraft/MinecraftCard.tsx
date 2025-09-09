@@ -1,15 +1,15 @@
-import React from 'react';
-import { Card, CardContent, CardProps, Box, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
-import { MinecraftBlock } from '../MinecraftComponents';
+import React from 'react'
+import { Card, CardContent, CardProps, Box, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { MinecraftBlock } from '../MinecraftComponents'
 
 interface MinecraftCardProps extends Omit<CardProps, 'variant'> {
-  variant?: 'inventory' | 'chest' | 'crafting' | 'enchantment';
-  title?: string;
-  icon?: 'grass' | 'stone' | 'diamond' | 'gold' | 'iron' | 'emerald';
-  glowing?: boolean;
-  pixelated?: boolean;
-  children: React.ReactNode;
+  variant?: 'inventory' | 'chest' | 'crafting' | 'enchantment'
+  title?: string
+  icon?: 'grass' | 'stone' | 'diamond' | 'gold' | 'iron' | 'emerald'
+  glowing?: boolean
+  pixelated?: boolean
+  children: React.ReactNode
 }
 
 export const MinecraftCard: React.FC<MinecraftCardProps> = ({
@@ -30,7 +30,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
           borderWidth: 3,
           innerBorder: '#AB8259',
           shadowColor: '#3B1909',
-        };
+        }
       case 'crafting':
         return {
           background: 'linear-gradient(180deg, #C6A57A 0%, #A68A5A 50%, #86704A 100%)',
@@ -38,7 +38,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
           borderWidth: 3,
           innerBorder: '#D6B58A',
           shadowColor: '#463030',
-        };
+        }
       case 'enchantment':
         return {
           background: 'linear-gradient(180deg, #4A3C6E 0%, #3A2C5E 50%, #2A1C4E 100%)',
@@ -47,7 +47,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
           innerBorder: '#6A5C8E',
           shadowColor: '#0A0020',
           glowColor: '#9B59B6',
-        };
+        }
       case 'inventory':
       default:
         return {
@@ -56,11 +56,11 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
           borderWidth: 3,
           innerBorder: '#D6D6D6',
           shadowColor: '#1B1B1B',
-        };
+        }
     }
-  };
+  }
 
-  const styles = getVariantStyles();
+  const styles = getVariantStyles()
 
   return (
     <motion.div
@@ -140,7 +140,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
           >
             {icon && <MinecraftBlock type={icon} size={24} animated={glowing} />}
             <Typography
-              variant="h6"
+              variant='h6'
               sx={{
                 color: '#FFFFFF',
                 fontFamily: pixelated ? '"Minecraft", "Press Start 2P", monospace' : 'inherit',
@@ -164,7 +164,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
         >
           {children}
         </CardContent>
-        
+
         {/* 角落装饰 */}
         <Box
           sx={{
@@ -216,7 +216,7 @@ export const MinecraftCard: React.FC<MinecraftCardProps> = ({
         />
       </Card>
     </motion.div>
-  );
-};
+  )
+}
 
-export default MinecraftCard;
+export default MinecraftCard

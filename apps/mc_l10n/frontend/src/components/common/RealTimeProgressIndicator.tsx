@@ -3,7 +3,7 @@
  * 专为扫描任务设计的增强型进度显示，支持实时更新、动画效果和丰富的状态展示
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -15,8 +15,8 @@ import {
   Fade,
   Collapse,
   IconButton,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+} from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
 import {
   Play,
   Pause,
@@ -31,31 +31,40 @@ import {
   Expand,
   Minimize2,
   Zap,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ScanStatistics {
-  total_files: number;
-  processed_files: number;
-  total_mods: number;
-  total_language_files: number;
-  total_keys: number;
-  scan_duration_ms?: number;
+  total_files: number
+  processed_files: number
+  total_mods: number
+  total_language_files: number
+  total_keys: number
+  scan_duration_ms?: number
+  // 新增的详细进度信息
+  scan_phase?: 'discovering' | 'processing' | 'finalizing'
+  phase_text?: string
+  current_batch?: number
+  total_batches?: number
+  batch_progress?: number
+  files_per_second?: number
+  estimated_remaining_seconds?: number
+  elapsed_seconds?: number
 }
 
 interface RealTimeProgressProps {
-  scanId?: string;
-  progress: number; // 0-100
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  currentFile?: string;
-  statistics: ScanStatistics;
-  error?: string;
-  startTime?: Date;
-  estimatedTimeRemaining?: number;
-  onCancel?: () => void;
-  animated?: boolean;
-  compact?: boolean;
-  showDetails?: boolean;
+  scanId?: string
+  progress: number // 0-100
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  currentFile?: string
+  statistics: ScanStatistics
+  error?: string
+  startTime?: Date
+  estimatedTimeRemaining?: number
+  onCancel?: () => void
+  animated?: boolean
+  compact?: boolean
+  showDetails?: boolean
 }
 
 export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
@@ -72,89 +81,89 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
   compact = false,
   showDetails = true,
 }) => {
-  const theme = useTheme();
-  const [expanded, setExpanded] = useState(!compact);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [smoothProgress, setSmoothProgress] = useState(progress);
-  const [previousStats, setPreviousStats] = useState<ScanStatistics | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const theme = useTheme()
+  const [expanded, setExpanded] = useState(!compact)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [smoothProgress, setSmoothProgress] = useState(progress)
+  const [previousStats, setPreviousStats] = useState<ScanStatistics | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // 计算经过的时间
   useEffect(() => {
     if (startTime && status === 'running') {
       const updateElapsedTime = () => {
-        const now = Date.now();
-        const elapsed = Math.floor((now - startTime.getTime()) / 1000);
-        setElapsedTime(elapsed);
-      };
+        const now = Date.now()
+        const elapsed = Math.floor((now - startTime.getTime()) / 1000)
+        setElapsedTime(elapsed)
+      }
 
-      updateElapsedTime();
-      intervalRef.current = setInterval(updateElapsedTime, 1000);
+      updateElapsedTime()
+      intervalRef.current = setInterval(updateElapsedTime, 1000)
 
       return () => {
         if (intervalRef.current) {
-          clearInterval(intervalRef.current);
+          clearInterval(intervalRef.current)
         }
-      };
+      }
     }
-  }, [startTime, status]);
+  }, [startTime, status])
 
   // 平滑进度动画
   useEffect(() => {
     if (animated) {
-      const targetProgress = Math.max(0, Math.min(100, progress));
-      const startProgress = smoothProgress;
-      const diff = targetProgress - startProgress;
-      
+      const targetProgress = Math.max(0, Math.min(100, progress))
+      const startProgress = smoothProgress
+      const diff = targetProgress - startProgress
+
       if (Math.abs(diff) > 0.1) {
-        const duration = Math.min(1000, Math.abs(diff) * 20); // 最多1秒动画
-        const startTime = Date.now();
-        
+        const duration = Math.min(1000, Math.abs(diff) * 20) // 最多1秒动画
+        const startTime = Date.now()
+
         const animateProgress = () => {
-          const elapsed = Date.now() - startTime;
-          const ratio = Math.min(elapsed / duration, 1);
-          const easeOutQuart = 1 - Math.pow(1 - ratio, 4);
-          const currentProgress = startProgress + diff * easeOutQuart;
-          
-          setSmoothProgress(currentProgress);
-          
+          const elapsed = Date.now() - startTime
+          const ratio = Math.min(elapsed / duration, 1)
+          const easeOutQuart = 1 - Math.pow(1 - ratio, 4)
+          const currentProgress = startProgress + diff * easeOutQuart
+
+          setSmoothProgress(currentProgress)
+
           if (ratio < 1) {
-            requestAnimationFrame(animateProgress);
+            requestAnimationFrame(animateProgress)
           }
-        };
-        
-        requestAnimationFrame(animateProgress);
+        }
+
+        requestAnimationFrame(animateProgress)
       } else {
-        setSmoothProgress(progress);
+        setSmoothProgress(progress)
       }
     } else {
-      setSmoothProgress(progress);
+      setSmoothProgress(progress)
     }
-  }, [progress, animated, smoothProgress]);
+  }, [progress, animated, smoothProgress])
 
   // 检测统计数据变化
   useEffect(() => {
-    setPreviousStats(statistics);
-  }, [statistics]);
+    setPreviousStats(statistics)
+  }, [statistics])
 
   const formatTime = useCallback((seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }, [])
 
   const formatFileSize = useCallback((bytes: number) => {
-    const units = ['B', 'KB', 'MB', 'GB'];
-    let size = bytes;
-    let unitIndex = 0;
-    
+    const units = ['B', 'KB', 'MB', 'GB']
+    let size = bytes
+    let unitIndex = 0
+
     while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
+      size /= 1024
+      unitIndex++
     }
-    
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
-  }, []);
+
+    return `${size.toFixed(1)} ${units[unitIndex]}`
+  }, [])
 
   const getStatusConfig = useCallback(() => {
     switch (status) {
@@ -164,57 +173,57 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
           icon: <CheckCircle size={20} />,
           label: '完成',
           bgColor: alpha(theme.palette.success.main, 0.1),
-        };
+        }
       case 'failed':
         return {
           color: theme.palette.error.main,
           icon: <AlertCircle size={20} />,
           label: '失败',
           bgColor: alpha(theme.palette.error.main, 0.1),
-        };
+        }
       case 'cancelled':
         return {
           color: theme.palette.warning.main,
           icon: <Pause size={20} />,
           label: '已取消',
           bgColor: alpha(theme.palette.warning.main, 0.1),
-        };
+        }
       case 'running':
         return {
           color: theme.palette.info.main,
           icon: <Play size={20} />,
           label: '运行中',
           bgColor: alpha(theme.palette.info.main, 0.1),
-        };
+        }
       default:
         return {
           color: theme.palette.grey[500],
           icon: <Clock size={20} />,
           label: '等待中',
           bgColor: alpha(theme.palette.grey[500], 0.1),
-        };
+        }
     }
-  }, [status, theme]);
+  }, [status, theme])
 
-  const statusConfig = getStatusConfig();
+  const statusConfig = getStatusConfig()
 
   const renderCompactView = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <motion.div
           animate={{ rotate: status === 'running' ? 360 : 0 }}
-          transition={{ duration: 2, repeat: status === 'running' ? Infinity : 0, ease: "linear" }}
+          transition={{ duration: 2, repeat: status === 'running' ? Infinity : 0, ease: 'linear' }}
         >
           {statusConfig.icon}
         </motion.div>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: statusConfig.color }}>
+        <Typography variant='body2' sx={{ fontWeight: 600, color: statusConfig.color }}>
           {statusConfig.label}
         </Typography>
       </Box>
-      
+
       <Box sx={{ flexGrow: 1, minWidth: 100 }}>
         <LinearProgress
-          variant="determinate"
+          variant='determinate'
           value={smoothProgress}
           sx={{
             height: 6,
@@ -228,19 +237,19 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
           }}
         />
       </Box>
-      
-      <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 45, textAlign: 'right' }}>
+
+      <Typography variant='body2' sx={{ fontWeight: 600, minWidth: 45, textAlign: 'right' }}>
         {Math.round(smoothProgress)}%
       </Typography>
-      
-      <IconButton size="small" onClick={() => setExpanded(!expanded)}>
+
+      <IconButton size='small' onClick={() => setExpanded(!expanded)}>
         {expanded ? <Minimize2 size={16} /> : <Expand size={16} />}
       </IconButton>
     </Box>
-  );
+  )
 
   const renderDetailedView = () => (
-    <Card 
+    <Card
       elevation={2}
       sx={{
         borderRadius: 3,
@@ -270,13 +279,17 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: status === 'running' ? 360 : 0,
-                scale: status === 'running' ? [1, 1.1, 1] : 1 
+                scale: status === 'running' ? [1, 1.1, 1] : 1,
               }}
-              transition={{ 
-                rotate: { duration: 2, repeat: status === 'running' ? Infinity : 0, ease: "linear" },
-                scale: { duration: 2, repeat: status === 'running' ? Infinity : 0 }
+              transition={{
+                rotate: {
+                  duration: 2,
+                  repeat: status === 'running' ? Infinity : 0,
+                  ease: 'linear',
+                },
+                scale: { duration: 2, repeat: status === 'running' ? Infinity : 0 },
               }}
             >
               <Box
@@ -292,24 +305,40 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
                 {statusConfig.icon}
               </Box>
             </motion.div>
-            
+
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: statusConfig.color, display: 'flex', alignItems: 'center', gap: 1 }}>
-                扫描进度 {scanId && <Chip label={`#${scanId.slice(-8)}`} size="small" variant="outlined" />}
+              <Typography
+                variant='h6'
+                sx={{
+                  fontWeight: 700,
+                  color: statusConfig.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                {statistics.phase_text || '扫描进度'}{' '}
+                {scanId && <Chip label={`#${scanId.slice(-8)}`} size='small' variant='outlined' />}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                实时扫描状态监控
+              <Typography variant='caption' color='text.secondary'>
+                {statistics.current_batch && statistics.total_batches
+                  ? `第 ${statistics.current_batch}/${statistics.total_batches} 批`
+                  : '实时扫描状态监控'}
               </Typography>
             </Box>
           </Box>
-          
+
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: statusConfig.color }}>
-              {Math.round(smoothProgress)}%
+            <Typography variant='h5' sx={{ fontWeight: 700, color: statusConfig.color }}>
+              {statistics.processed_files.toLocaleString()} /{' '}
+              {statistics.total_files.toLocaleString()}
             </Typography>
-            {status === 'running' && elapsedTime > 0 && (
-              <Typography variant="caption" color="text.secondary">
-                已用时: {formatTime(elapsedTime)}
+            <Typography variant='body2' color='text.secondary'>
+              文件 ({Math.round(smoothProgress)}%)
+            </Typography>
+            {status === 'running' && statistics.files_per_second && (
+              <Typography variant='caption' color='text.secondary'>
+                {statistics.files_per_second} 文件/秒
               </Typography>
             )}
           </Box>
@@ -318,7 +347,7 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
         {/* 主进度条 */}
         <Box sx={{ mb: 3 }}>
           <LinearProgress
-            variant="determinate"
+            variant='determinate'
             value={smoothProgress}
             sx={{
               height: 12,
@@ -333,159 +362,229 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
             }}
           />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-              {statistics.processed_files} / {statistics.total_files} 文件
+            <Typography variant='caption' color='text.secondary'>
+              {statistics.processed_files.toLocaleString()} /{' '}
+              {statistics.total_files.toLocaleString()} 文件
             </Typography>
-            {estimatedTimeRemaining && status === 'running' && (
-              <Typography variant="caption" color="text.secondary">
-                预计剩余: {formatTime(Math.ceil(estimatedTimeRemaining / 1000))}
+            {statistics.estimated_remaining_seconds !== undefined && status === 'running' && (
+              <Typography variant='caption' color='text.secondary'>
+                预计剩余: {formatTime(statistics.estimated_remaining_seconds)}
               </Typography>
             )}
           </Box>
         </Box>
 
-        {/* 当前处理文件 */}
+        {/* 批次进度 */}
         <AnimatePresence>
-          {currentFile && status === 'running' && (
+          {statistics.batch_progress !== undefined && status === 'running' && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Box sx={{ 
-                mb: 3, 
-                p: 2, 
-                backgroundColor: alpha(theme.palette.info.main, 0.05),
-                borderRadius: 2,
-                border: `1px dashed ${alpha(theme.palette.info.main, 0.2)}`,
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <motion.div
-                    animate={{ x: [-5, 5, -5] }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <Zap size={16} color={theme.palette.info.main} />
-                  </motion.div>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.info.main }}>
-                    正在处理
-                  </Typography>
-                </Box>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    wordBreak: 'break-all',
-                    fontFamily: 'monospace',
-                    fontSize: '0.85rem',
-                    lineHeight: 1.4
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  backgroundColor: alpha(theme.palette.info.main, 0.05),
+                  borderRadius: 2,
+                  border: `1px dashed ${alpha(theme.palette.info.main, 0.2)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 1,
                   }}
                 >
-                  {currentFile}
-                </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <motion.div
+                      animate={{ x: [-5, 5, -5] }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <Zap size={16} color={theme.palette.info.main} />
+                    </motion.div>
+                    <Typography
+                      variant='caption'
+                      sx={{ fontWeight: 600, color: theme.palette.info.main }}
+                    >
+                      批次进度
+                    </Typography>
+                  </Box>
+                  <Typography variant='caption' color='text.secondary'>
+                    {Math.round(statistics.batch_progress)}%
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant='determinate'
+                  value={statistics.batch_progress}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.info.main, 0.1),
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: theme.palette.info.main,
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+                {currentFile && (
+                  <Typography
+                    variant='caption'
+                    sx={{
+                      mt: 1,
+                      display: 'block',
+                      color: 'text.secondary',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    当前: {currentFile}
+                  </Typography>
+                )}
               </Box>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* 统计信息网格 */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 2, mb: 2 }}>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Box sx={{ 
-              textAlign: 'center', 
-              p: 2, 
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              borderRadius: 2,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 1 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+            gap: 2,
+            mb: 2,
+          }}
+        >
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <Box
+              sx={{
+                textAlign: 'center',
+                p: 2,
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  mb: 1,
+                }}
+              >
                 <Files size={16} color={theme.palette.primary.main} />
-                <Typography variant="h5" color="primary.main" fontWeight="bold">
-                  {statistics.processed_files}
+                <Typography variant='h5' color='primary.main' fontWeight='bold'>
+                  {statistics.processed_files.toLocaleString()}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  /{statistics.total_files}
+                <Typography variant='body2' color='text.secondary'>
+                  /{statistics.total_files.toLocaleString()}
                 </Typography>
               </Box>
-              <Typography variant="caption" color="text.secondary">
-                处理文件
+              <Typography variant='caption' color='text.secondary'>
+                已扫描文件
               </Typography>
             </Box>
           </motion.div>
-          
+
           {statistics.total_mods > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Box sx={{ 
-                textAlign: 'center', 
-                p: 2, 
-                backgroundColor: alpha(theme.palette.success.main, 0.1),
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 1 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  p: 2,
+                  backgroundColor: alpha(theme.palette.success.main, 0.1),
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    mb: 1,
+                  }}
+                >
                   <Package size={16} color={theme.palette.success.main} />
-                  <Typography variant="h5" color="success.main" fontWeight="bold">
+                  <Typography variant='h5' color='success.main' fontWeight='bold'>
                     {statistics.total_mods}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   发现模组
                 </Typography>
               </Box>
             </motion.div>
           )}
-          
+
           {statistics.total_language_files > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Box sx={{ 
-                textAlign: 'center', 
-                p: 2, 
-                backgroundColor: alpha(theme.palette.info.main, 0.1),
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 1 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  p: 2,
+                  backgroundColor: alpha(theme.palette.info.main, 0.1),
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    mb: 1,
+                  }}
+                >
                   <Languages size={16} color={theme.palette.info.main} />
-                  <Typography variant="h5" color="info.main" fontWeight="bold">
+                  <Typography variant='h5' color='info.main' fontWeight='bold'>
                     {statistics.total_language_files}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   语言文件
                 </Typography>
               </Box>
             </motion.div>
           )}
-          
+
           {statistics.total_keys > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Box sx={{ 
-                textAlign: 'center', 
-                p: 2, 
-                backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 1 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  p: 2,
+                  backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    mb: 1,
+                  }}
+                >
                   <Key size={16} color={theme.palette.warning.main} />
-                  <Typography variant="h5" color="warning.main" fontWeight="bold">
+                  <Typography variant='h5' color='warning.main' fontWeight='bold'>
                     {statistics.total_keys.toLocaleString()}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   翻译条目
                 </Typography>
               </Box>
@@ -495,25 +594,28 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
 
         {/* 性能指标 */}
         {statistics.scan_duration_ms && status === 'completed' && (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            p: 2, 
-            backgroundColor: alpha(theme.palette.success.main, 0.05),
-            borderRadius: 2, 
-            border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-            mb: 2 
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 2,
+              backgroundColor: alpha(theme.palette.success.main, 0.05),
+              borderRadius: 2,
+              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+              mb: 2,
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingUp size={16} color={theme.palette.success.main} />
-              <Typography variant="body2" color="text.primary">
+              <Typography variant='body2' color='text.primary'>
                 <strong>扫描耗时:</strong> {Math.round(statistics.scan_duration_ms / 1000)}秒
               </Typography>
             </Box>
             {statistics.total_files > 0 && (
-              <Typography variant="body2" color="text.primary">
-                <strong>处理速度:</strong> {Math.round(statistics.total_files / (statistics.scan_duration_ms / 1000))} 文件/秒
+              <Typography variant='body2' color='text.primary'>
+                <strong>处理速度:</strong>{' '}
+                {Math.round(statistics.total_files / (statistics.scan_duration_ms / 1000))} 文件/秒
               </Typography>
             )}
           </Box>
@@ -528,7 +630,7 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity='error' sx={{ mb: 2 }}>
                 <strong>扫描错误:</strong> {error}
               </Alert>
             </motion.div>
@@ -559,7 +661,7 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
         )}
       </CardContent>
     </Card>
-  );
+  )
 
   return (
     <motion.div
@@ -569,7 +671,7 @@ export const RealTimeProgressIndicator: React.FC<RealTimeProgressProps> = ({
     >
       {compact && !expanded ? renderCompactView() : renderDetailedView()}
     </motion.div>
-  );
-};
+  )
+}
 
-export default RealTimeProgressIndicator;
+export default RealTimeProgressIndicator

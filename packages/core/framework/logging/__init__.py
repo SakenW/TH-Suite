@@ -17,10 +17,12 @@ from .logger import ILogger, Logger, LogLevel
 from .logging_config import HybridPanelRenderer, setup_logging
 from .structlog_logger import StructLogFactory, StructLogLogger
 
+
 # Convenience function for getting a logger
 def get_logger(name: str = "") -> StructLogLogger:
     """获取结构化日志器的便捷函数"""
     return StructLogFactory.get_logger(name)
+
 
 __all__ = [
     "ILogger",

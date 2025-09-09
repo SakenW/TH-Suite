@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Box,
   Drawer,
@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Container,
-} from '@mui/material';
+} from '@mui/material'
 import {
   Menu as MenuIcon,
   Home as HomeIcon,
@@ -28,18 +28,18 @@ import {
   Computer as ServerIcon,
   Settings as SettingsIcon,
   Storage as LocalDataIcon,
-} from '@mui/icons-material';
+} from '@mui/icons-material'
 
-const drawerWidth = 240;
+const drawerWidth = 240
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 interface NavItem {
-  text: string;
-  path: string;
-  icon: React.ReactElement;
+  text: string
+  path: string
+  icon: React.ReactElement
 }
 
 const navItems: NavItem[] = [
@@ -54,47 +54,45 @@ const navItems: NavItem[] = [
   { text: '服务器', path: '/server', icon: <ServerIcon /> },
   { text: '设置', path: '/settings', icon: <SettingsIcon /> },
   { text: '本地数据', path: '/local-data', icon: <LocalDataIcon /> },
-];
+]
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const location = useLocation()
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+    setMobileOpen(!mobileOpen)
+  }
 
   const drawer = (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div">
+        <Typography variant='h6' noWrap component='div'>
           MC L10n
         </Typography>
       </Toolbar>
       <Divider />
       <List>
-        {navItems.map((item) => (
+        {navItems.map(item => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
               component={Link}
               to={item.path}
               selected={location.pathname === item.path}
             >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
+              <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
     </div>
-  );
+  )
 
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar
-        position="fixed"
+        position='fixed'
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
@@ -102,25 +100,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         <Toolbar>
           <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
+            color='inherit'
+            aria-label='open drawer'
+            edge='start'
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant='h6' noWrap component='div'>
             TH Suite MC L10n
           </Typography>
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
+      <Box component='nav' sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
         <Drawer
-          variant="temporary"
+          variant='temporary'
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -134,7 +129,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {drawer}
         </Drawer>
         <Drawer
-          variant="permanent"
+          variant='permanent'
           sx={{
             display: { xs: 'none', sm: 'block' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
@@ -145,16 +140,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </Drawer>
       </Box>
       <Box
-        component="main"
+        component='main'
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Toolbar />
-        <Container maxWidth="xl">
-          {children}
-        </Container>
+        <Container maxWidth='xl'>{children}</Container>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

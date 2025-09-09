@@ -8,6 +8,7 @@ from typing import Any
 @dataclass
 class LanguageEntry:
     """A single language entry."""
+
     key: str
     value: str
     context: str | None = None
@@ -17,12 +18,13 @@ class LanguageEntry:
 @dataclass
 class ParseResult:
     """Result of parsing a file."""
+
     entries: list[LanguageEntry]
     metadata: dict[str, Any]
     warnings: list[str] | None = None
     errors: list[str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.warnings is None:
             self.warnings = []
         if self.errors is None:
@@ -31,17 +33,18 @@ class ParseResult:
     @property
     def is_valid(self) -> bool:
         """Check if parsing was successful."""
-        return len(self.errors) == 0
+        return len(self.errors or []) == 0
 
     @property
     def has_warnings(self) -> bool:
         """Check if there are any warnings."""
-        return len(self.warnings) > 0
+        return len(self.warnings or []) > 0
 
 
 @dataclass
 class LanguageFileInfo:
     """Information about a language file."""
+
     path: Path
     locale: str
     format: str
@@ -52,6 +55,7 @@ class LanguageFileInfo:
 @dataclass
 class ModInfo:
     """Information about a mod."""
+
     name: str
     version: str
     mod_id: str
@@ -62,6 +66,7 @@ class ModInfo:
 @dataclass
 class ProjectInfo:
     """Information about a project."""
+
     name: str
     path: Path | str
     project_type: str
@@ -79,11 +84,12 @@ class ProjectInfo:
 @dataclass
 class ProjectScanResult:
     """Result of scanning a project directory."""
+
     projects: list[ProjectInfo]
     warnings: list[str] | None = None
     errors: list[str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.warnings is None:
             self.warnings = []
         if self.errors is None:

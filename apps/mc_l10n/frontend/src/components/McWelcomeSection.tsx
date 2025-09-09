@@ -1,46 +1,37 @@
-import React from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  useTheme,
-  alpha,
-} from '@mui/material';
-import { motion } from 'framer-motion';
-import { Creeper } from './MinecraftComponents';
+import React from 'react'
+import { Box, Typography, Grid, Card, CardContent, Button, useTheme, alpha } from '@mui/material'
+import { motion } from 'framer-motion'
+import { Creeper } from './MinecraftComponents'
 
 export interface McQuickAction {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  color: string;
-  onClick: () => void;
+  id: string
+  title: string
+  description: string
+  icon: React.ReactNode
+  color: string
+  onClick: () => void
 }
 
 export interface McWelcomeSectionProps {
-  title: string;
-  subtitle?: string;
-  description?: string;
-  quickActions?: McQuickAction[];
-  quickActionsTitle?: string;
+  title: string
+  subtitle?: string
+  description?: string
+  quickActions?: McQuickAction[]
+  quickActionsTitle?: string
   primaryButton?: {
-    text: string;
-    icon?: React.ReactNode;
-    onClick: () => void;
-  };
+    text: string
+    icon?: React.ReactNode
+    onClick: () => void
+  }
   secondaryButtons?: {
-    text: string;
-    icon?: React.ReactNode;
-    onClick: () => void;
-    variant?: 'outlined' | 'text';
-  }[];
-  headerAction?: React.ReactNode;
-  enableAnimation?: boolean;
-  animationDelay?: number;
+    text: string
+    icon?: React.ReactNode
+    onClick: () => void
+    variant?: 'outlined' | 'text'
+  }[]
+  headerAction?: React.ReactNode
+  enableAnimation?: boolean
+  animationDelay?: number
 }
 
 const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
@@ -55,7 +46,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
   enableAnimation = true,
   animationDelay = 0,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -65,25 +56,29 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
         animate={enableAnimation ? { opacity: 1, y: 0 } : {}}
         transition={enableAnimation ? { duration: 0.5, delay: animationDelay } : {}}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between', 
-          alignItems: { xs: 'flex-start', sm: 'flex-start' },
-          gap: { xs: 2, sm: 0 },
-          mb: 3 
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'flex-start' },
+            gap: { xs: 2, sm: 0 },
+            mb: 3,
+          }}
+        >
           <Box sx={{ flex: 1 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: { xs: 1, sm: 2 }, 
-              mb: 1,
-              flexWrap: 'wrap'
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: { xs: 1, sm: 2 },
+                mb: 1,
+                flexWrap: 'wrap',
+              }}
+            >
               <Creeper />
               <Typography
-                variant="h3"
+                variant='h3'
                 sx={{
                   fontWeight: 700,
                   color: theme.palette.text.primary,
@@ -96,7 +91,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
             </Box>
             {subtitle && (
               <Typography
-                variant="h6"
+                variant='h6'
                 sx={{
                   color: theme.palette.text.secondary,
                   fontWeight: 400,
@@ -109,7 +104,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
             )}
             {description && (
               <Typography
-                variant="body1"
+                variant='body1'
                 sx={{
                   color: theme.palette.text.secondary,
                   lineHeight: 1.6,
@@ -121,11 +116,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
               </Typography>
             )}
           </Box>
-          {headerAction && (
-            <Box sx={{ ml: 2 }}>
-              {headerAction}
-            </Box>
-          )}
+          {headerAction && <Box sx={{ ml: 2 }}>{headerAction}</Box>}
         </Box>
       </motion.div>
 
@@ -136,18 +127,20 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
           animate={enableAnimation ? { opacity: 1, y: 0 } : {}}
           transition={enableAnimation ? { duration: 0.5, delay: animationDelay + 0.1 } : {}}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            gap: { xs: 1, sm: 2 }, 
-            mb: 4, 
-            flexWrap: 'wrap',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'stretch', sm: 'flex-start' }
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: { xs: 1, sm: 2 },
+              mb: 4,
+              flexWrap: 'wrap',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'flex-start' },
+            }}
+          >
             {primaryButton && (
               <Button
-                variant="contained"
-                size="large"
+                variant='contained'
+                size='large'
                 startIcon={primaryButton.icon}
                 onClick={primaryButton.onClick}
                 sx={{
@@ -169,7 +162,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
               <Button
                 key={index}
                 variant={button.variant || 'outlined'}
-                size="large"
+                size='large'
                 startIcon={button.icon}
                 onClick={button.onClick}
                 sx={{
@@ -195,7 +188,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
           transition={enableAnimation ? { duration: 0.5, delay: animationDelay + 0.2 } : {}}
         >
           <Typography
-            variant="h5"
+            variant='h5'
             sx={{
               fontWeight: 600,
               marginBottom: 2,
@@ -211,7 +204,11 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
                 <motion.div
                   initial={enableAnimation ? { opacity: 0, y: 20 } : {}}
                   animate={enableAnimation ? { opacity: 1, y: 0 } : {}}
-                  transition={enableAnimation ? { duration: 0.5, delay: animationDelay + 0.3 + index * 0.1 } : {}}
+                  transition={
+                    enableAnimation
+                      ? { duration: 0.5, delay: animationDelay + 0.3 + index * 0.1 }
+                      : {}
+                  }
                   whileHover={{ y: -4, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -250,7 +247,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
                         </Box>
                       </Box>
                       <Typography
-                        variant="h6"
+                        variant='h6'
                         sx={{
                           fontWeight: 600,
                           marginBottom: 1,
@@ -261,7 +258,7 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
                         {action.title}
                       </Typography>
                       <Typography
-                        variant="body2"
+                        variant='body2'
                         sx={{
                           color: theme.palette.text.secondary,
                           lineHeight: 1.5,
@@ -279,8 +276,8 @@ const McWelcomeSection: React.FC<McWelcomeSectionProps> = ({
         </motion.div>
       )}
     </Box>
-  );
-};
+  )
+}
 
-export default McWelcomeSection;
-export { McWelcomeSection };
+export default McWelcomeSection
+export { McWelcomeSection }

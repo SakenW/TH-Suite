@@ -114,7 +114,7 @@ task dev:rw          # 启动 RW Studio（前端 + 后端，并行运行）
 
 # 单独启动服务
 task dev:mc:backend  # 仅启动 MC L10n 后端（端口 18000）
-task dev:mc:frontend # 仅启动 MC L10n 前端（端口 5173）
+task dev:mc:frontend # 仅启动 MC L10n 前端（端口 18001）
 task dev:rw:backend  # 仅启动 RW Studio 后端（端口 8002）
 task dev:rw:frontend # 仅启动 RW Studio 前端
 
@@ -155,7 +155,7 @@ poetry run python main.py
 cd apps/mc_l10n/frontend  
 npm run tauri:dev        # 桌面应用（推荐）
 # 或者：
-npm run dev             # Web模式，访问 http://localhost:5173
+npm run dev             # Web模式，访问 http://localhost:18001
 ```
 
 #### 使用 npm 脚本（从根目录）
@@ -213,8 +213,12 @@ npm run lint:python:mc
 
 ## 服务端口配置
 - **MC L10n 后端**: http://localhost:18000 (API 文档: /docs)
-- **MC L10n 前端**: http://localhost:5173
+- **MC L10n 前端**: http://localhost:18001 (避免与 Trans-Hub 的 5173 端口冲突)
 - **RW Studio 后端**: http://localhost:8002 (API 文档: /docs)
+
+### 端口冲突说明
+- Trans-Hub 项目使用端口：8000（API）、5173（前端开发）、3000（Docker映射）
+- TH-Suite 端口已调整避免冲突：18000（MC后端）、18001（MC前端）、8002（RW后端）
 
 ## 重要配置文件
 
@@ -266,7 +270,7 @@ npm run lint:python:mc
 ### 常见问题
 - 如果 `task dev:mc` 失败，尝试分别运行 `task dev:mc:backend` 和 `task dev:mc:frontend`
 - 确保已安装 Poetry、pnpm 和 Rust 工具链
-- 检查端口是否被占用（18000、8002、5173）
+- 检查端口是否被占用（18000、18001、8002）
 - 权限问题：确保对扫描目录有读取权限
 
 ### 调试工具

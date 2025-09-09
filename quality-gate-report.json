@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "total_checks": 6,
+    "passed": 0,
+    "warned": 5,
+    "failed": 1,
+    "total_errors": 1,
+    "total_warnings": 12,
+    "status": "FAIL"
+  },
+  "details": {
+    "python_style": {
+      "ruff_issues": 323,
+      "format_issues": 1,
+      "status": "FAIL"
+    },
+    "python_types": {
+      "mypy_exit_code": 2,
+      "status": "WARN",
+      "note": "类型检查暂时为警告级别"
+    },
+    "python_tests": {
+      "exit_code": 2,
+      "status": "WARN",
+      "note": "测试暂时为警告级别"
+    },
+    "frontend_quality": {
+      "lint_issues": 1,
+      "type_issues": 1,
+      "format_issues": 0,
+      "status": "WARN"
+    },
+    "architecture": {
+      "violations": [
+        "发现30个超大文件(>500行)"
+      ],
+      "large_files": [
+        "tests/adapters/minecraft/test_minecraft_adapter.py: 531行",
+        "apps/mc_l10n/scripts/mc_cli.py: 671行",
+        "apps/mc_l10n/backend/main.py: 665行",
+        "apps/mc_l10n/scripts/deprecated/db_audit.py: 1140行",
+        "apps/mc_l10n/scripts/deprecated/db_reader.py: 501行"
+      ],
+      "status": "WARN"
+    },
+    "security": {
+      "sensitive_files": [
+        "apps/mc_l10n/backend/archive/database_old/sync_service.py",
+        "packages/core/database.py",
+        "packages/backend-kit/dependencies.py",
+        "packages/core/src/trans_hub_core/infrastructure/transhub_client.py",
+        "packages/core/framework/config/settings.py",
+        "packages/localization-kit/database/manager.py",
+        "packages/localization-kit/integration/transhub_client.py",
+        "packages/common/sync/client.py"
+      ],
+      "status": "WARN"
+    }
+  },
+  "timestamp": "2025-09-09T02:27:37+08:00"
+}

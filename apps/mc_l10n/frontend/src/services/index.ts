@@ -4,38 +4,49 @@
  */
 
 // === 核心服务类 ===
-export { BaseApiService } from './baseApiService';
-import { BaseApiService } from './baseApiService';
+export { BaseApiService } from './baseApiService'
+import { BaseApiService } from './baseApiService'
+import { API_BASE_URL } from '../config/api'
 
 // === 领域服务 ===
-export { ProjectService } from './domain/projectService';
-export { ScanService } from './domain/scanService';
-export { LocalDataService } from './domain/localDataService';
-import { ProjectService } from './domain/projectService';
-import { ScanService } from './domain/scanService';
-import { LocalDataService } from './domain/localDataService';
+export { ProjectService } from './domain/projectService'
+export { ScanService } from './domain/scanService'
+export { LocalDataService } from './domain/localDataService'
+import { ProjectService } from './domain/projectService'
+import { ScanService } from './domain/scanService'
+import { LocalDataService } from './domain/localDataService'
 
 // === 基础设施服务 ===
-export { TauriService, initializeTauri, FILE_FILTERS } from './infrastructure/tauriService';
-export { SystemService } from './infrastructure/systemService';
-export { FileService } from './infrastructure/fileService';
-export { storageService, StorageService } from './storage.service';
+export { TauriService, initializeTauri, FILE_FILTERS } from './infrastructure/tauriService'
+export { SystemService } from './infrastructure/systemService'
+export { FileService } from './infrastructure/fileService'
+export { storageService, StorageService } from './storage.service'
 
 // === 服务容器 ===
-export { serviceContainer } from './container/serviceContainer';
-import { serviceContainer } from './container/serviceContainer';
+export { serviceContainer } from './container/serviceContainer'
+import { serviceContainer } from './container/serviceContainer'
 
 // === 类型定义 ===
 export type {
   // 容器类型
-  ServiceResult, ServiceError,
-  
+  ServiceResult,
+  ServiceError,
+
   // 领域类型
-  Project, ProjectCreateRequest, ProjectUpdateRequest, ProjectListOptions, ProjectStatistics,
-  ScanRequest, ScanStatus, ScanResult,
-  Mod, LanguageFile, TranslationEntry,
-  PaginationParams, ListOptions,
-} from './domain/types';
+  Project,
+  ProjectCreateRequest,
+  ProjectUpdateRequest,
+  ProjectListOptions,
+  ProjectStatistics,
+  ScanRequest,
+  ScanStatus,
+  ScanResult,
+  Mod,
+  LanguageFile,
+  TranslationEntry,
+  PaginationParams,
+  ListOptions,
+} from './domain/types'
 
 // === 服务初始化 ===
 
@@ -45,37 +56,37 @@ export type {
 function initializeServices() {
   // 基础服务
   serviceContainer.register('apiClient', {
-    factory: () => new BaseApiService('http://localhost:18000'),
+    factory: () => new BaseApiService(API_BASE_URL),
     singleton: true,
-  });
-  
-  // 领域服务  
+  })
+
+  // 领域服务
   serviceContainer.register('projectService', {
     factory: () => {
-      const apiClient = serviceContainer.resolve('apiClient');
-      return new ProjectService(apiClient);
+      const apiClient = serviceContainer.resolve('apiClient')
+      return new ProjectService(apiClient)
     },
     dependencies: ['apiClient'],
     singleton: true,
-  });
-  
+  })
+
   serviceContainer.register('scanService', {
     factory: () => {
-      const apiClient = serviceContainer.resolve('apiClient');
-      return new ScanService(apiClient);
+      const apiClient = serviceContainer.resolve('apiClient')
+      return new ScanService(apiClient)
     },
     dependencies: ['apiClient'],
     singleton: true,
-  });
-  
+  })
+
   serviceContainer.register('localDataService', {
     factory: () => {
-      const apiClient = serviceContainer.resolve('apiClient');
-      return new LocalDataService(apiClient);
+      const apiClient = serviceContainer.resolve('apiClient')
+      return new LocalDataService(apiClient)
     },
     dependencies: ['apiClient'],
     singleton: true,
-  });
+  })
 }
 
 // === 服务访问器 ===
@@ -84,38 +95,45 @@ function initializeServices() {
  * 获取项目服务
  */
 export function getProjectService(): ProjectService {
-  return serviceContainer.resolve('projectService');
+  return serviceContainer.resolve('projectService')
 }
 
 /**
  * 获取扫描服务
  */
 export function getScanService(): ScanService {
-  return serviceContainer.resolve('scanService');
+  return serviceContainer.resolve('scanService')
 }
 
 /**
  * 获取本地数据服务
  */
 export function getLocalDataService(): LocalDataService {
-  return serviceContainer.resolve('localDataService');
+  return serviceContainer.resolve('localDataService')
 }
 
 // 兼容性导出（保持旧的命名）
-export const useProjectService = getProjectService;
-export const useScanService = getScanService;
-export const useLocalDataService = getLocalDataService;
+export const useProjectService = getProjectService
+export const useScanService = getScanService
+export const useLocalDataService = getLocalDataService
+
+// 便捷导出（作为getter函数）
+export const scanService = () => getScanService()
+export const projectService = () => getProjectService()
+export const localDataService = () => getLocalDataService()
 
 // === 工具函数 ===
 
-export const isTaskCompleted = (status: string): boolean => ['completed', 'failed', 'cancelled'].includes(status);
-export const isTaskRunning = (status: string): boolean => ['pending', 'running', 'scanning'].includes(status);
-export const isTaskSuccessful = (status: string): boolean => status === 'completed';
+export const isTaskCompleted = (status: string): boolean =>
+  ['completed', 'failed', 'cancelled'].includes(status)
+export const isTaskRunning = (status: string): boolean =>
+  ['pending', 'running', 'scanning'].includes(status)
+export const isTaskSuccessful = (status: string): boolean => status === 'completed'
 
 export const createPaginationParams = (page: number, pageSize: number = 20): PaginationParams => ({
   page: Math.max(1, page),
   page_size: Math.max(1, Math.min(100, pageSize)),
-});
+})
 
 // 自动初始化
-initializeServices();
+initializeServices()

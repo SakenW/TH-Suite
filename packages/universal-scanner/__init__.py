@@ -13,21 +13,22 @@ Universal Scanner Package - 通用扫描引擎
 - 通用性：不包含任何游戏特定逻辑
 """
 
-from .core.scanner_engine import UniversalScannerEngine
 from .core.database_engine import UniversalUpsertEngine
+from .core.scanner_engine import UniversalScannerEngine
 from .core.scanner_interface import ScannerInterface, ScanRequest, ScanResult
 
 # Import cache and websocket modules if they exist
 try:
-    from .cache.cache_service import ScanCacheService
-    from .websocket.progress_broadcaster import ProgressBroadcaster
+    from .cache.cache_service import ScanCacheService  # noqa: F401
+    from .websocket.progress_broadcaster import ProgressBroadcaster  # noqa: F401
+
     _optional_imports = ["ScanCacheService", "ProgressBroadcaster"]
 except ImportError:
     _optional_imports = []
 
 __all__ = [
     "UniversalScannerEngine",
-    "UniversalUpsertEngine", 
+    "UniversalUpsertEngine",
     "ScannerInterface",
     "ScanRequest",
     "ScanResult",

@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, TypeVar, Union
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 

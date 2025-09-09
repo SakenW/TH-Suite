@@ -1,6 +1,6 @@
-import React, { lazy, Suspense, ComponentType } from 'react';
-import { MinecraftLoader } from '@components/minecraft';
-import { Box } from '@mui/material';
+import React, { lazy, Suspense, ComponentType } from 'react'
+import { MinecraftLoader } from '@components/minecraft'
+import { Box } from '@mui/material'
 
 /**
  * 懒加载组件包装器
@@ -8,9 +8,9 @@ import { Box } from '@mui/material';
  */
 export function lazyLoad<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ReactNode
+  fallback?: React.ReactNode,
 ) {
-  const LazyComponent = lazy(importFunc);
+  const LazyComponent = lazy(importFunc)
 
   return (props: React.ComponentProps<T>) => (
     <Suspense
@@ -22,45 +22,41 @@ export function lazyLoad<T extends ComponentType<any>>(
               justifyContent: 'center',
               alignItems: 'center',
               minHeight: '400px',
-              width: '100%'
+              width: '100%',
             }}
           >
-            <MinecraftLoader variant="blocks" size="large" />
+            <MinecraftLoader variant='blocks' size='large' />
           </Box>
         )
       }
     >
       <LazyComponent {...props} />
     </Suspense>
-  );
+  )
 }
 
 /**
  * 预加载组件
  * 在空闲时间预先加载组件以提高性能
  */
-export function preloadComponent(
-  importFunc: () => Promise<any>
-) {
+export function preloadComponent(importFunc: () => Promise<any>) {
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
-      importFunc();
-    });
+      importFunc()
+    })
   } else {
     // Fallback for browsers that don't support requestIdleCallback
     setTimeout(() => {
-      importFunc();
-    }, 1);
+      importFunc()
+    }, 1)
   }
 }
 
 /**
  * 批量预加载组件
  */
-export function preloadComponents(
-  importFuncs: Array<() => Promise<any>>
-) {
-  importFuncs.forEach(preloadComponent);
+export function preloadComponents(importFuncs: Array<() => Promise<any>>) {
+  importFuncs.forEach(preloadComponent)
 }
 
 /**
@@ -70,21 +66,21 @@ export function preloadComponents(
 export function lazyLoadWithRetry<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
   retries = 3,
-  delay = 1000
+  delay = 1000,
 ) {
   const retryImport = async (): Promise<{ default: T }> => {
     try {
-      return await importFunc();
+      return await importFunc()
     } catch (error) {
       if (retries > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return retryImport();
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return retryImport()
       }
-      throw error;
+      throw error
     }
-  };
+  }
 
-  return lazyLoad(retryImport);
+  return lazyLoad(retryImport)
 }
 
 /**
@@ -94,12 +90,12 @@ export function lazyLoadWithRetry<T extends ComponentType<any>>(
 export function conditionalLazyLoad<T extends ComponentType<any>>(
   condition: boolean,
   importFunc: () => Promise<{ default: T }>,
-  Component: T
+  Component: T,
 ) {
   if (condition) {
-    return lazyLoad(importFunc);
+    return lazyLoad(importFunc)
   }
-  return Component;
+  return Component
 }
 
 /**
@@ -108,13 +104,14 @@ export function conditionalLazyLoad<T extends ComponentType<any>>(
  */
 export function delayedLoad<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
-  delay: number = 300
+  delay: number = 300,
 ) {
-  return lazyLoad(() => 
-    new Promise<{ default: T }>(resolve => {
-      setTimeout(() => {
-        importFunc().then(resolve);
-      }, delay);
-    })
-  );
+  return lazyLoad(
+    () =>
+      new Promise<{ default: T }>(resolve => {
+        setTimeout(() => {
+          importFunc().then(resolve)
+        }, delay)
+      }),
+  )
 }

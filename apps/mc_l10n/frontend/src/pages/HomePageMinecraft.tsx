@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, IconButton, Tooltip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Gamepad2, 
-  Package, 
-  FileSearch, 
-  Download, 
-  Upload, 
-  Settings, 
+import React, { useState, useEffect } from 'react'
+import { Box, Typography, Grid, IconButton, Tooltip } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Gamepad2,
+  Package,
+  FileSearch,
+  Download,
+  Upload,
+  Settings,
   Database,
   Sparkles,
   Zap,
@@ -16,13 +16,13 @@ import {
   Trophy,
   Heart,
   Shield,
-  Sword
-} from 'lucide-react';
+  Sword,
+} from 'lucide-react'
 
-import { MinecraftButton } from '../components/minecraft/MinecraftButton';
-import { MinecraftCard } from '../components/minecraft/MinecraftCard';
-import { MinecraftProgress } from '../components/minecraft/MinecraftProgress';
-import { MinecraftBlock, ParticleEffect, Creeper } from '../components/MinecraftComponents';
+import { MinecraftButton } from '../components/minecraft/MinecraftButton'
+import { MinecraftCard } from '../components/minecraft/MinecraftCard'
+import { MinecraftProgress } from '../components/minecraft/MinecraftProgress'
+import { MinecraftBlock, ParticleEffect, Creeper } from '../components/MinecraftComponents'
 
 // 快捷功能卡片数据
 const quickActions = [
@@ -33,7 +33,7 @@ const quickActions = [
     icon: FileSearch,
     color: 'emerald',
     path: '/scan',
-    stats: { value: 0, label: '已扫描' }
+    stats: { value: 0, label: '已扫描' },
   },
   {
     id: 'project',
@@ -42,7 +42,7 @@ const quickActions = [
     icon: Package,
     color: 'diamond',
     path: '/project',
-    stats: { value: 0, label: '活跃项目' }
+    stats: { value: 0, label: '活跃项目' },
   },
   {
     id: 'export',
@@ -51,7 +51,7 @@ const quickActions = [
     icon: Download,
     color: 'gold',
     path: '/export',
-    stats: { value: 0, label: '已导出' }
+    stats: { value: 0, label: '已导出' },
   },
   {
     id: 'transfer',
@@ -60,9 +60,9 @@ const quickActions = [
     icon: Upload,
     color: 'redstone',
     path: '/transfer',
-    stats: { value: 0, label: '待同步' }
+    stats: { value: 0, label: '待同步' },
   },
-];
+]
 
 // 成就数据
 const achievements = [
@@ -71,12 +71,12 @@ const achievements = [
   { id: 3, name: '翻译大师', icon: '🌐', unlocked: false },
   { id: 4, name: '效率专家', icon: '⚡', unlocked: false },
   { id: 5, name: '团队协作', icon: '🤝', unlocked: false },
-];
+]
 
 export default function HomePageMinecraft() {
-  const navigate = useNavigate();
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [showParticles, setShowParticles] = useState(false);
+  const navigate = useNavigate()
+  const [selectedAction, setSelectedAction] = useState<string | null>(null)
+  const [showParticles, setShowParticles] = useState(false)
   const [stats, setStats] = useState({
     totalMods: 156,
     translatedKeys: 12450,
@@ -85,7 +85,7 @@ export default function HomePageMinecraft() {
     todayProgress: 450,
     weeklyGoal: 2000,
     weeklyProgress: 1650,
-  });
+  })
 
   // 模拟统计数据更新
   useEffect(() => {
@@ -93,26 +93,27 @@ export default function HomePageMinecraft() {
       setStats(prev => ({
         ...prev,
         todayProgress: Math.min(prev.todayProgress + Math.floor(Math.random() * 5), 500),
-        weeklyProgress: Math.min(prev.weeklyProgress + Math.floor(Math.random() * 10), prev.weeklyGoal),
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+        weeklyProgress: Math.min(
+          prev.weeklyProgress + Math.floor(Math.random() * 10),
+          prev.weeklyGoal,
+        ),
+      }))
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleActionClick = (path: string) => {
-    setShowParticles(true);
+    setShowParticles(true)
     setTimeout(() => {
-      navigate(path);
-      setShowParticles(false);
-    }, 300);
-  };
+      navigate(path)
+      setShowParticles(false)
+    }, 300)
+  }
 
   return (
     <Box sx={{ position: 'relative', minHeight: '100vh', p: 3 }}>
       {/* 粒子效果 */}
-      <AnimatePresence>
-        {showParticles && <ParticleEffect count={30} />}
-      </AnimatePresence>
+      <AnimatePresence>{showParticles && <ParticleEffect count={30} />}</AnimatePresence>
 
       {/* 页面标题 */}
       <motion.div
@@ -121,10 +122,12 @@ export default function HomePageMinecraft() {
         transition={{ duration: 0.6 }}
       >
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 2 }}>
-            <MinecraftBlock type="diamond" size={48} animated />
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 2 }}
+          >
+            <MinecraftBlock type='diamond' size={48} animated />
             <Typography
-              variant="h2"
+              variant='h2'
               sx={{
                 fontFamily: '"Minecraft", "Press Start 2P", monospace',
                 fontSize: { xs: '28px', md: '40px' },
@@ -139,7 +142,7 @@ export default function HomePageMinecraft() {
             >
               TH Suite MC L10n
             </Typography>
-            <MinecraftBlock type="emerald" size={48} animated />
+            <MinecraftBlock type='emerald' size={48} animated />
           </Box>
           <Typography
             sx={{
@@ -163,11 +166,11 @@ export default function HomePageMinecraft() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <MinecraftCard variant="enchantment" title="今日概览" icon="gold" glowing>
+            <MinecraftCard variant='enchantment' title='今日概览' icon='gold' glowing>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
                   <Box sx={{ textAlign: 'center', p: 2 }}>
-                    <Trophy size={32} color="#FFD700" />
+                    <Trophy size={32} color='#FFD700' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -191,7 +194,7 @@ export default function HomePageMinecraft() {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box sx={{ textAlign: 'center', p: 2 }}>
-                    <Sparkles size={32} color="#00BCD4" />
+                    <Sparkles size={32} color='#00BCD4' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -215,7 +218,7 @@ export default function HomePageMinecraft() {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box sx={{ textAlign: 'center', p: 2 }}>
-                    <Target size={32} color="#FF6347" />
+                    <Target size={32} color='#FF6347' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -239,7 +242,7 @@ export default function HomePageMinecraft() {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <Box sx={{ textAlign: 'center', p: 2 }}>
-                    <Zap size={32} color="#4CAF50" />
+                    <Zap size={32} color='#4CAF50' />
                     <Typography
                       sx={{
                         fontFamily: '"Minecraft", monospace',
@@ -268,19 +271,19 @@ export default function HomePageMinecraft() {
                 <MinecraftProgress
                   value={stats.todayProgress}
                   max={500}
-                  variant="experience"
-                  label="今日进度"
+                  variant='experience'
+                  label='今日进度'
                   animated
-                  size="medium"
+                  size='medium'
                 />
                 <Box sx={{ mt: 2 }}>
                   <MinecraftProgress
                     value={stats.weeklyProgress}
                     max={stats.weeklyGoal}
-                    variant="health"
-                    label="本周目标"
+                    variant='health'
+                    label='本周目标'
                     animated
-                    size="medium"
+                    size='medium'
                   />
                 </Box>
               </Box>
@@ -317,10 +320,7 @@ export default function HomePageMinecraft() {
                     onHoverStart={() => setSelectedAction(action.id)}
                     onHoverEnd={() => setSelectedAction(null)}
                   >
-                    <MinecraftCard
-                      variant="inventory"
-                      glowing={selectedAction === action.id}
-                    >
+                    <MinecraftCard variant='inventory' glowing={selectedAction === action.id}>
                       <Box
                         sx={{
                           p: 2,
@@ -340,16 +340,19 @@ export default function HomePageMinecraft() {
                               alignItems: 'center',
                               justifyContent: 'center',
                               background: `linear-gradient(135deg, ${
-                                action.color === 'emerald' ? '#4CAF50' :
-                                action.color === 'diamond' ? '#00BCD4' :
-                                action.color === 'gold' ? '#FFD700' :
-                                '#FF6347'
+                                action.color === 'emerald'
+                                  ? '#4CAF50'
+                                  : action.color === 'diamond'
+                                    ? '#00BCD4'
+                                    : action.color === 'gold'
+                                      ? '#FFD700'
+                                      : '#FF6347'
                               } 0%, rgba(0,0,0,0.3) 100%)`,
                               border: '2px solid rgba(0,0,0,0.5)',
                               borderRadius: 0,
                             }}
                           >
-                            <action.icon size={24} color="#FFFFFF" />
+                            <action.icon size={24} color='#FFFFFF' />
                           </Box>
                           <Box sx={{ flex: 1 }}>
                             <Typography
@@ -429,7 +432,7 @@ export default function HomePageMinecraft() {
             >
               🏆 成就
             </Typography>
-            <MinecraftCard variant="chest" glowing>
+            <MinecraftCard variant='chest' glowing>
               <Box sx={{ p: 2 }}>
                 {achievements.map((achievement, index) => (
                   <motion.div
@@ -465,7 +468,7 @@ export default function HomePageMinecraft() {
                       </Typography>
                       {achievement.unlocked && (
                         <Box sx={{ ml: 'auto' }}>
-                          <Sparkles size={16} color="#FFD700" />
+                          <Sparkles size={16} color='#FFD700' />
                         </Box>
                       )}
                     </Box>
@@ -489,7 +492,7 @@ export default function HomePageMinecraft() {
             {/* 快速操作按钮 */}
             <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <MinecraftButton
-                minecraftStyle="diamond"
+                minecraftStyle='diamond'
                 onClick={() => navigate('/settings')}
                 fullWidth
                 startIcon={<Settings size={16} />}
@@ -497,7 +500,7 @@ export default function HomePageMinecraft() {
                 设置
               </MinecraftButton>
               <MinecraftButton
-                minecraftStyle="iron"
+                minecraftStyle='iron'
                 onClick={() => navigate('/local-data')}
                 fullWidth
                 startIcon={<Database size={16} />}
@@ -526,9 +529,9 @@ export default function HomePageMinecraft() {
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 1 }}>
-                <Heart size={20} color="#FF6B6B" />
-                <Shield size={20} color="#4ECDC4" />
-                <Sword size={20} color="#FFD93D" />
+                <Heart size={20} color='#FF6B6B' />
+                <Shield size={20} color='#4ECDC4' />
+                <Sword size={20} color='#FFD93D' />
               </Box>
               <Typography
                 sx={{
@@ -545,5 +548,5 @@ export default function HomePageMinecraft() {
         </Grid>
       </Grid>
     </Box>
-  );
+  )
 }

@@ -6,7 +6,9 @@
 
 /* 主要标题字体 - 像素风格 */
 .minecraft-title {
-  font-family: 'Press Start 2P', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Courier New', monospace;
+  font-family:
+    'Press Start 2P', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑',
+    'Courier New', monospace;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
@@ -14,7 +16,9 @@
 
 /* 副标题字体 - 科技感 */
 .minecraft-subtitle {
-  font-family: 'Orbitron', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Arial', sans-serif;
+  font-family:
+    'Orbitron', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Arial',
+    sans-serif;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -22,14 +26,18 @@
 
 /* 正文字体 - 清晰易读 */
 .minecraft-body {
-  font-family: 'JetBrains Mono', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Consolas', 'Monaco', monospace;
+  font-family:
+    'JetBrains Mono', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑',
+    'Consolas', 'Monaco', monospace;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 
 /* 按钮字体 */
 .minecraft-button {
-  font-family: 'Orbitron', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Arial', sans-serif;
+  font-family:
+    'Orbitron', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Arial',
+    sans-serif;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -38,14 +46,16 @@
 
 /* 代码字体 */
 .minecraft-code {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', '微软雅黑', 'Consolas', monospace;
+  font-family:
+    'JetBrains Mono', 'Fira Code', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei',
+    '微软雅黑', 'Consolas', monospace;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
 
 /* 特殊效果字体 - 发光效果 */
 .minecraft-glow {
-  text-shadow: 
+  text-shadow:
     0 0 5px currentColor,
     0 0 10px currentColor,
     0 0 15px currentColor,
@@ -64,7 +74,7 @@
   .minecraft-title {
     font-size: 0.8em;
   }
-  
+
   .minecraft-subtitle {
     font-size: 0.9em;
   }
@@ -72,14 +82,15 @@
 
 /* 动画效果 */
 @keyframes minecraft-text-glow {
-  0%, 100% {
-    text-shadow: 
+  0%,
+  100% {
+    text-shadow:
       0 0 5px currentColor,
       0 0 10px currentColor,
       2px 2px 0px rgba(0, 0, 0, 0.8);
   }
   50% {
-    text-shadow: 
+    text-shadow:
       0 0 10px currentColor,
       0 0 20px currentColor,
       0 0 30px currentColor,

@@ -3,36 +3,36 @@
  * 模拟 Minecraft 游戏内的输入框样式
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { minecraftColors, get3DBorder } from '../../theme/minecraft/colors';
-import { typography } from '../../theme/minecraft/typography';
+import React, { useState, useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { minecraftColors, get3DBorder } from '../../theme/minecraft/colors'
+import { typography } from '../../theme/minecraft/typography'
 
 export interface MCInputProps {
-  value?: string;
-  defaultValue?: string;
-  placeholder?: string;
-  type?: 'text' | 'password' | 'number' | 'search' | 'email' | 'url';
-  variant?: 'default' | 'chat' | 'command' | 'sign';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  readOnly?: boolean;
-  error?: boolean;
-  success?: boolean;
-  fullWidth?: boolean;
-  multiline?: boolean;
-  rows?: number;
-  maxLength?: number;
-  prefix?: React.ReactNode;
-  suffix?: React.ReactNode;
-  label?: string;
-  helperText?: string;
-  onChange?: (value: string) => void;
-  onEnter?: (value: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  className?: string;
-  style?: React.CSSProperties;
+  value?: string
+  defaultValue?: string
+  placeholder?: string
+  type?: 'text' | 'password' | 'number' | 'search' | 'email' | 'url'
+  variant?: 'default' | 'chat' | 'command' | 'sign'
+  size?: 'small' | 'medium' | 'large'
+  disabled?: boolean
+  readOnly?: boolean
+  error?: boolean
+  success?: boolean
+  fullWidth?: boolean
+  multiline?: boolean
+  rows?: number
+  maxLength?: number
+  prefix?: React.ReactNode
+  suffix?: React.ReactNode
+  label?: string
+  helperText?: string
+  onChange?: (value: string) => void
+  onEnter?: (value: string) => void
+  onFocus?: () => void
+  onBlur?: () => void
+  className?: string
+  style?: React.CSSProperties
 }
 
 const MCInput: React.FC<MCInputProps> = ({
@@ -61,27 +61,27 @@ const MCInput: React.FC<MCInputProps> = ({
   className = '',
   style = {},
 }) => {
-  const [inputValue, setInputValue] = useState(value || defaultValue || '');
-  const [isFocused, setIsFocused] = useState(false);
-  const [showCursor, setShowCursor] = useState(true);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const [inputValue, setInputValue] = useState(value || defaultValue || '')
+  const [isFocused, setIsFocused] = useState(false)
+  const [showCursor, setShowCursor] = useState(true)
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
   // 同步外部 value
   useEffect(() => {
     if (value !== undefined) {
-      setInputValue(value);
+      setInputValue(value)
     }
-  }, [value]);
+  }, [value])
 
   // 光标闪烁效果
   useEffect(() => {
     if (isFocused && variant === 'chat') {
       const interval = setInterval(() => {
-        setShowCursor(prev => !prev);
-      }, 500);
-      return () => clearInterval(interval);
+        setShowCursor(prev => !prev)
+      }, 500)
+      return () => clearInterval(interval)
     }
-  }, [isFocused, variant]);
+  }, [isFocused, variant])
 
   // 获取变体样式
   const getVariantStyles = () => {
@@ -91,27 +91,27 @@ const MCInput: React.FC<MCInputProps> = ({
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           color: minecraftColors.ui.text.secondary,
           borderColor: 'transparent',
-        };
+        }
       case 'command':
         return {
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
           color: minecraftColors.formatting['§e'],
           borderColor: minecraftColors.ui.border.dark,
-        };
+        }
       case 'sign':
         return {
           backgroundColor: '#8B6F3D',
           color: minecraftColors.ui.text.primary,
           borderColor: '#6B4F2D',
-        };
+        }
       default:
         return {
           backgroundColor: minecraftColors.ui.background.primary,
           color: minecraftColors.ui.text.primary,
           borderColor: minecraftColors.ui.border.slot,
-        };
+        }
     }
-  };
+  }
 
   // 获取尺寸样式
   const getSizeStyles = () => {
@@ -121,34 +121,34 @@ const MCInput: React.FC<MCInputProps> = ({
           padding: '4px 8px',
           fontSize: typography.fontSize.small,
           height: multiline ? 'auto' : '28px',
-        };
+        }
       case 'large':
         return {
           padding: '12px 16px',
           fontSize: typography.fontSize.large,
           height: multiline ? 'auto' : '48px',
-        };
+        }
       default:
         return {
           padding: '8px 12px',
           fontSize: typography.fontSize.normal,
           height: multiline ? 'auto' : '36px',
-        };
+        }
     }
-  };
+  }
 
   // 获取状态颜色
   const getStatusColor = () => {
-    if (error) return minecraftColors.ui.text.enchanted;
-    if (success) return minecraftColors.primary.emerald;
-    if (isFocused) return minecraftColors.primary.diamond;
-    return minecraftColors.ui.border.slot;
-  };
+    if (error) return minecraftColors.ui.text.enchanted
+    if (success) return minecraftColors.primary.emerald
+    if (isFocused) return minecraftColors.primary.diamond
+    return minecraftColors.ui.border.slot
+  }
 
-  const variantStyles = getVariantStyles();
-  const sizeStyles = getSizeStyles();
-  const borderStyles = get3DBorder(false);
-  const statusColor = getStatusColor();
+  const variantStyles = getVariantStyles()
+  const sizeStyles = getSizeStyles()
+  const borderStyles = get3DBorder(false)
+  const statusColor = getStatusColor()
 
   // 输入框样式
   const inputStyles: React.CSSProperties = {
@@ -168,38 +168,38 @@ const MCInput: React.FC<MCInputProps> = ({
     resize: multiline ? 'vertical' : 'none',
     minHeight: multiline ? `${rows * 24}px` : 'auto',
     ...style,
-  };
+  }
 
   // 处理输入变化
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    if (maxLength && newValue.length > maxLength) return;
-    
-    setInputValue(newValue);
-    onChange?.(newValue);
-  };
+    const newValue = e.target.value
+    if (maxLength && newValue.length > maxLength) return
+
+    setInputValue(newValue)
+    onChange?.(newValue)
+  }
 
   // 处理回车键
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !multiline) {
-      e.preventDefault();
-      onEnter?.(inputValue);
+      e.preventDefault()
+      onEnter?.(inputValue)
     }
-  };
+  }
 
   // 处理焦点
   const handleFocus = () => {
-    setIsFocused(true);
-    onFocus?.();
-  };
+    setIsFocused(true)
+    onFocus?.()
+  }
 
   // 处理失焦
   const handleBlur = () => {
-    setIsFocused(false);
-    onBlur?.();
-  };
+    setIsFocused(false)
+    onBlur?.()
+  }
 
-  const InputComponent = multiline ? 'textarea' : 'input';
+  const InputComponent = multiline ? 'textarea' : 'input'
 
   return (
     <div className={`mc-input-container ${className}`}>
@@ -326,11 +326,11 @@ const MCInput: React.FC<MCInputProps> = ({
         <div
           style={{
             marginTop: '4px',
-            color: error 
-              ? minecraftColors.ui.text.enchanted 
-              : success 
-              ? minecraftColors.primary.emerald 
-              : minecraftColors.ui.text.disabled,
+            color: error
+              ? minecraftColors.ui.text.enchanted
+              : success
+                ? minecraftColors.primary.emerald
+                : minecraftColors.ui.text.disabled,
             fontSize: typography.fontSize.caption,
             fontFamily: typography.fontFamily.minecraft,
           }}
@@ -345,9 +345,10 @@ const MCInput: React.FC<MCInputProps> = ({
           style={{
             marginTop: '4px',
             textAlign: 'right',
-            color: inputValue.length >= maxLength 
-              ? minecraftColors.ui.text.enchanted 
-              : minecraftColors.ui.text.disabled,
+            color:
+              inputValue.length >= maxLength
+                ? minecraftColors.ui.text.enchanted
+                : minecraftColors.ui.text.disabled,
             fontSize: typography.fontSize.caption,
             fontFamily: typography.fontFamily.minecraft,
           }}
@@ -356,19 +357,19 @@ const MCInput: React.FC<MCInputProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
 // 搜索框组件
 export interface MCSearchBoxProps {
-  value?: string;
-  placeholder?: string;
-  onSearch?: (value: string) => void;
-  onChange?: (value: string) => void;
-  size?: 'small' | 'medium' | 'large';
-  fullWidth?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
+  value?: string
+  placeholder?: string
+  onSearch?: (value: string) => void
+  onChange?: (value: string) => void
+  size?: 'small' | 'medium' | 'large'
+  fullWidth?: boolean
+  className?: string
+  style?: React.CSSProperties
 }
 
 export const MCSearchBox: React.FC<MCSearchBoxProps> = ({
@@ -381,16 +382,16 @@ export const MCSearchBox: React.FC<MCSearchBoxProps> = ({
   className = '',
   style = {},
 }) => {
-  const [searchValue, setSearchValue] = useState(value || '');
+  const [searchValue, setSearchValue] = useState(value || '')
 
   const handleChange = (newValue: string) => {
-    setSearchValue(newValue);
-    onChange?.(newValue);
-  };
+    setSearchValue(newValue)
+    onChange?.(newValue)
+  }
 
   const handleSearch = () => {
-    onSearch?.(searchValue);
-  };
+    onSearch?.(searchValue)
+  }
 
   return (
     <div
@@ -405,7 +406,7 @@ export const MCSearchBox: React.FC<MCSearchBoxProps> = ({
       <MCInput
         value={searchValue}
         placeholder={placeholder}
-        type="search"
+        type='search'
         size={size}
         fullWidth
         prefix={<span>🔍</span>}
@@ -413,18 +414,14 @@ export const MCSearchBox: React.FC<MCSearchBoxProps> = ({
         onEnter={handleSearch}
         style={{ flex: 1 }}
       />
-      <MCButton
-        onClick={handleSearch}
-        variant="primary"
-        size={size}
-      >
+      <MCButton onClick={handleSearch} variant='primary' size={size}>
         Search
       </MCButton>
     </div>
-  );
-};
+  )
+}
 
 // 导入必要的组件
-import MCButton from './MCButton';
+import MCButton from './MCButton'
 
-export default MCInput;
+export default MCInput

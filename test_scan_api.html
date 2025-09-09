@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>扫描API测试</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        pre { background: #000; padding: 10px; border: 1px solid #0f0; overflow: auto; max-height: 400px; }
+        .status { padding: 10px; margin: 10px 0; border: 1px solid #0f0; }
+    </style>
+</head>
+<body>
+    <h1>扫描进度测试</h1>
+    
+    <button onclick="startScan()">开始扫描</button>
+    <button onclick="stopPolling()">停止轮询</button>
+    
+    <div class="status">
+        <div>扫描ID: <span id="scanId">-</span></div>
+        <div>状态: <span id="status">-</span></div>
+        <div>进度: <span id="progress">-</span></div>
+        <div>阶段: <span id="phase">-</span></div>
+        <div>批次: <span id="batch">-</span></div>
+        <div>速度: <span id="speed">-</span></div>
+    </div>
+    
+    <h3>原始响应:</h3>
+    <pre id="response"></pre>
+    
+    <script>
+        let pollingInterval;
+        let currentScanId;
+        
+        async function startScan() {
+            try {
+                const response = await fetch('http://localhost:18000/api/v1/scan/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        directory: '/mnt/d/Games/Curseforge/Minecraft/Instances/DeceasedCraft - Modern Zombie Apocalypse/mods',
+                        incremental: false
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.data) {
+                    currentScanId = data.data.scan_id;
+                    document.getElementById('scanId').textContent = currentScanId;
+                    startPolling();
+                }
+            } catch (error) {
+                console.error('扫描失败:', error);
+                document.getElementById('response').textContent = '错误: ' + error.message;
+            }
+        }
+        
+        function startPolling() {
+            stopPolling();
+            pollStatus();
+            pollingInterval = setInterval(pollStatus, 1000);
+        }
+        
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+        
+        async function pollStatus() {
+            if (!currentScanId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:18000/api/v1/scan-status/${currentScanId}`);
+                const data = await response.json();
+                
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.data) {
+                    const status = data.data;
+                    document.getElementById('status').textContent = status.status || '-';
+                    document.getElementById('progress').textContent = 
+                        `${status.processed_files || 0} / ${status.total_files || 0} (${Math.round(status.progress || 0)}%)`;
+                    document.getElementById('phase').textContent = 
+                        `${status.scan_phase || '-'}: ${status.phase_text || '-'}`;
+                    document.getElementById('batch').textContent = 
+                        status.current_batch ? `第 ${status.current_batch} / ${status.total_batches} 批` : '-';
+                    document.getElementById('speed').textContent = 
+                        status.files_per_second ? `${status.files_per_second} 文件/秒` : '-';
+                    
+                    if (status.status === 'completed' || status.status === 'failed') {
+                        stopPolling();
+                    }
+                }
+            } catch (error) {
+                console.error('获取状态失败:', error);
+                document.getElementById('response').textContent = '错误: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

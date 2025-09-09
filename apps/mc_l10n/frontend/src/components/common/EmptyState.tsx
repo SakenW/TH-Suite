@@ -3,16 +3,9 @@
  * 用于展示无数据、无搜索结果等空状态场景
  */
 
-import React from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Stack,
-  Paper,
-  alpha,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import React from 'react'
+import { Box, Typography, Button, Stack, Paper, alpha } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   Search,
   FolderOpen,
@@ -26,13 +19,13 @@ import {
   Database,
   Filter,
   Globe,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+} from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export type EmptyStateType =
   | 'no-data'
   | 'no-results'
-  | 'no-projects' 
+  | 'no-projects'
   | 'no-translations'
   | 'no-files'
   | 'error'
@@ -41,37 +34,37 @@ export type EmptyStateType =
   | 'permission-denied'
   | 'filtered-empty'
   | 'archived'
-  | 'maintenance';
+  | 'maintenance'
 
 interface EmptyStateConfig {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+  icon: React.ReactNode
+  title: string
+  description: string
   primaryAction?: {
-    label: string;
-    action: () => void;
-  };
+    label: string
+    action: () => void
+  }
   secondaryAction?: {
-    label: string;
-    action: () => void;
-  };
+    label: string
+    action: () => void
+  }
 }
 
 interface EmptyStateProps {
-  type: EmptyStateType;
-  title?: string;
-  description?: string;
-  icon?: React.ReactNode;
+  type: EmptyStateType
+  title?: string
+  description?: string
+  icon?: React.ReactNode
   actions?: Array<{
-    label: string;
-    onClick: () => void;
-    variant?: 'contained' | 'outlined' | 'text';
-    color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
-    startIcon?: React.ReactNode;
-  }>;
-  illustration?: React.ReactNode;
-  size?: 'small' | 'medium' | 'large';
-  animate?: boolean;
+    label: string
+    onClick: () => void
+    variant?: 'contained' | 'outlined' | 'text'
+    color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
+    startIcon?: React.ReactNode
+  }>
+  illustration?: React.ReactNode
+  size?: 'small' | 'medium' | 'large'
+  animate?: boolean
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -84,7 +77,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   size = 'medium',
   animate = true,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const getEmptyStateConfig = (type: EmptyStateType): EmptyStateConfig => {
     const configs: Record<EmptyStateType, EmptyStateConfig> = {
@@ -141,7 +134,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           action: () => {},
         },
       },
-      'error': {
+      error: {
         icon: <AlertCircle size={48} />,
         title: '出现错误',
         description: '加载数据时发生错误，请稍后重试。',
@@ -150,7 +143,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           action: () => {},
         },
       },
-      'offline': {
+      offline: {
         icon: <Wifi size={48} />,
         title: '网络连接断开',
         description: '请检查您的网络连接并重试。',
@@ -186,7 +179,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           action: () => {},
         },
       },
-      'archived': {
+      archived: {
         icon: <Archive size={48} />,
         title: '内容已归档',
         description: '这些内容已被归档，您可以在归档区域查看。',
@@ -195,7 +188,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           action: () => {},
         },
       },
-      'maintenance': {
+      maintenance: {
         icon: <AlertCircle size={48} />,
         title: '维护中',
         description: '系统正在维护中，请稍后再试。',
@@ -204,15 +197,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           action: () => {},
         },
       },
-    };
+    }
 
-    return configs[type];
-  };
+    return configs[type]
+  }
 
-  const config = getEmptyStateConfig(type);
-  const finalTitle = customTitle || config.title;
-  const finalDescription = customDescription || config.description;
-  const finalIcon = customIcon || config.icon;
+  const config = getEmptyStateConfig(type)
+  const finalTitle = customTitle || config.title
+  const finalDescription = customDescription || config.description
+  const finalIcon = customIcon || config.icon
 
   const getSizeStyles = () => {
     switch (size) {
@@ -222,14 +215,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           titleVariant: 'h6' as const,
           spacing: 2,
           maxWidth: 300,
-        };
+        }
       case 'large':
         return {
           iconSize: 64,
           titleVariant: 'h4' as const,
           spacing: 4,
           maxWidth: 500,
-        };
+        }
       case 'medium':
       default:
         return {
@@ -237,11 +230,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           titleVariant: 'h5' as const,
           spacing: 3,
           maxWidth: 400,
-        };
+        }
     }
-  };
+  }
 
-  const sizeStyles = getSizeStyles();
+  const sizeStyles = getSizeStyles()
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -253,7 +246,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         staggerChildren: 0.1,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -262,12 +255,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       y: 0,
       transition: { duration: 0.4 },
     },
-  };
+  }
 
   const iconElement = React.cloneElement(finalIcon as React.ReactElement, {
     size: sizeStyles.iconSize,
     color: alpha(theme.palette.text.secondary, 0.6),
-  });
+  })
 
   return (
     <Box
@@ -285,7 +278,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <motion.div
         variants={containerVariants}
         initial={animate ? 'hidden' : 'visible'}
-        animate="visible"
+        animate='visible'
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -297,9 +290,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {/* 插图或图标 */}
         <motion.div variants={itemVariants}>
           {illustration ? (
-            <Box sx={{ mb: sizeStyles.spacing }}>
-              {illustration}
-            </Box>
+            <Box sx={{ mb: sizeStyles.spacing }}>{illustration}</Box>
           ) : (
             <Box
               sx={{
@@ -332,8 +323,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {/* 描述 */}
         <motion.div variants={itemVariants}>
           <Typography
-            variant="body1"
-            color="text.secondary"
+            variant='body1'
+            color='text.secondary'
             sx={{
               mb: sizeStyles.spacing,
               lineHeight: 1.6,
@@ -350,7 +341,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
-              alignItems="center"
+              alignItems='center'
               sx={{ width: '100%' }}
             >
               {actions.map((action, index) => (
@@ -377,14 +368,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {/* 默认操作按钮 */}
         {actions.length === 0 && (config.primaryAction || config.secondaryAction) && (
           <motion.div variants={itemVariants}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              alignItems="center"
-            >
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems='center'>
               {config.primaryAction && (
                 <Button
-                  variant="contained"
+                  variant='contained'
                   onClick={config.primaryAction.action}
                   sx={{
                     minWidth: { xs: '100%', sm: 120 },
@@ -398,7 +385,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               )}
               {config.secondaryAction && (
                 <Button
-                  variant="outlined"
+                  variant='outlined'
                   onClick={config.secondaryAction.action}
                   sx={{
                     minWidth: { xs: '100%', sm: 120 },
@@ -414,5 +401,5 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         )}
       </motion.div>
     </Box>
-  );
-};
+  )
+}

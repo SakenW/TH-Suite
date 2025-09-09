@@ -3,9 +3,9 @@
  * 管理翻译补丁的创建、应用和回滚
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import {
   MCPanel,
   MCButton,
@@ -19,37 +19,37 @@ import {
   minecraftColors,
   typography,
   getRarityColor,
-} from '../components/minecraft';
+} from '../components/minecraft'
 
 // 补丁类型
 interface Patch {
-  id: string;
-  name: string;
-  version: string;
-  description: string;
-  createdAt: Date;
-  appliedAt?: Date;
-  status: 'pending' | 'applied' | 'failed' | 'rollback';
-  type: 'overlay' | 'jar_modify' | 'directory';
-  targetLanguages: string[];
-  affectedFiles: number;
-  totalEntries: number;
-  conflicts: number;
-  author: string;
-  size: string;
+  id: string
+  name: string
+  version: string
+  description: string
+  createdAt: Date
+  appliedAt?: Date
+  status: 'pending' | 'applied' | 'failed' | 'rollback'
+  type: 'overlay' | 'jar_modify' | 'directory'
+  targetLanguages: string[]
+  affectedFiles: number
+  totalEntries: number
+  conflicts: number
+  author: string
+  size: string
 }
 
 // 补丁策略
-type PatchPolicy = 'OVERLAY' | 'REPLACE' | 'MERGE' | 'CREATE_IF_MISSING';
+type PatchPolicy = 'OVERLAY' | 'REPLACE' | 'MERGE' | 'CREATE_IF_MISSING'
 
 const PatchesPage: React.FC = () => {
-  const { t } = useTranslation(['mcStudio', 'minecraft']);
-  
-  const [patches, setPatches] = useState<Patch[]>([]);
-  const [selectedPatch, setSelectedPatch] = useState<Patch | null>(null);
-  const [applyingPatch, setApplyingPatch] = useState(false);
-  const [patchPolicy, setPatchPolicy] = useState<PatchPolicy>('OVERLAY');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useTranslation(['mcStudio', 'minecraft'])
+
+  const [patches, setPatches] = useState<Patch[]>([])
+  const [selectedPatch, setSelectedPatch] = useState<Patch | null>(null)
+  const [applyingPatch, setApplyingPatch] = useState(false)
+  const [patchPolicy, setPatchPolicy] = useState<PatchPolicy>('OVERLAY')
+  const [searchTerm, setSearchTerm] = useState('')
 
   // 模拟加载补丁
   useEffect(() => {
@@ -100,87 +100,88 @@ const PatchesPage: React.FC = () => {
         author: 'System',
         size: '12 KB',
       },
-    ];
-    setPatches(mockPatches);
-  }, []);
+    ]
+    setPatches(mockPatches)
+  }, [])
 
   // 应用补丁
   const applyPatch = async (patch: Patch) => {
-    setApplyingPatch(true);
-    
+    setApplyingPatch(true)
+
     // 模拟应用过程
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
     // 更新补丁状态
-    setPatches(prev => prev.map(p => 
-      p.id === patch.id 
-        ? { ...p, status: 'applied' as const, appliedAt: new Date() }
-        : p
-    ));
-    
-    setApplyingPatch(false);
-  };
+    setPatches(prev =>
+      prev.map(p =>
+        p.id === patch.id ? { ...p, status: 'applied' as const, appliedAt: new Date() } : p,
+      ),
+    )
+
+    setApplyingPatch(false)
+  }
 
   // 回滚补丁
   const rollbackPatch = async (patch: Patch) => {
-    setApplyingPatch(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setPatches(prev => prev.map(p => 
-      p.id === patch.id 
-        ? { ...p, status: 'rollback' as const, appliedAt: undefined }
-        : p
-    ));
-    
-    setApplyingPatch(false);
-  };
+    setApplyingPatch(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    setPatches(prev =>
+      prev.map(p =>
+        p.id === patch.id ? { ...p, status: 'rollback' as const, appliedAt: undefined } : p,
+      ),
+    )
+
+    setApplyingPatch(false)
+  }
 
   // 获取补丁稀有度
   const getPatchRarity = (patch: Patch): 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' => {
-    if (patch.conflicts > 10) return 'common';
-    if (patch.conflicts > 5) return 'uncommon';
-    if (patch.totalEntries > 5000) return 'legendary';
-    if (patch.totalEntries > 2000) return 'epic';
-    if (patch.totalEntries > 500) return 'rare';
-    return 'uncommon';
-  };
+    if (patch.conflicts > 10) return 'common'
+    if (patch.conflicts > 5) return 'uncommon'
+    if (patch.totalEntries > 5000) return 'legendary'
+    if (patch.totalEntries > 2000) return 'epic'
+    if (patch.totalEntries > 500) return 'rare'
+    return 'uncommon'
+  }
 
   // 获取状态颜色
   const getStatusColor = (status: Patch['status']) => {
     switch (status) {
       case 'applied':
-        return minecraftColors.primary.emerald;
+        return minecraftColors.primary.emerald
       case 'pending':
-        return minecraftColors.primary.gold;
+        return minecraftColors.primary.gold
       case 'failed':
-        return minecraftColors.primary.redstone;
+        return minecraftColors.primary.redstone
       case 'rollback':
-        return minecraftColors.formatting['§7'];
+        return minecraftColors.formatting['§7']
       default:
-        return minecraftColors.ui.text.primary;
+        return minecraftColors.ui.text.primary
     }
-  };
+  }
 
   // 获取补丁图标
   const getPatchIcon = (type: Patch['type']) => {
     switch (type) {
       case 'overlay':
-        return '📚';
+        return '📚'
       case 'jar_modify':
-        return '🔧';
+        return '🔧'
       case 'directory':
-        return '📁';
+        return '📁'
       default:
-        return '📦';
+        return '📦'
     }
-  };
+  }
 
   // 过滤补丁
-  const filteredPatches = patches.filter(patch =>
-    patch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patch.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPatches = patches.filter(
+    patch =>
+      patch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patch.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -202,7 +203,8 @@ const PatchesPage: React.FC = () => {
             marginBottom: '8px',
           }}
         >
-          {t('mcStudio.features.modLocalization.title')} {t('common.labels.management', 'Management')}
+          {t('mcStudio.features.modLocalization.title')}{' '}
+          {t('common.labels.management', 'Management')}
         </h1>
         <p
           style={{
@@ -216,36 +218,26 @@ const PatchesPage: React.FC = () => {
       </motion.div>
 
       {/* 控制面板 */}
-      <MCPanel
-        variant="stone"
-        title="Patch Control"
-        style={{ marginBottom: '24px' }}
-      >
+      <MCPanel variant='stone' title='Patch Control' style={{ marginBottom: '24px' }}>
         <div style={{ padding: '16px' }}>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
             {/* 搜索框 */}
             <MCInput
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search patches..."
-              type="search"
+              placeholder='Search patches...'
+              type='search'
               fullWidth
               prefix={<span>🔍</span>}
             />
-            
+
             {/* 创建新补丁 */}
-            <MCButton
-              variant="primary"
-              icon={<span>➕</span>}
-            >
+            <MCButton variant='primary' icon={<span>➕</span>}>
               Create Patch
             </MCButton>
-            
+
             {/* 导入补丁 */}
-            <MCButton
-              variant="default"
-              icon={<span>📥</span>}
-            >
+            <MCButton variant='default' icon={<span>📥</span>}>
               Import
             </MCButton>
           </div>
@@ -262,13 +254,10 @@ const PatchesPage: React.FC = () => {
               Policy:
             </span>
             {(['OVERLAY', 'REPLACE', 'MERGE', 'CREATE_IF_MISSING'] as PatchPolicy[]).map(policy => (
-              <MCTooltip
-                key={policy}
-                content={`Apply patches using ${policy} strategy`}
-              >
+              <MCTooltip key={policy} content={`Apply patches using ${policy} strategy`}>
                 <MCButton
                   variant={patchPolicy === policy ? 'primary' : 'default'}
-                  size="small"
+                  size='small'
                   onClick={() => setPatchPolicy(policy)}
                 >
                   {policy}
@@ -331,14 +320,14 @@ const PatchesPage: React.FC = () => {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <MCPanel
-                variant="planks"
+                variant='planks'
                 title={selectedPatch.name}
                 closable
                 onClose={() => setSelectedPatch(null)}
-                width="600px"
+                width='600px'
               >
                 <PatchDetails
                   patch={selectedPatch}
@@ -352,7 +341,7 @@ const PatchesPage: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 
   // 补丁列表组件
   function PatchList({ patches: patchList }: { patches: Patch[] }) {
@@ -386,9 +375,16 @@ const PatchesPage: React.FC = () => {
                 onClick={() => setSelectedPatch(patch)}
                 style={{ cursor: 'pointer' }}
               >
-                <MCPanel variant="dirt">
+                <MCPanel variant='dirt'>
                   <div style={{ padding: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '8px',
+                      }}
+                    >
                       <span style={{ fontSize: '24px' }}>{getPatchIcon(patch.type)}</span>
                       <div style={{ flex: 1 }}>
                         <div
@@ -423,7 +419,7 @@ const PatchesPage: React.FC = () => {
                         {patch.status.toUpperCase()}
                       </div>
                     </div>
-                    
+
                     <div
                       style={{
                         fontSize: typography.fontSize.small,
@@ -434,7 +430,7 @@ const PatchesPage: React.FC = () => {
                     >
                       {patch.description}
                     </div>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span
                         style={{
@@ -464,20 +460,20 @@ const PatchesPage: React.FC = () => {
           </div>
         )}
       </div>
-    );
+    )
   }
 
   // 补丁详情组件
-  function PatchDetails({ 
-    patch, 
-    onApply, 
-    onRollback, 
-    isApplying 
-  }: { 
-    patch: Patch; 
-    onApply: () => void; 
-    onRollback: () => void;
-    isApplying: boolean;
+  function PatchDetails({
+    patch,
+    onApply,
+    onRollback,
+    isApplying,
+  }: {
+    patch: Patch
+    onApply: () => void
+    onRollback: () => void
+    isApplying: boolean
   }) {
     return (
       <div style={{ padding: '24px' }}>
@@ -519,7 +515,7 @@ const PatchesPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <p
             style={{
               fontSize: typography.fontSize.normal,
@@ -541,21 +537,25 @@ const PatchesPage: React.FC = () => {
             marginBottom: '24px',
           }}
         >
-          <InfoItem label="Type" value={patch.type} />
-          <InfoItem label="Size" value={patch.size} />
-          <InfoItem label="Affected Files" value={patch.affectedFiles} />
-          <InfoItem label="Total Entries" value={patch.totalEntries} />
-          <InfoItem label="Target Languages" value={patch.targetLanguages.join(', ')} />
-          <InfoItem label="Conflicts" value={patch.conflicts} color={patch.conflicts > 0 ? minecraftColors.primary.redstone : undefined} />
-          <InfoItem label="Created" value={patch.createdAt.toLocaleDateString()} />
-          <InfoItem label="Applied" value={patch.appliedAt?.toLocaleDateString() || 'Never'} />
+          <InfoItem label='Type' value={patch.type} />
+          <InfoItem label='Size' value={patch.size} />
+          <InfoItem label='Affected Files' value={patch.affectedFiles} />
+          <InfoItem label='Total Entries' value={patch.totalEntries} />
+          <InfoItem label='Target Languages' value={patch.targetLanguages.join(', ')} />
+          <InfoItem
+            label='Conflicts'
+            value={patch.conflicts}
+            color={patch.conflicts > 0 ? minecraftColors.primary.redstone : undefined}
+          />
+          <InfoItem label='Created' value={patch.createdAt.toLocaleDateString()} />
+          <InfoItem label='Applied' value={patch.appliedAt?.toLocaleDateString() || 'Never'} />
         </div>
 
         {/* 操作按钮 */}
         <div style={{ display: 'flex', gap: '12px' }}>
           {patch.status === 'pending' && (
             <MCButton
-              variant="primary"
+              variant='primary'
               fullWidth
               onClick={onApply}
               loading={isApplying}
@@ -565,10 +565,10 @@ const PatchesPage: React.FC = () => {
               Apply Patch
             </MCButton>
           )}
-          
+
           {patch.status === 'applied' && (
             <MCButton
-              variant="danger"
+              variant='danger'
               fullWidth
               onClick={onRollback}
               loading={isApplying}
@@ -578,10 +578,10 @@ const PatchesPage: React.FC = () => {
               Rollback
             </MCButton>
           )}
-          
+
           {patch.status === 'failed' && (
             <MCButton
-              variant="warning"
+              variant='warning'
               fullWidth
               onClick={onApply}
               loading={isApplying}
@@ -591,28 +591,24 @@ const PatchesPage: React.FC = () => {
               Retry
             </MCButton>
           )}
-          
-          <MCButton
-            variant="default"
-            fullWidth
-            icon={<span>📤</span>}
-          >
+
+          <MCButton variant='default' fullWidth icon={<span>📤</span>}>
             Export
           </MCButton>
         </div>
       </div>
-    );
+    )
   }
 
   // 信息项组件
-  function InfoItem({ 
-    label, 
-    value, 
-    color 
-  }: { 
-    label: string; 
-    value: string | number; 
-    color?: string;
+  function InfoItem({
+    label,
+    value,
+    color,
+  }: {
+    label: string
+    value: string | number
+    color?: string
   }) {
     return (
       <div>
@@ -635,8 +631,8 @@ const PatchesPage: React.FC = () => {
           {value}
         </div>
       </div>
-    );
+    )
   }
-};
+}
 
-export default PatchesPage;
+export default PatchesPage

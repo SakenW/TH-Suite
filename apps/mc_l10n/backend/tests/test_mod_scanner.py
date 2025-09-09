@@ -11,10 +11,10 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from src.mc_l10n.infrastructure.parsers import ParserFactory
-from src.mc_l10n.infrastructure.scanners import MinecraftModScanner
 
+from packages.adapters.minecraft.scanner import MinecraftModScanner
 from packages.core import FileType, LoaderType, ModParsingError
+from packages.parsers import ParserFactory
 
 
 class TestMinecraftModScanner:

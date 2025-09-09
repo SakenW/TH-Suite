@@ -3,51 +3,51 @@
  * 提供整体的页面框架和导航
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { 
-  MCPanel, 
-  MCButton, 
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate, useLocation, Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import {
+  MCPanel,
+  MCButton,
   MCInventorySlot,
   MCTooltip,
   MCStatusBars,
   minecraftColors,
   typography,
-  textures
-} from '../components/minecraft';
-import { languageManager } from '../i18n/config';
+  textures,
+} from '../components/minecraft'
+import { languageManager } from '../i18n/config'
 
 // 导航项类型
 interface NavItem {
-  id: string;
-  label: string;
-  icon: string;
-  path: string;
-  badge?: number;
-  tooltip?: string;
+  id: string
+  label: string
+  icon: string
+  path: string
+  badge?: number
+  tooltip?: string
 }
 
 // 快捷栏项目
 interface HotbarItem {
-  id: string;
-  icon: string;
-  label: string;
-  action?: () => void;
-  active?: boolean;
+  id: string
+  icon: string
+  label: string
+  action?: () => void
+  active?: boolean
 }
 
 const MCLayout: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedHotbarSlot, setSelectedHotbarSlot] = useState(0);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [serverStatus, setServerStatus] = useState<'online' | 'offline'>('offline');
-  
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [selectedHotbarSlot, setSelectedHotbarSlot] = useState(0)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [serverStatus, setServerStatus] = useState<'online' | 'offline'>('offline')
+
   // 导航项目
   const navItems: NavItem[] = [
     {
@@ -55,14 +55,14 @@ const MCLayout: React.FC = () => {
       label: t('navigation.home'),
       icon: '🏠',
       path: '/',
-      tooltip: 'Return to spawn'
+      tooltip: 'Return to spawn',
     },
     {
       id: 'scan',
       label: t('mcStudio.welcome.quickActions.scan.title'),
       icon: '🔍',
       path: '/scan',
-      tooltip: 'Scan for resources'
+      tooltip: 'Scan for resources',
     },
     {
       id: 'patches',
@@ -70,37 +70,37 @@ const MCLayout: React.FC = () => {
       icon: '📦',
       path: '/patches',
       badge: 3,
-      tooltip: 'Manage patches'
+      tooltip: 'Manage patches',
     },
     {
       id: 'quality',
       label: t('common.labels.quality', 'Quality'),
       icon: '✨',
       path: '/quality',
-      tooltip: 'Quality checks'
+      tooltip: 'Quality checks',
     },
     {
       id: 'sync',
       label: t('mcStudio.workflow.synchronization.status.completed'),
       icon: '🔄',
       path: '/sync',
-      tooltip: 'Sync with Trans-Hub'
+      tooltip: 'Sync with Trans-Hub',
     },
     {
       id: 'metrics',
       label: t('navigation.dashboard'),
       icon: '📊',
       path: '/metrics',
-      tooltip: 'View metrics'
+      tooltip: 'View metrics',
     },
     {
       id: 'settings',
       label: t('navigation.settings'),
       icon: '⚙️',
       path: '/settings',
-      tooltip: 'Game settings'
-    }
-  ];
+      tooltip: 'Game settings',
+    },
+  ]
 
   // 快捷栏项目（底部）
   const hotbarItems: HotbarItem[] = [
@@ -113,54 +113,54 @@ const MCLayout: React.FC = () => {
     { id: 'deploy', icon: '🚀', label: 'Deploy', action: () => navigate('/deploy') },
     { id: 'help', icon: '❓', label: 'Help', action: () => navigate('/help') },
     { id: 'terminal', icon: '💻', label: 'Terminal', action: () => console.log('Open terminal') },
-  ];
+  ]
 
   // 更新时间
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   // 检查服务器状态
   useEffect(() => {
     const checkServerStatus = async () => {
       try {
-        const response = await fetch('http://localhost:18000/health');
-        setServerStatus(response.ok ? 'online' : 'offline');
+        const response = await fetch('http://localhost:18000/health')
+        setServerStatus(response.ok ? 'online' : 'offline')
       } catch {
-        setServerStatus('offline');
+        setServerStatus('offline')
       }
-    };
-    
-    checkServerStatus();
-    const interval = setInterval(checkServerStatus, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    }
+
+    checkServerStatus()
+    const interval = setInterval(checkServerStatus, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   // 键盘快捷键
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key >= '1' && e.key <= '9') {
-        const slot = parseInt(e.key) - 1;
-        setSelectedHotbarSlot(slot);
-        hotbarItems[slot]?.action?.();
+        const slot = parseInt(e.key) - 1
+        setSelectedHotbarSlot(slot)
+        hotbarItems[slot]?.action?.()
       }
       if (e.key === 'Escape') {
-        setIsMenuOpen(!isMenuOpen);
+        setIsMenuOpen(!isMenuOpen)
       }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isMenuOpen]);
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [isMenuOpen])
 
   // 获取当前页面标题
   const getCurrentPageTitle = () => {
-    const currentNav = navItems.find(item => item.path === location.pathname);
-    return currentNav?.label || 'Minecraft Localization Studio';
-  };
+    const currentNav = navItems.find(item => item.path === location.pathname)
+    return currentNav?.label || 'Minecraft Localization Studio'
+  }
 
   return (
     <div
@@ -200,19 +200,19 @@ const MCLayout: React.FC = () => {
         {/* 右侧状态 */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {/* 服务器状态 */}
-          <MCTooltip content="Trans-Hub Server Status">
+          <MCTooltip content='Trans-Hub Server Status'>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <div
                 style={{
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: serverStatus === 'online' 
-                    ? minecraftColors.status.online 
-                    : minecraftColors.status.offline,
-                  boxShadow: serverStatus === 'online'
-                    ? `0 0 4px ${minecraftColors.status.online}`
-                    : 'none',
+                  backgroundColor:
+                    serverStatus === 'online'
+                      ? minecraftColors.status.online
+                      : minecraftColors.status.offline,
+                  boxShadow:
+                    serverStatus === 'online' ? `0 0 4px ${minecraftColors.status.online}` : 'none',
                 }}
               />
               <span>{serverStatus === 'online' ? 'Online' : 'Offline'}</span>
@@ -220,10 +220,10 @@ const MCLayout: React.FC = () => {
           </MCTooltip>
 
           {/* 语言切换 */}
-          <MCTooltip content="Change Language">
+          <MCTooltip content='Change Language'>
             <select
               value={i18n.language}
-              onChange={(e) => languageManager.setLanguage(e.target.value as any)}
+              onChange={e => languageManager.setLanguage(e.target.value as any)}
               style={{
                 backgroundColor: 'transparent',
                 border: 'none',
@@ -234,8 +234,8 @@ const MCLayout: React.FC = () => {
                 outline: 'none',
               }}
             >
-              <option value="en">English</option>
-              <option value="zh-CN">简体中文</option>
+              <option value='en'>English</option>
+              <option value='zh-CN'>简体中文</option>
             </select>
           </MCTooltip>
 
@@ -264,11 +264,11 @@ const MCLayout: React.FC = () => {
               }}
             >
               <MCPanel
-                variant="planks"
-                title="Menu"
+                variant='planks'
+                title='Menu'
                 closable
                 onClose={() => setIsMenuOpen(false)}
-                height="100%"
+                height='100%'
                 style={{ height: '100%' }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -276,8 +276,8 @@ const MCLayout: React.FC = () => {
                     <MCButton
                       key={item.id}
                       onClick={() => {
-                        navigate(item.path);
-                        setIsMenuOpen(false);
+                        navigate(item.path)
+                        setIsMenuOpen(false)
                       }}
                       variant={location.pathname === item.path ? 'primary' : 'default'}
                       fullWidth
@@ -349,7 +349,7 @@ const MCLayout: React.FC = () => {
             overflow: 'auto',
           }}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 20 }}
@@ -379,18 +379,14 @@ const MCLayout: React.FC = () => {
         }}
       >
         {hotbarItems.map((item, index) => (
-          <MCTooltip
-            key={item.id}
-            content={item.label}
-            position="top"
-          >
+          <MCTooltip key={item.id} content={item.label} position='top'>
             <div style={{ position: 'relative' }}>
               <MCInventorySlot
                 item={<span style={{ fontSize: '20px' }}>{item.icon}</span>}
                 selected={selectedHotbarSlot === index}
                 onClick={() => {
-                  setSelectedHotbarSlot(index);
-                  item.action?.();
+                  setSelectedHotbarSlot(index)
+                  item.action?.()
                 }}
                 size={44}
               />
@@ -413,7 +409,7 @@ const MCLayout: React.FC = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MCLayout;
+export default MCLayout

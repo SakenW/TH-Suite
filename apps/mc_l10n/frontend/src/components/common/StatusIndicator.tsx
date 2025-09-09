@@ -3,15 +3,9 @@
  * 统一的状态展示组件，支持多种状态类型
  */
 
-import React from 'react';
-import {
-  Box,
-  Chip,
-  Typography,
-  Tooltip,
-  alpha,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import React from 'react'
+import { Box, Chip, Typography, Tooltip, alpha } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   CheckCircle,
   Clock,
@@ -24,36 +18,49 @@ import {
   Eye,
   Flag,
   Settings,
-} from 'lucide-react';
+} from 'lucide-react'
 
-export type StatusType = 
+export type StatusType =
   // 项目状态
-  | 'active' | 'paused' | 'archived'
+  | 'active'
+  | 'paused'
+  | 'archived'
   // 翻译状态
-  | 'untranslated' | 'translated' | 'reviewed' | 'approved' | 'needs_update'
+  | 'untranslated'
+  | 'translated'
+  | 'reviewed'
+  | 'approved'
+  | 'needs_update'
   // 任务状态
-  | 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
   // 通用状态
-  | 'success' | 'error' | 'warning' | 'info';
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info'
 
 interface StatusConfig {
-  label: string;
-  color: string;
-  bgColor: string;
-  icon: React.ReactNode;
-  description?: string;
+  label: string
+  color: string
+  bgColor: string
+  icon: React.ReactNode
+  description?: string
 }
 
 interface StatusIndicatorProps {
-  status: StatusType;
-  variant?: 'chip' | 'badge' | 'dot' | 'icon' | 'full';
-  size?: 'small' | 'medium' | 'large';
-  showIcon?: boolean;
-  showLabel?: boolean;
-  customLabel?: string;
-  tooltip?: string;
-  pulse?: boolean;
-  onClick?: () => void;
+  status: StatusType
+  variant?: 'chip' | 'badge' | 'dot' | 'icon' | 'full'
+  size?: 'small' | 'medium' | 'large'
+  showIcon?: boolean
+  showLabel?: boolean
+  customLabel?: string
+  tooltip?: string
+  pulse?: boolean
+  onClick?: () => void
 }
 
 export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
@@ -67,7 +74,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
   pulse = false,
   onClick,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const getStatusConfig = (status: StatusType): StatusConfig => {
     const configs: Record<StatusType, StatusConfig> = {
@@ -197,40 +204,45 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
         icon: <Zap size={16} />,
         description: '提示信息',
       },
-    };
+    }
 
-    return configs[status];
-  };
+    return configs[status]
+  }
 
-  const config = getStatusConfig(status);
-  const displayLabel = customLabel || config.label;
-  const displayTooltip = tooltip || config.description;
+  const config = getStatusConfig(status)
+  const displayLabel = customLabel || config.label
+  const displayTooltip = tooltip || config.description
 
   const getIconSize = () => {
     switch (size) {
-      case 'small': return 12;
-      case 'large': return 20;
+      case 'small':
+        return 12
+      case 'large':
+        return 20
       case 'medium':
-      default: return 16;
+      default:
+        return 16
     }
-  };
+  }
 
   const iconElement = React.cloneElement(config.icon as React.ReactElement, {
     size: getIconSize(),
     color: config.color,
-  });
+  })
 
-  const pulseAnimation = pulse ? {
-    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-    '@keyframes pulse': {
-      '0%, 100%': {
-        opacity: 1,
-      },
-      '50%': {
-        opacity: 0.5,
-      },
-    },
-  } : {};
+  const pulseAnimation = pulse
+    ? {
+        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        '@keyframes pulse': {
+          '0%, 100%': {
+            opacity: 1,
+          },
+          '50%': {
+            opacity: 0.5,
+          },
+        },
+      }
+    : {}
 
   const renderStatusElement = () => {
     switch (variant) {
@@ -247,14 +259,16 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               fontWeight: 600,
               cursor: onClick ? 'pointer' : 'default',
               ...pulseAnimation,
-              '&:hover': onClick ? {
-                backgroundColor: alpha(config.color, 0.2),
-                borderColor: alpha(config.color, 0.5),
-              } : {},
+              '&:hover': onClick
+                ? {
+                    backgroundColor: alpha(config.color, 0.2),
+                    borderColor: alpha(config.color, 0.5),
+                  }
+                : {},
             }}
             onClick={onClick}
           />
-        );
+        )
 
       case 'badge':
         return (
@@ -273,17 +287,19 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               fontWeight: 600,
               cursor: onClick ? 'pointer' : 'default',
               ...pulseAnimation,
-              '&:hover': onClick ? {
-                backgroundColor: alpha(config.color, 0.2),
-                borderColor: alpha(config.color, 0.5),
-              } : {},
+              '&:hover': onClick
+                ? {
+                    backgroundColor: alpha(config.color, 0.2),
+                    borderColor: alpha(config.color, 0.5),
+                  }
+                : {},
             }}
             onClick={onClick}
           >
             {showIcon && iconElement}
             {showLabel && displayLabel}
           </Box>
-        );
+        )
 
       case 'dot':
         return (
@@ -307,7 +323,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
             />
             {showLabel && (
               <Typography
-                variant="body2"
+                variant='body2'
                 sx={{
                   color: config.color,
                   fontWeight: 600,
@@ -318,7 +334,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               </Typography>
             )}
           </Box>
-        );
+        )
 
       case 'icon':
         return (
@@ -334,15 +350,17 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               color: config.color,
               cursor: onClick ? 'pointer' : 'default',
               ...pulseAnimation,
-              '&:hover': onClick ? {
-                backgroundColor: alpha(config.color, 0.2),
-              } : {},
+              '&:hover': onClick
+                ? {
+                    backgroundColor: alpha(config.color, 0.2),
+                  }
+                : {},
             }}
             onClick={onClick}
           >
             {iconElement}
           </Box>
-        );
+        )
 
       case 'full':
         return (
@@ -359,10 +377,12 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               border: `1px solid ${alpha(config.color, 0.3)}`,
               cursor: onClick ? 'pointer' : 'default',
               ...pulseAnimation,
-              '&:hover': onClick ? {
-                backgroundColor: alpha(config.color, 0.2),
-                borderColor: alpha(config.color, 0.5),
-              } : {},
+              '&:hover': onClick
+                ? {
+                    backgroundColor: alpha(config.color, 0.2),
+                    borderColor: alpha(config.color, 0.5),
+                  }
+                : {},
             }}
             onClick={onClick}
           >
@@ -370,10 +390,11 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
             <Box>
               {showLabel && (
                 <Typography
-                  variant="body2"
+                  variant='body2'
                   sx={{
                     fontWeight: 600,
-                    fontSize: size === 'small' ? '0.75rem' : size === 'large' ? '0.95rem' : '0.85rem',
+                    fontSize:
+                      size === 'small' ? '0.75rem' : size === 'large' ? '0.95rem' : '0.85rem',
                     lineHeight: 1.2,
                   }}
                 >
@@ -382,10 +403,11 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               )}
               {config.description && (
                 <Typography
-                  variant="caption"
+                  variant='caption'
                   sx={{
                     opacity: 0.8,
-                    fontSize: size === 'small' ? '0.65rem' : size === 'large' ? '0.75rem' : '0.7rem',
+                    fontSize:
+                      size === 'small' ? '0.65rem' : size === 'large' ? '0.75rem' : '0.7rem',
                     lineHeight: 1.1,
                   }}
                 >
@@ -394,22 +416,22 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
               )}
             </Box>
           </Box>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
-  const statusElement = renderStatusElement();
+  const statusElement = renderStatusElement()
 
   if (displayTooltip && statusElement) {
     return (
-      <Tooltip title={displayTooltip} arrow placement="top">
-        <Box component="span">{statusElement}</Box>
+      <Tooltip title={displayTooltip} arrow placement='top'>
+        <Box component='span'>{statusElement}</Box>
       </Tooltip>
-    );
+    )
   }
 
-  return statusElement;
-};
+  return statusElement
+}

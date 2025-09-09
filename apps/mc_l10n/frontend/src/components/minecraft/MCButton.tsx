@@ -3,24 +3,24 @@
  * 模拟 Minecraft 游戏内的按钮样式
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { minecraftColors, get3DBorder, getPixelShadow } from '../../theme/minecraft/colors';
-import { typography, textStyles } from '../../theme/minecraft/typography';
+import React, { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { minecraftColors, get3DBorder, getPixelShadow } from '../../theme/minecraft/colors'
+import { typography, textStyles } from '../../theme/minecraft/typography'
 
 export interface MCButtonProps {
-  children: React.ReactNode;
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  variant?: 'default' | 'primary' | 'success' | 'danger' | 'warning' | 'enchanted';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  fullWidth?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  sound?: boolean; // 是否播放音效
-  tooltip?: string;
-  className?: string;
-  style?: React.CSSProperties;
+  children: React.ReactNode
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  variant?: 'default' | 'primary' | 'success' | 'danger' | 'warning' | 'enchanted'
+  size?: 'small' | 'medium' | 'large'
+  disabled?: boolean
+  fullWidth?: boolean
+  loading?: boolean
+  icon?: React.ReactNode
+  sound?: boolean // 是否播放音效
+  tooltip?: string
+  className?: string
+  style?: React.CSSProperties
 }
 
 const MCButton: React.FC<MCButtonProps> = ({
@@ -37,17 +37,17 @@ const MCButton: React.FC<MCButtonProps> = ({
   className = '',
   style = {},
 }) => {
-  const [isPressed, setIsPressed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [isPressed, setIsPressed] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   // 播放音效
   const playSound = (type: 'hover' | 'click') => {
-    if (!sound) return;
+    if (!sound) return
     // 这里可以添加实际的音效播放逻辑
     // const audio = new Audio(`/sounds/button_${type}.ogg`);
     // audio.play();
-  };
+  }
 
   // 获取变体颜色
   const getVariantColors = () => {
@@ -57,39 +57,39 @@ const MCButton: React.FC<MCButtonProps> = ({
           bg: minecraftColors.primary.grass,
           hover: minecraftColors.primary.emerald,
           text: minecraftColors.ui.text.secondary,
-        };
+        }
       case 'success':
         return {
           bg: minecraftColors.ui.button.success,
           hover: minecraftColors.primary.emerald,
           text: minecraftColors.ui.text.secondary,
-        };
+        }
       case 'danger':
         return {
           bg: minecraftColors.ui.button.danger,
           hover: minecraftColors.primary.redstone,
           text: minecraftColors.ui.text.secondary,
-        };
+        }
       case 'warning':
         return {
           bg: minecraftColors.primary.gold,
           hover: minecraftColors.formatting['§6'],
           text: minecraftColors.ui.text.primary,
-        };
+        }
       case 'enchanted':
         return {
           bg: minecraftColors.ui.text.enchanted,
           hover: minecraftColors.rarity.epic,
           text: minecraftColors.ui.text.secondary,
-        };
+        }
       default:
         return {
           bg: minecraftColors.ui.button.default,
           hover: minecraftColors.ui.button.hover,
           text: minecraftColors.ui.text.secondary,
-        };
+        }
     }
-  };
+  }
 
   // 获取尺寸样式
   const getSizeStyles = () => {
@@ -99,25 +99,25 @@ const MCButton: React.FC<MCButtonProps> = ({
           padding: '6px 12px',
           fontSize: typography.fontSize.small,
           height: '28px',
-        };
+        }
       case 'large':
         return {
           padding: '12px 24px',
           fontSize: typography.fontSize.large,
           height: '48px',
-        };
+        }
       default:
         return {
           padding: '8px 16px',
           fontSize: typography.fontSize.button,
           height: '36px',
-        };
+        }
     }
-  };
+  }
 
-  const colors = getVariantColors();
-  const sizeStyles = getSizeStyles();
-  const borderStyles = get3DBorder(!isPressed);
+  const colors = getVariantColors()
+  const sizeStyles = getSizeStyles()
+  const borderStyles = get3DBorder(!isPressed)
 
   // 基础样式
   const baseStyles: React.CSSProperties = {
@@ -143,54 +143,57 @@ const MCButton: React.FC<MCButtonProps> = ({
     userSelect: 'none',
     transform: isPressed ? 'translateY(2px)' : 'translateY(0)',
     ...style,
-  };
+  }
 
   // 处理点击
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (disabled || loading) return;
-    playSound('click');
-    onClick?.(e);
-  };
+    if (disabled || loading) return
+    playSound('click')
+    onClick?.(e)
+  }
 
   // 处理鼠标进入
   const handleMouseEnter = () => {
-    if (disabled) return;
-    setIsHovered(true);
-    playSound('hover');
-  };
+    if (disabled) return
+    setIsHovered(true)
+    playSound('hover')
+  }
 
   // 处理鼠标离开
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    setIsPressed(false);
-  };
+    setIsHovered(false)
+    setIsPressed(false)
+  }
 
   // 处理鼠标按下
   const handleMouseDown = () => {
-    if (disabled) return;
-    setIsPressed(true);
-  };
+    if (disabled) return
+    setIsPressed(true)
+  }
 
   // 处理鼠标释放
   const handleMouseUp = () => {
-    setIsPressed(false);
-  };
+    setIsPressed(false)
+  }
 
   // 附魔效果动画
-  const enchantedAnimation = variant === 'enchanted' ? {
-    animate: {
-      textShadow: [
-        '0 0 5px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
-        '0 0 10px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
-        '0 0 5px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
-      ],
-    },
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    },
-  } : {};
+  const enchantedAnimation =
+    variant === 'enchanted'
+      ? {
+          animate: {
+            textShadow: [
+              '0 0 5px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
+              '0 0 10px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
+              '0 0 5px #9C6BFF, 2px 2px 0px rgba(0, 0, 0, 0.5)',
+            ],
+          },
+          transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          },
+        }
+      : {}
 
   return (
     <>
@@ -224,18 +227,10 @@ const MCButton: React.FC<MCButtonProps> = ({
         )}
 
         {/* 图标 */}
-        {icon && !loading && (
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {icon}
-          </span>
-        )}
+        {icon && !loading && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
 
         {/* 文本 */}
-        {!loading && (
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {children}
-          </span>
-        )}
+        {!loading && <span style={{ display: 'flex', alignItems: 'center' }}>{children}</span>}
 
         {/* 附魔闪光效果 */}
         {variant === 'enchanted' && !disabled && (
@@ -246,7 +241,8 @@ const MCButton: React.FC<MCButtonProps> = ({
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(135deg, transparent 0%, rgba(156, 107, 255, 0.3) 50%, transparent 100%)',
+              background:
+                'linear-gradient(135deg, transparent 0%, rgba(156, 107, 255, 0.3) 50%, transparent 100%)',
               pointerEvents: 'none',
             }}
             animate={{
@@ -290,16 +286,16 @@ const MCButton: React.FC<MCButtonProps> = ({
         )}
       </AnimatePresence>
     </>
-  );
-};
+  )
+}
 
 // 按钮组组件
 export interface MCButtonGroupProps {
-  children: React.ReactNode;
-  orientation?: 'horizontal' | 'vertical';
-  spacing?: number;
-  className?: string;
-  style?: React.CSSProperties;
+  children: React.ReactNode
+  orientation?: 'horizontal' | 'vertical'
+  spacing?: number
+  className?: string
+  style?: React.CSSProperties
 }
 
 export const MCButtonGroup: React.FC<MCButtonGroupProps> = ({
@@ -314,13 +310,13 @@ export const MCButtonGroup: React.FC<MCButtonGroupProps> = ({
     flexDirection: orientation === 'horizontal' ? 'row' : 'column',
     gap: `${spacing}px`,
     ...style,
-  };
+  }
 
   return (
     <div className={`mc-button-group ${className}`} style={groupStyles}>
       {children}
     </div>
-  );
-};
+  )
+}
 
-export default MCButton;
+export default MCButton

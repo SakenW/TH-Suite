@@ -3,7 +3,7 @@
  * 使用新的 API 架构和表单验证
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -24,32 +24,24 @@ import {
   Card,
   CardContent,
   IconButton,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import {
-  FolderOpen,
-  Package,
-  FileImage,
-  Layers,
-  X,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CreateProjectRequest } from '../../types/api';
-import { useApi } from '../../hooks/useApi';
-import { projectService } from '../../services';
-import { tauriService } from '../../services';
-import toast from 'react-hot-toast';
+} from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
+import { FolderOpen, Package, FileImage, Layers, X, CheckCircle, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { CreateProjectRequest } from '../../types/api'
+import { useApi } from '../../hooks/useApi'
+import { projectService } from '../../services'
+import { tauriService } from '../../services'
+import toast from 'react-hot-toast'
 
 interface CreateProjectDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  open: boolean
+  onClose: () => void
+  onSuccess: () => void
 }
 
 interface FormData extends CreateProjectRequest {
-  [key: string]: any;
+  [key: string]: any
 }
 
 const PROJECT_TYPES = [
@@ -74,7 +66,7 @@ const PROJECT_TYPES = [
     icon: <Layers size={20} />,
     color: '#9C27B0',
   },
-];
+]
 
 const COMMON_LANGUAGES = [
   { code: 'zh_cn', name: '简体中文' },
@@ -87,14 +79,14 @@ const COMMON_LANGUAGES = [
   { code: 'de_de', name: 'Deutsch' },
   { code: 'es_es', name: 'Español' },
   { code: 'pt_br', name: 'Português (Brasil)' },
-];
+]
 
 export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
   open,
   onClose,
   onSuccess,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme()
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -103,25 +95,25 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     project_type: 'mod',
     default_language: 'en_us',
     supported_languages: ['en_us'],
-  });
+  })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [pathValidation, setPathValidation] = useState<{
-    valid: boolean;
-    message?: string;
-    suggestions?: string[];
-  } | null>(null);
+    valid: boolean
+    message?: string
+    suggestions?: string[]
+  } | null>(null)
 
   // API hooks
   const { execute: createProject, loading: creating } = useApi(
     () => projectService.createProject(formData),
-    false
-  );
+    false,
+  )
 
   const { execute: validatePath, loading: validatingPath } = useApi(
     () => projectService.validateProjectPath(formData.source_path),
-    false
-  );
+    false,
+  )
 
   const handleClose = () => {
     if (!creating) {
@@ -133,148 +125,146 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         project_type: 'mod',
         default_language: 'en_us',
         supported_languages: ['en_us'],
-      });
-      setErrors({});
-      setPathValidation(null);
-      onClose();
+      })
+      setErrors({})
+      setPathValidation(null)
+      onClose()
     }
-  };
+  }
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
-    }));
+    }))
 
     // 清除对应字段的错误
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
         [field]: undefined,
-      }));
+      }))
     }
-  };
+  }
 
   const handleSelectPath = async () => {
     try {
       const selectedPath = await tauriService.selectDirectory({
         title: '选择项目源目录',
-      });
-      
+      })
+
       if (selectedPath) {
-        handleInputChange('source_path', selectedPath);
-        
+        handleInputChange('source_path', selectedPath)
+
         // 自动验证路径
         setTimeout(() => {
-          validateProjectPath();
-        }, 500);
+          validateProjectPath()
+        }, 500)
 
         // 如果没有设置项目名称，从路径中提取
         if (!formData.name) {
-          const folderName = selectedPath.split(/[/\\]/).pop();
+          const folderName = selectedPath.split(/[/\\]/).pop()
           if (folderName) {
-            handleInputChange('name', folderName);
+            handleInputChange('name', folderName)
           }
         }
       }
     } catch (error) {
-      toast.error('选择路径失败');
+      toast.error('选择路径失败')
     }
-  };
+  }
 
   const handleSelectOutputPath = async () => {
     try {
       const selectedPath = await tauriService.selectDirectory({
         title: '选择输出目录',
-      });
-      
+      })
+
       if (selectedPath) {
-        handleInputChange('output_path', selectedPath);
+        handleInputChange('output_path', selectedPath)
       }
     } catch (error) {
-      toast.error('选择输出路径失败');
+      toast.error('选择输出路径失败')
     }
-  };
+  }
 
   const validateProjectPath = async () => {
     if (!formData.source_path.trim()) {
-      setPathValidation(null);
-      return;
+      setPathValidation(null)
+      return
     }
 
     try {
-      const result = await validatePath();
+      const result = await validatePath()
       if (result) {
-        setPathValidation(result);
+        setPathValidation(result)
       }
     } catch (error) {
       setPathValidation({
         valid: false,
         message: '路径验证失败',
-      });
+      })
     }
-  };
+  }
 
   const handleAddLanguage = (languageCode: string) => {
     if (!formData.supported_languages.includes(languageCode)) {
-      handleInputChange('supported_languages', [
-        ...formData.supported_languages,
-        languageCode
-      ]);
+      handleInputChange('supported_languages', [...formData.supported_languages, languageCode])
     }
-  };
+  }
 
   const handleRemoveLanguage = (languageCode: string) => {
     if (languageCode !== formData.default_language) {
-      handleInputChange('supported_languages', 
-        formData.supported_languages.filter(lang => lang !== languageCode)
-      );
+      handleInputChange(
+        'supported_languages',
+        formData.supported_languages.filter(lang => lang !== languageCode),
+      )
     }
-  };
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = '项目名称不能为空';
+      newErrors.name = '项目名称不能为空'
     }
 
     if (!formData.source_path.trim()) {
-      newErrors.source_path = '源路径不能为空';
+      newErrors.source_path = '源路径不能为空'
     }
 
     if (!formData.supported_languages.length) {
-      newErrors.supported_languages = '至少需要支持一种语言';
+      newErrors.supported_languages = '至少需要支持一种语言'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      const result = await createProject();
+      const result = await createProject()
       if (result) {
-        toast.success('项目创建成功！');
-        onSuccess();
-        handleClose();
+        toast.success('项目创建成功！')
+        onSuccess()
+        handleClose()
       }
     } catch (error) {
-      toast.error('创建项目失败');
+      toast.error('创建项目失败')
     }
-  };
+  }
 
-  const selectedProjectType = PROJECT_TYPES.find(type => type.value === formData.project_type);
+  const selectedProjectType = PROJECT_TYPES.find(type => type.value === formData.project_type)
 
   return (
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="md"
+      maxWidth='md'
       fullWidth
       PaperProps={{
         sx: {
@@ -297,13 +287,13 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                 justifyContent: 'center',
               }}
             >
-              <Package size={20} color="white" />
+              <Package size={20} color='white' />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant='h6' sx={{ fontWeight: 700 }}>
                 创建新项目
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 配置项目基本信息和语言支持
               </Typography>
             </Box>
@@ -320,22 +310,20 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* 项目类型选择 */}
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ mb: 2, fontWeight: 600 }}>
               项目类型
             </Typography>
             <Grid container spacing={2}>
-              {PROJECT_TYPES.map((type) => (
+              {PROJECT_TYPES.map(type => (
                 <Grid item xs={12} sm={4} key={type.value}>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Card
                       sx={{
                         cursor: 'pointer',
-                        border: formData.project_type === type.value 
-                          ? `2px solid ${type.color}`
-                          : `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                        border:
+                          formData.project_type === type.value
+                            ? `2px solid ${type.color}`
+                            : `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                         transition: 'all 0.2s ease',
                         '&:hover': {
                           borderColor: type.color,
@@ -345,13 +333,11 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                       onClick={() => handleInputChange('project_type', type.value)}
                     >
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Box sx={{ color: type.color, mb: 1 }}>
-                          {type.icon}
-                        </Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        <Box sx={{ color: type.color, mb: 1 }}>{type.icon}</Box>
+                        <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>
                           {type.label}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant='caption' color='text.secondary'>
                           {type.description}
                         </Typography>
                       </CardContent>
@@ -364,24 +350,24 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
 
           {/* 基本信息 */}
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ mb: 2, fontWeight: 600 }}>
               基本信息
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
-                label="项目名称"
+                label='项目名称'
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={e => handleInputChange('name', e.target.value)}
                 error={!!errors.name}
                 helperText={errors.name}
                 fullWidth
                 disabled={creating}
               />
-              
+
               <TextField
-                label="项目描述（可选）"
+                label='项目描述（可选）'
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={e => handleInputChange('description', e.target.value)}
                 multiline
                 rows={2}
                 fullWidth
@@ -392,25 +378,25 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
 
           {/* 路径配置 */}
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ mb: 2, fontWeight: 600 }}>
               路径配置
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <TextField
-                    label="源路径"
+                    label='源路径'
                     value={formData.source_path}
-                    onChange={(e) => handleInputChange('source_path', e.target.value)}
+                    onChange={e => handleInputChange('source_path', e.target.value)}
                     onBlur={validateProjectPath}
                     error={!!errors.source_path}
                     helperText={errors.source_path}
                     fullWidth
                     disabled={creating}
-                    placeholder="项目源文件所在目录"
+                    placeholder='项目源文件所在目录'
                   />
                   <Button
-                    variant="outlined"
+                    variant='outlined'
                     onClick={handleSelectPath}
                     disabled={creating}
                     sx={{ minWidth: 100, height: 56 }}
@@ -419,7 +405,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                     浏览
                   </Button>
                 </Box>
-                
+
                 {/* 路径验证结果 */}
                 <AnimatePresence>
                   {pathValidation && (
@@ -432,16 +418,22 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                       <Alert
                         severity={pathValidation.valid ? 'success' : 'warning'}
                         sx={{ mt: 1 }}
-                        icon={pathValidation.valid ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                        icon={
+                          pathValidation.valid ? (
+                            <CheckCircle size={16} />
+                          ) : (
+                            <AlertCircle size={16} />
+                          )
+                        }
                       >
                         {pathValidation.message}
                         {pathValidation.suggestions && pathValidation.suggestions.length > 0 && (
                           <Box sx={{ mt: 1 }}>
-                            <Typography variant="caption">建议:</Typography>
+                            <Typography variant='caption'>建议:</Typography>
                             <ul style={{ margin: '4px 0', paddingLeft: 16 }}>
                               {pathValidation.suggestions.map((suggestion, index) => (
                                 <li key={index}>
-                                  <Typography variant="caption">{suggestion}</Typography>
+                                  <Typography variant='caption'>{suggestion}</Typography>
                                 </li>
                               ))}
                             </ul>
@@ -455,15 +447,15 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
 
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <TextField
-                  label="输出路径（可选）"
+                  label='输出路径（可选）'
                   value={formData.output_path}
-                  onChange={(e) => handleInputChange('output_path', e.target.value)}
+                  onChange={e => handleInputChange('output_path', e.target.value)}
                   fullWidth
                   disabled={creating}
-                  placeholder="构建输出目录，留空使用默认位置"
+                  placeholder='构建输出目录，留空使用默认位置'
                 />
                 <Button
-                  variant="outlined"
+                  variant='outlined'
                   onClick={handleSelectOutputPath}
                   disabled={creating}
                   sx={{ minWidth: 100, height: 56 }}
@@ -477,19 +469,19 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
 
           {/* 语言配置 */}
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ mb: 2, fontWeight: 600 }}>
               语言配置
             </Typography>
-            
+
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>默认语言</InputLabel>
               <Select
                 value={formData.default_language}
-                onChange={(e) => handleInputChange('default_language', e.target.value)}
-                label="默认语言"
+                onChange={e => handleInputChange('default_language', e.target.value)}
+                label='默认语言'
                 disabled={creating}
               >
-                {COMMON_LANGUAGES.map((lang) => (
+                {COMMON_LANGUAGES.map(lang => (
                   <MenuItem key={lang.code} value={lang.code}>
                     {lang.name} ({lang.code})
                   </MenuItem>
@@ -498,14 +490,14 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
             </FormControl>
 
             <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+              <Typography variant='body2' sx={{ mb: 1, fontWeight: 600 }}>
                 支持的语言
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {formData.supported_languages.map((langCode) => {
-                  const lang = COMMON_LANGUAGES.find(l => l.code === langCode);
-                  const isDefault = langCode === formData.default_language;
-                  
+                {formData.supported_languages.map(langCode => {
+                  const lang = COMMON_LANGUAGES.find(l => l.code === langCode)
+                  const isDefault = langCode === formData.default_language
+
                   return (
                     <Chip
                       key={langCode}
@@ -515,35 +507,35 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                       onDelete={isDefault ? undefined : () => handleRemoveLanguage(langCode)}
                       disabled={creating}
                     />
-                  );
+                  )
                 })}
               </Box>
-              
-              <FormControl size="small" sx={{ minWidth: 200 }}>
+
+              <FormControl size='small' sx={{ minWidth: 200 }}>
                 <InputLabel>添加语言</InputLabel>
                 <Select
-                  value=""
-                  onChange={(e) => {
+                  value=''
+                  onChange={e => {
                     if (e.target.value) {
-                      handleAddLanguage(e.target.value);
+                      handleAddLanguage(e.target.value)
                     }
                   }}
-                  label="添加语言"
+                  label='添加语言'
                   disabled={creating}
                 >
-                  {COMMON_LANGUAGES
-                    .filter(lang => !formData.supported_languages.includes(lang.code))
-                    .map((lang) => (
-                      <MenuItem key={lang.code} value={lang.code}>
-                        {lang.name} ({lang.code})
-                      </MenuItem>
-                    ))}
+                  {COMMON_LANGUAGES.filter(
+                    lang => !formData.supported_languages.includes(lang.code),
+                  ).map(lang => (
+                    <MenuItem key={lang.code} value={lang.code}>
+                      {lang.name} ({lang.code})
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Box>
 
             {errors.supported_languages && (
-              <Alert severity="error" sx={{ mt: 1 }}>
+              <Alert severity='error' sx={{ mt: 1 }}>
                 {errors.supported_languages}
               </Alert>
             )}
@@ -557,18 +549,18 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         </Button>
         <Button
           onClick={handleSubmit}
-          variant="contained"
+          variant='contained'
           disabled={creating || !formData.name.trim() || !formData.source_path.trim()}
           sx={{
             minWidth: 100,
-            background: selectedProjectType ? 
-              `linear-gradient(135deg, ${selectedProjectType.color}, ${alpha(selectedProjectType.color, 0.8)})` :
-              undefined,
+            background: selectedProjectType
+              ? `linear-gradient(135deg, ${selectedProjectType.color}, ${alpha(selectedProjectType.color, 0.8)})`
+              : undefined,
           }}
         >
           {creating ? '创建中...' : '创建项目'}
         </Button>
       </DialogActions>
     </Dialog>
-  );
-};
+  )
+}

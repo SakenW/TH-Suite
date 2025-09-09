@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useAppStore, ProjectType, ProjectIdentifier } from '../stores/appStore';
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { useAppStore, ProjectType, ProjectIdentifier } from '../stores/appStore'
 import {
   MCPanel,
   MCButton,
@@ -13,42 +13,42 @@ import {
   MCInventoryGrid,
   minecraftColors,
   typography,
-} from '../components/minecraft';
-import ProjectScan from '../components/ProjectScan';
+} from '../components/minecraft'
+import ProjectScan from '../components/ProjectScan'
 
 interface ScanResult {
-  scan_id: string;
-  project_path: string;
-  scan_started_at: string;
-  scan_completed_at?: string;
-  modpack_manifest?: any;
-  mod_jars: any[];
-  language_resources: any[];
-  total_mods: number;
-  total_language_files: number;
-  total_translatable_keys: number;
-  supported_locales: string[];
-  warnings: string[];
-  errors: string[];
+  scan_id: string
+  project_path: string
+  scan_started_at: string
+  scan_completed_at?: string
+  modpack_manifest?: any
+  mod_jars: any[]
+  language_resources: any[]
+  total_mods: number
+  total_language_files: number
+  total_translatable_keys: number
+  supported_locales: string[]
+  warnings: string[]
+  errors: string[]
 }
 
 const ScanPage: React.FC = () => {
-  const { t } = useTranslation(['mcStudio', 'minecraft']);
-  const navigate = useNavigate();
-  const { createProject, setCurrentProject } = useAppStore();
-  
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const { t } = useTranslation(['mcStudio', 'minecraft'])
+  const navigate = useNavigate()
+  const { createProject, setCurrentProject } = useAppStore()
+
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null)
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
 
   const handleScanComplete = (result: ScanResult) => {
-    console.log('Scan completed:', result);
-    setScanResult(result);
-  };
+    console.log('Scan completed:', result)
+    setScanResult(result)
+  }
 
   const handleCreateProject = async (result: ScanResult) => {
-    console.log('Creating project from scan result:', result);
-    setIsCreatingProject(true);
-    
+    console.log('Creating project from scan result:', result)
+    setIsCreatingProject(true)
+
     try {
       const identifier: ProjectIdentifier = {
         type: result.modpack_manifest ? ProjectType.MODPACK : ProjectType.MOD,
@@ -56,14 +56,19 @@ const ScanPage: React.FC = () => {
         modId: result.mod_jars[0]?.mod_id || undefined,
         version: result.modpack_manifest?.version || result.mod_jars[0]?.version || '1.0.0',
         mcVersion: result.modpack_manifest?.minecraft?.version || '1.20.1',
-        loader: result.modpack_manifest?.dependencies?.forge ? 'forge' : 
-                result.modpack_manifest?.dependencies?.fabric ? 'fabric' : 'unknown',
-        loaderVersion: result.modpack_manifest?.dependencies?.forge || 
-                      result.modpack_manifest?.dependencies?.fabric || 'unknown'
-      };
-      
-      const project = await createProject(identifier, result.project_path);
-      
+        loader: result.modpack_manifest?.dependencies?.forge
+          ? 'forge'
+          : result.modpack_manifest?.dependencies?.fabric
+            ? 'fabric'
+            : 'unknown',
+        loaderVersion:
+          result.modpack_manifest?.dependencies?.forge ||
+          result.modpack_manifest?.dependencies?.fabric ||
+          'unknown',
+      }
+
+      const project = await createProject(identifier, result.project_path)
+
       project.metadata = {
         scanResult: result,
         totalMods: result.total_mods,
@@ -71,17 +76,17 @@ const ScanPage: React.FC = () => {
         totalTranslatableKeys: result.total_translatable_keys,
         supportedLocales: result.supported_locales,
         warnings: result.warnings,
-        errors: result.errors
-      };
-      
-      setCurrentProject(project);
-      navigate('/projects');
+        errors: result.errors,
+      }
+
+      setCurrentProject(project)
+      navigate('/projects')
     } catch (error) {
-      console.error('Failed to create project:', error);
+      console.error('Failed to create project:', error)
     } finally {
-      setIsCreatingProject(false);
+      setIsCreatingProject(false)
     }
-  };
+  }
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -117,15 +122,8 @@ const ScanPage: React.FC = () => {
       </motion.div>
 
       {/* 扫描组件（MC风格包装） */}
-      <MCPanel
-        variant="stone"
-        title={t('scan.selectPath')}
-        style={{ marginBottom: '24px' }}
-      >
-        <ProjectScan 
-          onScanComplete={handleScanComplete}
-          onCreateProject={handleCreateProject}
-        />
+      <MCPanel variant='stone' title={t('scan.selectPath')} style={{ marginBottom: '24px' }}>
+        <ProjectScan onScanComplete={handleScanComplete} onCreateProject={handleCreateProject} />
       </MCPanel>
 
       {/* 扫描结果显示 */}
@@ -136,10 +134,7 @@ const ScanPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <MCPanel
-              variant="planks"
-              title={t('scan.results')}
-            >
+            <MCPanel variant='planks' title={t('scan.results')}>
               <div style={{ padding: '16px' }}>
                 {/* 统计信息 */}
                 <div
@@ -153,25 +148,25 @@ const ScanPage: React.FC = () => {
                   <StatCard
                     label={t('scan.stats.totalMods')}
                     value={scanResult.total_mods}
-                    icon="📦"
+                    icon='📦'
                     color={minecraftColors.primary.emerald}
                   />
                   <StatCard
                     label={t('scan.stats.languageFiles')}
                     value={scanResult.total_language_files}
-                    icon="📄"
+                    icon='📄'
                     color={minecraftColors.primary.diamond}
                   />
                   <StatCard
                     label={t('scan.stats.translatableKeys')}
                     value={scanResult.total_translatable_keys}
-                    icon="🔑"
+                    icon='🔑'
                     color={minecraftColors.primary.gold}
                   />
                   <StatCard
                     label={t('scan.stats.supportedLanguages')}
                     value={scanResult.supported_locales.length}
-                    icon="🌐"
+                    icon='🌐'
                     color={minecraftColors.primary.redstone}
                   />
                 </div>
@@ -180,8 +175,8 @@ const ScanPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <MCButton
                     onClick={() => handleCreateProject(scanResult)}
-                    variant="primary"
-                    size="large"
+                    variant='primary'
+                    size='large'
                     loading={isCreatingProject}
                     disabled={isCreatingProject}
                     icon={<span>🎮</span>}
@@ -195,15 +190,15 @@ const ScanPage: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 
 // 统计卡片组件
 interface StatCardProps {
-  label: string;
-  value: number | string;
-  icon: string;
-  color: string;
+  label: string
+  value: number | string
+  icon: string
+  color: string
 }
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => (
@@ -252,6 +247,6 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => (
       </div>
     </div>
   </div>
-);
+)
 
-export default ScanPage;
+export default ScanPage

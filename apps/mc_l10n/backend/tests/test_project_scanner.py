@@ -11,10 +11,12 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from src.mc_l10n.domain.scan_models import ScanProgress
-from src.mc_l10n.infrastructure.scanners import MinecraftProjectScanner
 
+from packages.adapters.minecraft.scanner import (
+    MinecraftModScanner as MinecraftProjectScanner,
+)
 from packages.core import LoaderType, ProjectType
+from packages.core.data.models import ScanProgress
 
 
 class TestMinecraftProjectScanner:

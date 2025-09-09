@@ -11,13 +11,10 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from src.mc_l10n.infrastructure.parsers import (
-    MinecraftLangParser,
-    ModFileAnalyzer,
-    ParserFactory,
-)
 
+from packages.adapters.minecraft.parsers import MinecraftLangParser, ModFileAnalyzer
 from packages.core import FileParsingError, FileType
+from packages.parsers import ParserFactory
 
 
 class TestMinecraftLangParser:

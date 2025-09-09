@@ -1,29 +1,29 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { createTheme, ThemeProvider as MuiThemeProvider, Theme } from '@mui/material/styles';
-import { minecraftTheme } from '../theme/minecraftTheme';
-import { minecraftColors } from '../theme/minecraftTheme';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { createTheme, ThemeProvider as MuiThemeProvider, Theme } from '@mui/material/styles'
+import { minecraftTheme } from '../theme/minecraftTheme'
+import { minecraftColors } from '../theme/minecraftTheme'
 
-export type ThemeMode = 'light' | 'dark' | 'minecraft' | 'highContrast';
-export type ColorScheme = 'emerald' | 'diamond' | 'gold' | 'redstone' | 'netherite';
+export type ThemeMode = 'light' | 'dark' | 'minecraft' | 'highContrast'
+export type ColorScheme = 'emerald' | 'diamond' | 'gold' | 'redstone' | 'netherite'
 
 interface ThemeContextType {
-  themeMode: ThemeMode;
-  colorScheme: ColorScheme;
-  setThemeMode: (mode: ThemeMode) => void;
-  setColorScheme: (scheme: ColorScheme) => void;
-  toggleTheme: () => void;
-  theme: Theme;
+  themeMode: ThemeMode
+  colorScheme: ColorScheme
+  setThemeMode: (mode: ThemeMode) => void
+  setColorScheme: (scheme: ColorScheme) => void
+  toggleTheme: () => void
+  theme: Theme
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
+  const context = useContext(ThemeContext)
   if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
+    throw new Error('useTheme must be used within ThemeProvider')
   }
-  return context;
-};
+  return context
+}
 
 const colorSchemes = {
   emerald: {
@@ -51,16 +51,16 @@ const colorSchemes = {
     secondary: minecraftColors.netheriteGray,
     accent: minecraftColors.goldYellow,
   },
-};
+}
 
 const createCustomTheme = (mode: ThemeMode, colorScheme: ColorScheme): Theme => {
-  const colors = colorSchemes[colorScheme];
-  
+  const colors = colorSchemes[colorScheme]
+
   if (mode === 'minecraft') {
     // Return the original minecraft theme
-    return minecraftTheme;
+    return minecraftTheme
   }
-  
+
   const baseTheme = createTheme({
     palette: {
       mode: mode === 'light' ? 'light' : 'dark',
@@ -70,34 +70,36 @@ const createCustomTheme = (mode: ThemeMode, colorScheme: ColorScheme): Theme => 
       secondary: {
         main: colors.secondary,
       },
-      background: mode === 'light' 
-        ? {
-            default: '#F5F5F5',
-            paper: '#FFFFFF',
-          }
-        : mode === 'highContrast'
-        ? {
-            default: '#000000',
-            paper: '#0A0A0A',
-          }
-        : {
-            default: '#0F172A',
-            paper: '#1E293B',
-          },
-      text: mode === 'light'
-        ? {
-            primary: '#2C3E50',
-            secondary: '#546E7A',
-          }
-        : mode === 'highContrast'
-        ? {
-            primary: '#FFFFFF',
-            secondary: '#FFFF00',
-          }
-        : {
-            primary: '#FFFFFF',
-            secondary: 'rgba(255, 255, 255, 0.7)',
-          },
+      background:
+        mode === 'light'
+          ? {
+              default: '#F5F5F5',
+              paper: '#FFFFFF',
+            }
+          : mode === 'highContrast'
+            ? {
+                default: '#000000',
+                paper: '#0A0A0A',
+              }
+            : {
+                default: '#0F172A',
+                paper: '#1E293B',
+              },
+      text:
+        mode === 'light'
+          ? {
+              primary: '#2C3E50',
+              secondary: '#546E7A',
+            }
+          : mode === 'highContrast'
+            ? {
+                primary: '#FFFFFF',
+                secondary: '#FFFF00',
+              }
+            : {
+                primary: '#FFFFFF',
+                secondary: 'rgba(255, 255, 255, 0.7)',
+              },
     },
     typography: {
       fontFamily: '"Minecraft", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -155,9 +157,10 @@ const createCustomTheme = (mode: ThemeMode, colorScheme: ColorScheme): Theme => 
           root: {
             borderRadius: mode === 'minecraft' ? 0 : 8,
             border: mode === 'minecraft' ? `3px solid ${colors.primary}33` : undefined,
-            background: mode === 'minecraft' 
-              ? `linear-gradient(135deg, ${colors.primary}11 0%, transparent 100%)`
-              : undefined,
+            background:
+              mode === 'minecraft'
+                ? `linear-gradient(135deg, ${colors.primary}11 0%, transparent 100%)`
+                : undefined,
           },
         },
       },
@@ -181,58 +184,55 @@ const createCustomTheme = (mode: ThemeMode, colorScheme: ColorScheme): Theme => 
         },
       },
     },
-  });
-  
-  return baseTheme;
-};
+  })
+
+  return baseTheme
+}
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('themeMode');
-    return (saved as ThemeMode) || 'minecraft';
-  });
-  
+    const saved = localStorage.getItem('themeMode')
+    return (saved as ThemeMode) || 'minecraft'
+  })
+
   const [colorScheme, setColorScheme] = useState<ColorScheme>(() => {
-    const saved = localStorage.getItem('colorScheme');
-    return (saved as ColorScheme) || 'emerald';
-  });
-  
-  const theme = useMemo(
-    () => createCustomTheme(themeMode, colorScheme),
-    [themeMode, colorScheme]
-  );
-  
+    const saved = localStorage.getItem('colorScheme')
+    return (saved as ColorScheme) || 'emerald'
+  })
+
+  const theme = useMemo(() => createCustomTheme(themeMode, colorScheme), [themeMode, colorScheme])
+
   useEffect(() => {
-    localStorage.setItem('themeMode', themeMode);
-  }, [themeMode]);
-  
+    localStorage.setItem('themeMode', themeMode)
+  }, [themeMode])
+
   useEffect(() => {
-    localStorage.setItem('colorScheme', colorScheme);
-  }, [colorScheme]);
-  
+    localStorage.setItem('colorScheme', colorScheme)
+  }, [colorScheme])
+
   useEffect(() => {
     // Apply theme mode to document
-    document.documentElement.setAttribute('data-theme', themeMode);
-    
+    document.documentElement.setAttribute('data-theme', themeMode)
+
     // Apply high contrast styles if needed
     if (themeMode === 'highContrast') {
-      document.body.style.filter = 'contrast(1.2)';
+      document.body.style.filter = 'contrast(1.2)'
     } else {
-      document.body.style.filter = '';
+      document.body.style.filter = ''
     }
-  }, [themeMode]);
-  
+  }, [themeMode])
+
   const toggleTheme = () => {
-    const modes: ThemeMode[] = ['minecraft', 'dark', 'light', 'highContrast'];
-    const currentIndex = modes.indexOf(themeMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    setThemeMode(modes[nextIndex]);
-  };
-  
+    const modes: ThemeMode[] = ['minecraft', 'dark', 'light', 'highContrast']
+    const currentIndex = modes.indexOf(themeMode)
+    const nextIndex = (currentIndex + 1) % modes.length
+    setThemeMode(modes[nextIndex])
+  }
+
   const value: ThemeContextType = {
     themeMode,
     colorScheme,
@@ -240,13 +240,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setColorScheme,
     toggleTheme,
     theme,
-  };
-  
+  }
+
   return (
     <ThemeContext.Provider value={value}>
-      <MuiThemeProvider theme={theme}>
-        {children}
-      </MuiThemeProvider>
+      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
-  );
-};
+  )
+}

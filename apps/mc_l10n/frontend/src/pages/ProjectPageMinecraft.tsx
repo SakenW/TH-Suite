@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  TextField, 
+import React, { useState, useEffect } from 'react'
+import {
+  Box,
+  Typography,
+  Grid,
+  TextField,
   InputAdornment,
   IconButton,
   Tooltip,
@@ -18,15 +18,15 @@ import {
   InputLabel,
   Select,
   Switch,
-  FormControlLabel
-} from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Plus, 
-  Folder, 
-  Edit, 
-  Trash2, 
+  FormControlLabel,
+} from '@mui/material'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Search,
+  Plus,
+  Folder,
+  Edit,
+  Trash2,
   MoreVertical,
   Star,
   StarOff,
@@ -45,156 +45,141 @@ import {
   Hash,
   CheckCircle,
   AlertCircle,
-  Clock
-} from 'lucide-react';
-import toast from 'react-hot-toast';
+  Clock,
+} from 'lucide-react'
+import toast from 'react-hot-toast'
 
-import { MinecraftButton } from '../components/minecraft/MinecraftButton';
-import { MinecraftCard } from '../components/minecraft/MinecraftCard';
-import { MinecraftProgress } from '../components/minecraft/MinecraftProgress';
-import { MinecraftBlock } from '../components/MinecraftComponents';
+import { MinecraftButton } from '../components/minecraft/MinecraftButton'
+import { MinecraftCard } from '../components/minecraft/MinecraftCard'
+import { MinecraftProgress } from '../components/minecraft/MinecraftProgress'
+import { MinecraftBlock } from '../components/MinecraftComponents'
 
 // 模拟项目数据
 interface Project {
-  id: string;
-  name: string;
-  description: string;
-  path: string;
-  modCount: number;
-  langFileCount: number;
-  totalKeys: number;
-  translatedKeys: number;
-  status: 'active' | 'completed' | 'archived' | 'paused';
-  favorite: boolean;
-  createdAt: string;
-  updatedAt: string;
-  author: string;
-  version: string;
-  tags: string[];
+  id: string
+  name: string
+  description: string
+  path: string
+  modCount: number
+  langFileCount: number
+  totalKeys: number
+  translatedKeys: number
+  status: 'active' | 'completed' | 'archived' | 'paused'
+  favorite: boolean
+  createdAt: string
+  updatedAt: string
+  author: string
+  version: string
+  tags: string[]
 }
 
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'All The Mods 9',
-    description: '大型科技魔法整合包的完整汉化项目',
-    path: 'D:/Games/Minecraft/Instances/ATM9',
-    modCount: 450,
-    langFileCount: 1280,
-    totalKeys: 45000,
-    translatedKeys: 38000,
-    status: 'active',
-    favorite: true,
-    createdAt: '2024-12-01',
-    updatedAt: '2025-01-01',
-    author: 'Admin',
-    version: '1.20.1',
-    tags: ['科技', '魔法', '大型整合包']
-  },
-  {
-    id: '2',
-    name: 'Create: Above and Beyond',
-    description: '机械动力主题整合包汉化',
-    path: 'D:/Games/Minecraft/Instances/CAB',
-    modCount: 120,
-    langFileCount: 450,
-    totalKeys: 12000,
-    translatedKeys: 12000,
-    status: 'completed',
-    favorite: true,
-    createdAt: '2024-11-15',
-    updatedAt: '2024-12-20',
-    author: 'Admin',
-    version: '1.18.2',
-    tags: ['机械', '自动化']
-  },
-  {
-    id: '3',
-    name: 'RLCraft',
-    description: '真实生存整合包本地化',
-    path: 'D:/Games/Minecraft/Instances/RLCraft',
-    modCount: 180,
-    langFileCount: 520,
-    totalKeys: 18000,
-    translatedKeys: 9000,
-    status: 'paused',
-    favorite: false,
-    createdAt: '2024-10-20',
-    updatedAt: '2024-11-30',
-    author: 'User',
-    version: '1.12.2',
-    tags: ['生存', '冒险', 'RPG']
-  }
-];
-
+// 将在组件加载时从API获取真实项目数据
 export default function ProjectPageMinecraft() {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'progress'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [menuProject, setMenuProject] = useState<Project | null>(null);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'progress'>('date')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+  const [menuProject, setMenuProject] = useState<Project | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
     path: '',
-    version: '1.20.1'
-  });
+    version: '1.20.1',
+  })
+
+  // 从API加载真实项目数据
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        // 获取最新扫描结果
+        const response = await fetch('http://localhost:18000/api/v1/scans/latest')
+        const data = await response.json()
+
+        if (data.success && data.data) {
+          // 将扫描数据转换为项目格式
+          const project: Project = {
+            id: data.data.scan_id,
+            name: data.data.directory?.split('/').pop() || '未知项目',
+            description: `包含 ${data.data.statistics?.total_mods || 0} 个模组的项目`,
+            path: data.data.directory || '',
+            modCount: data.data.statistics?.total_mods || 0,
+            langFileCount: data.data.statistics?.total_language_files || 0,
+            totalKeys: data.data.statistics?.total_keys || 0,
+            translatedKeys: data.data.statistics?.total_keys || 0, // 暂时假设全部已翻译，避免NaN
+            status: 'active' as 'active' | 'paused' | 'completed',
+            favorite: false,
+            createdAt: data.data.completed_at || new Date().toISOString(),
+            updatedAt: data.data.completed_at || new Date().toISOString(),
+            author: 'User',
+            version: '1.20.1',
+            tags: [],
+          }
+
+          setProjects([project])
+        }
+      } catch (error) {
+        console.error('加载项目数据失败:', error)
+        // 如果API失败，显示空列表
+        setProjects([])
+      }
+    }
+
+    loadProjects()
+  }, [])
 
   // 过滤和排序项目
   const filteredProjects = projects
     .filter(project => {
-      const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           project.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
-      return matchesSearch && matchesFilter;
+      const matchesSearch =
+        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesFilter = filterStatus === 'all' || project.status === filterStatus
+      return matchesSearch && matchesFilter
     })
     .sort((a, b) => {
-      let comparison = 0;
+      let comparison = 0
       switch (sortBy) {
         case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
+          comparison = a.name.localeCompare(b.name)
+          break
         case 'date':
-          comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-          break;
+          comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          break
         case 'progress':
-          const progressA = (a.translatedKeys / a.totalKeys) * 100;
-          const progressB = (b.translatedKeys / b.totalKeys) * 100;
-          comparison = progressB - progressA;
-          break;
+          const progressA = a.totalKeys > 0 ? (a.translatedKeys / a.totalKeys) * 100 : 0
+          const progressB = b.totalKeys > 0 ? (b.translatedKeys / b.totalKeys) * 100 : 0
+          comparison = progressB - progressA
+          break
       }
-      return sortOrder === 'asc' ? -comparison : comparison;
-    });
+      return sortOrder === 'asc' ? -comparison : comparison
+    })
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, project: Project) => {
-    setMenuAnchor(event.currentTarget);
-    setMenuProject(project);
-  };
+    setMenuAnchor(event.currentTarget)
+    setMenuProject(project)
+  }
 
   const handleMenuClose = () => {
-    setMenuAnchor(null);
-    setMenuProject(null);
-  };
+    setMenuAnchor(null)
+    setMenuProject(null)
+  }
 
   const handleToggleFavorite = (projectId: string) => {
-    setProjects(prev => prev.map(p => 
-      p.id === projectId ? { ...p, favorite: !p.favorite } : p
-    ));
-    const project = projects.find(p => p.id === projectId);
-    toast.success(
-      project?.favorite ? '已取消收藏' : '已添加收藏',
-      { icon: project?.favorite ? '⭐' : '✨' }
-    );
-  };
+    setProjects(prev => prev.map(p => (p.id === projectId ? { ...p, favorite: !p.favorite } : p)))
+    const project = projects.find(p => p.id === projectId)
+    toast.success(project?.favorite ? '已取消收藏' : '已添加收藏', {
+      icon: project?.favorite ? '⭐' : '✨',
+    })
+  }
 
   const handleCreateProject = () => {
     if (!newProject.name || !newProject.path) {
-      toast.error('请填写必要信息');
-      return;
+      toast.error('请填写必要信息')
+      return
     }
 
     const project: Project = {
@@ -212,40 +197,50 @@ export default function ProjectPageMinecraft() {
       updatedAt: new Date().toISOString().split('T')[0],
       author: 'Admin',
       version: newProject.version,
-      tags: []
-    };
+      tags: [],
+    }
 
-    setProjects(prev => [project, ...prev]);
-    setCreateDialogOpen(false);
-    setNewProject({ name: '', description: '', path: '', version: '1.20.1' });
-    toast.success('项目创建成功！', { icon: '🎉' });
-  };
+    setProjects(prev => [project, ...prev])
+    setCreateDialogOpen(false)
+    setNewProject({ name: '', description: '', path: '', version: '1.20.1' })
+    toast.success('项目创建成功！', { icon: '🎉' })
+  }
 
   const handleDeleteProject = (projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-    handleMenuClose();
-    toast.success('项目已删除', { icon: '🗑️' });
-  };
+    setProjects(prev => prev.filter(p => p.id !== projectId))
+    handleMenuClose()
+    toast.success('项目已删除', { icon: '🗑️' })
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return '#4CAF50';
-      case 'completed': return '#2196F3';
-      case 'paused': return '#FF9800';
-      case 'archived': return '#9E9E9E';
-      default: return '#9E9E9E';
+      case 'active':
+        return '#4CAF50'
+      case 'completed':
+        return '#2196F3'
+      case 'paused':
+        return '#FF9800'
+      case 'archived':
+        return '#9E9E9E'
+      default:
+        return '#9E9E9E'
     }
-  };
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <Clock size={16} />;
-      case 'completed': return <CheckCircle size={16} />;
-      case 'paused': return <AlertCircle size={16} />;
-      case 'archived': return <Archive size={16} />;
-      default: return <Clock size={16} />;
+      case 'active':
+        return <Clock size={16} />
+      case 'completed':
+        return <CheckCircle size={16} />
+      case 'paused':
+        return <AlertCircle size={16} />
+      case 'archived':
+        return <Archive size={16} />
+      default:
+        return <Clock size={16} />
     }
-  };
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -257,7 +252,7 @@ export default function ProjectPageMinecraft() {
       >
         <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h3"
+            variant='h3'
             sx={{
               fontFamily: '"Minecraft", "Press Start 2P", monospace',
               fontSize: { xs: '24px', md: '32px' },
@@ -290,12 +285,12 @@ export default function ProjectPageMinecraft() {
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
-            placeholder="搜索项目..."
+            placeholder='搜索项目...'
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position='start'>
                   <Search size={20} />
                 </InputAdornment>
               ),
@@ -306,7 +301,7 @@ export default function ProjectPageMinecraft() {
                 border: '2px solid #4A4A4A',
                 borderRadius: 0,
                 '& fieldset': { border: 'none' },
-              }
+              },
             }}
           />
         </Grid>
@@ -314,7 +309,7 @@ export default function ProjectPageMinecraft() {
           <FormControl fullWidth>
             <Select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              onChange={e => setFilterStatus(e.target.value)}
               sx={{
                 fontFamily: '"Minecraft", monospace',
                 fontSize: '14px',
@@ -324,11 +319,11 @@ export default function ProjectPageMinecraft() {
                 '& fieldset': { border: 'none' },
               }}
             >
-              <MenuItem value="all">全部状态</MenuItem>
-              <MenuItem value="active">进行中</MenuItem>
-              <MenuItem value="completed">已完成</MenuItem>
-              <MenuItem value="paused">已暂停</MenuItem>
-              <MenuItem value="archived">已归档</MenuItem>
+              <MenuItem value='all'>全部状态</MenuItem>
+              <MenuItem value='active'>进行中</MenuItem>
+              <MenuItem value='completed'>已完成</MenuItem>
+              <MenuItem value='paused'>已暂停</MenuItem>
+              <MenuItem value='archived'>已归档</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -336,7 +331,7 @@ export default function ProjectPageMinecraft() {
           <FormControl fullWidth>
             <Select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={e => setSortBy(e.target.value as any)}
               sx={{
                 fontFamily: '"Minecraft", monospace',
                 fontSize: '14px',
@@ -346,17 +341,17 @@ export default function ProjectPageMinecraft() {
                 '& fieldset': { border: 'none' },
               }}
             >
-              <MenuItem value="name">按名称</MenuItem>
-              <MenuItem value="date">按日期</MenuItem>
-              <MenuItem value="progress">按进度</MenuItem>
+              <MenuItem value='name'>按名称</MenuItem>
+              <MenuItem value='date'>按日期</MenuItem>
+              <MenuItem value='progress'>按进度</MenuItem>
             </Select>
           </FormControl>
         </Grid>
         <Grid item xs={6} md={2}>
           <MinecraftButton
             fullWidth
-            minecraftStyle="iron"
-            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+            minecraftStyle='iron'
+            onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
             startIcon={sortOrder === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
           >
             {sortOrder === 'asc' ? '升序' : '降序'}
@@ -365,7 +360,7 @@ export default function ProjectPageMinecraft() {
         <Grid item xs={6} md={2}>
           <MinecraftButton
             fullWidth
-            minecraftStyle="emerald"
+            minecraftStyle='emerald'
             onClick={() => setCreateDialogOpen(true)}
             startIcon={<Plus size={16} />}
             glowing
@@ -517,7 +512,14 @@ export default function ProjectPageMinecraft() {
                 >
                   <Box sx={{ p: 2 }}>
                     {/* 项目头部 */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 2,
+                      }}
+                    >
                       <Box sx={{ flex: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <Typography
@@ -530,9 +532,7 @@ export default function ProjectPageMinecraft() {
                           >
                             {project.name}
                           </Typography>
-                          {project.favorite && (
-                            <Star size={16} color="#FFD700" fill="#FFD700" />
-                          )}
+                          {project.favorite && <Star size={16} color='#FFD700' fill='#FFD700' />}
                         </Box>
                         <Typography
                           sx={{
@@ -550,16 +550,13 @@ export default function ProjectPageMinecraft() {
                       </Box>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <IconButton
-                          size="small"
+                          size='small'
                           onClick={() => handleToggleFavorite(project.id)}
                           sx={{ color: project.favorite ? '#FFD700' : '#888' }}
                         >
                           {project.favorite ? <Star size={16} /> : <StarOff size={16} />}
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, project)}
-                        >
+                        <IconButton size='small' onClick={e => handleMenuOpen(e, project)}>
                           <MoreVertical size={16} />
                         </IconButton>
                       </Box>
@@ -570,12 +567,15 @@ export default function ProjectPageMinecraft() {
                       <Chip
                         icon={getStatusIcon(project.status)}
                         label={
-                          project.status === 'active' ? '进行中' :
-                          project.status === 'completed' ? '已完成' :
-                          project.status === 'paused' ? '已暂停' :
-                          '已归档'
+                          project.status === 'active'
+                            ? '进行中'
+                            : project.status === 'completed'
+                              ? '已完成'
+                              : project.status === 'paused'
+                                ? '已暂停'
+                                : '已归档'
                         }
-                        size="small"
+                        size='small'
                         sx={{
                           fontFamily: '"Minecraft", monospace',
                           fontSize: '10px',
@@ -584,12 +584,12 @@ export default function ProjectPageMinecraft() {
                           borderRadius: 0,
                           '& .MuiChip-icon': {
                             color: '#FFFFFF',
-                          }
+                          },
                         }}
                       />
                       <Chip
                         label={project.version}
-                        size="small"
+                        size='small'
                         sx={{
                           fontFamily: '"Minecraft", monospace',
                           fontSize: '10px',
@@ -605,7 +605,7 @@ export default function ProjectPageMinecraft() {
                         value={project.translatedKeys}
                         max={project.totalKeys}
                         variant={project.status === 'completed' ? 'experience' : 'loading'}
-                        size="small"
+                        size='small'
                         animated={project.status === 'active'}
                       />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
@@ -616,7 +616,10 @@ export default function ProjectPageMinecraft() {
                             color: 'text.secondary',
                           }}
                         >
-                          {((project.translatedKeys / project.totalKeys) * 100).toFixed(1)}%
+                          {project.totalKeys > 0
+                            ? ((project.translatedKeys / project.totalKeys) * 100).toFixed(1)
+                            : '0.0'}
+                          %
                         </Typography>
                         <Typography
                           sx={{
@@ -625,7 +628,8 @@ export default function ProjectPageMinecraft() {
                             color: 'text.secondary',
                           }}
                         >
-                          {project.translatedKeys.toLocaleString()} / {project.totalKeys.toLocaleString()}
+                          {project.translatedKeys.toLocaleString()} /{' '}
+                          {project.totalKeys.toLocaleString()}
                         </Typography>
                       </Box>
                     </Box>
@@ -669,7 +673,7 @@ export default function ProjectPageMinecraft() {
                           <Chip
                             key={tag}
                             label={tag}
-                            size="small"
+                            size='small'
                             sx={{
                               fontFamily: '"Minecraft", monospace',
                               fontSize: '9px',
@@ -724,21 +728,21 @@ export default function ProjectPageMinecraft() {
                     <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                       <MinecraftButton
                         fullWidth
-                        minecraftStyle="diamond"
-                        size="small"
+                        minecraftStyle='diamond'
+                        size='small'
                         onClick={() => {
-                          setSelectedProject(project);
-                          toast.success('打开项目: ' + project.name);
+                          setSelectedProject(project)
+                          toast.success('打开项目: ' + project.name)
                         }}
                       >
                         打开
                       </MinecraftButton>
                       <MinecraftButton
                         fullWidth
-                        minecraftStyle="gold"
-                        size="small"
+                        minecraftStyle='gold'
+                        size='small'
                         onClick={() => {
-                          toast.success('编辑项目: ' + project.name);
+                          toast.success('编辑项目: ' + project.name)
                         }}
                       >
                         编辑
@@ -803,29 +807,35 @@ export default function ProjectPageMinecraft() {
               color: '#FFFFFF',
               '&:hover': {
                 background: 'rgba(255,255,255,0.1)',
-              }
-            }
-          }
+              },
+            },
+          },
         }}
       >
-        <MenuItem onClick={() => {
-          handleMenuClose();
-          toast.success('复制项目: ' + menuProject?.name);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose()
+            toast.success('复制项目: ' + menuProject?.name)
+          }}
+        >
           <Copy size={16} style={{ marginRight: 8 }} />
           复制项目
         </MenuItem>
-        <MenuItem onClick={() => {
-          handleMenuClose();
-          toast.success('导出项目: ' + menuProject?.name);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose()
+            toast.success('导出项目: ' + menuProject?.name)
+          }}
+        >
           <Download size={16} style={{ marginRight: 8 }} />
           导出项目
         </MenuItem>
-        <MenuItem onClick={() => {
-          handleMenuClose();
-          toast.success('归档项目: ' + menuProject?.name);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose()
+            toast.success('归档项目: ' + menuProject?.name)
+          }}
+        >
           <Archive size={16} style={{ marginRight: 8 }} />
           归档项目
         </MenuItem>
@@ -839,7 +849,7 @@ export default function ProjectPageMinecraft() {
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
         PaperProps={{
           sx: {
@@ -847,7 +857,7 @@ export default function ProjectPageMinecraft() {
             border: '3px solid #4A4A4A',
             borderRadius: 0,
             boxShadow: '0 0 30px rgba(0,188,212,0.5)',
-          }
+          },
         }}
       >
         <DialogTitle
@@ -861,7 +871,7 @@ export default function ProjectPageMinecraft() {
             gap: 1,
           }}
         >
-          <MinecraftBlock type="emerald" size={24} />
+          <MinecraftBlock type='emerald' size={24} />
           创建新项目
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
@@ -869,15 +879,15 @@ export default function ProjectPageMinecraft() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="项目名称"
+                label='项目名称'
                 value={newProject.name}
-                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                onChange={e => setNewProject({ ...newProject, name: e.target.value })}
                 InputLabelProps={{
                   sx: {
                     fontFamily: '"Minecraft", monospace',
                     fontSize: '12px',
                     color: 'text.secondary',
-                  }
+                  },
                 }}
                 InputProps={{
                   sx: {
@@ -886,25 +896,25 @@ export default function ProjectPageMinecraft() {
                     '& fieldset': {
                       borderRadius: 0,
                       borderWidth: 2,
-                    }
-                  }
+                    },
+                  },
                 }}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="项目描述"
+                label='项目描述'
                 multiline
                 rows={3}
                 value={newProject.description}
-                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                onChange={e => setNewProject({ ...newProject, description: e.target.value })}
                 InputLabelProps={{
                   sx: {
                     fontFamily: '"Minecraft", monospace',
                     fontSize: '12px',
                     color: 'text.secondary',
-                  }
+                  },
                 }}
                 InputProps={{
                   sx: {
@@ -913,8 +923,8 @@ export default function ProjectPageMinecraft() {
                     '& fieldset': {
                       borderRadius: 0,
                       borderWidth: 2,
-                    }
-                  }
+                    },
+                  },
                 }}
               />
             </Grid>
@@ -922,15 +932,15 @@ export default function ProjectPageMinecraft() {
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth
-                  label="项目路径"
+                  label='项目路径'
                   value={newProject.path}
-                  onChange={(e) => setNewProject({ ...newProject, path: e.target.value })}
+                  onChange={e => setNewProject({ ...newProject, path: e.target.value })}
                   InputLabelProps={{
                     sx: {
                       fontFamily: '"Minecraft", monospace',
                       fontSize: '12px',
                       color: 'text.secondary',
-                    }
+                    },
                   }}
                   InputProps={{
                     sx: {
@@ -939,12 +949,12 @@ export default function ProjectPageMinecraft() {
                       '& fieldset': {
                         borderRadius: 0,
                         borderWidth: 2,
-                      }
-                    }
+                      },
+                    },
                   }}
                 />
                 <MinecraftButton
-                  minecraftStyle="gold"
+                  minecraftStyle='gold'
                   onClick={() => toast.info('选择文件夹功能开发中...')}
                 >
                   <FolderOpen size={16} />
@@ -964,42 +974,35 @@ export default function ProjectPageMinecraft() {
                 </InputLabel>
                 <Select
                   value={newProject.version}
-                  onChange={(e) => setNewProject({ ...newProject, version: e.target.value })}
+                  onChange={e => setNewProject({ ...newProject, version: e.target.value })}
                   sx={{
                     fontFamily: '"Minecraft", monospace',
                     fontSize: '14px',
                     '& fieldset': {
                       borderRadius: 0,
                       borderWidth: 2,
-                    }
+                    },
                   }}
                 >
-                  <MenuItem value="1.20.1">1.20.1</MenuItem>
-                  <MenuItem value="1.19.2">1.19.2</MenuItem>
-                  <MenuItem value="1.18.2">1.18.2</MenuItem>
-                  <MenuItem value="1.16.5">1.16.5</MenuItem>
-                  <MenuItem value="1.12.2">1.12.2</MenuItem>
+                  <MenuItem value='1.20.1'>1.20.1</MenuItem>
+                  <MenuItem value='1.19.2'>1.19.2</MenuItem>
+                  <MenuItem value='1.18.2'>1.18.2</MenuItem>
+                  <MenuItem value='1.16.5'>1.16.5</MenuItem>
+                  <MenuItem value='1.12.2'>1.12.2</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: '2px solid #4A4A4A' }}>
-          <MinecraftButton
-            minecraftStyle="stone"
-            onClick={() => setCreateDialogOpen(false)}
-          >
+          <MinecraftButton minecraftStyle='stone' onClick={() => setCreateDialogOpen(false)}>
             取消
           </MinecraftButton>
-          <MinecraftButton
-            minecraftStyle="emerald"
-            onClick={handleCreateProject}
-            glowing
-          >
+          <MinecraftButton minecraftStyle='emerald' onClick={handleCreateProject} glowing>
             创建
           </MinecraftButton>
         </DialogActions>
       </Dialog>
     </Box>
-  );
+  )
 }

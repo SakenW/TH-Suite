@@ -77,7 +77,7 @@ export const textures = {
     linear-gradient(90deg, #8B8B8B 0%, #8B8B8B 2px, transparent 2px, transparent 18px),
     linear-gradient(0deg, #8B8B8B 0%, #8B8B8B 2px, transparent 2px, transparent 18px)
   `,
-};
+}
 
 // SVG 纹理生成器
 export function generateSVGTexture(type: 'dots' | 'grid' | 'noise', color = '#8B8B8B'): string {
@@ -111,44 +111,44 @@ export function generateSVGTexture(type: 'dots' | 'grid' | 'noise', color = '#8B
         <rect width="100" height="100" filter="url(#noise)" opacity="0.1"/>
       </svg>
     `,
-  };
+  }
 
-  const svg = svgPatterns[type];
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  const svg = svgPatterns[type]
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
 }
 
 // 创建像素化背景
 export function createPixelatedBackground(
   baseColor: string,
   pixelSize = 4,
-  variation = 0.1
+  variation = 0.1,
 ): string {
   const generatePixelGrid = () => {
-    const pixels = [];
+    const pixels = []
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < 10; j++) {
-        const opacity = 1 - Math.random() * variation;
+        const opacity = 1 - Math.random() * variation
         pixels.push(
           `radial-gradient(circle at ${i * 10 + 5}% ${j * 10 + 5}%, 
            ${baseColor}${Math.floor(opacity * 255).toString(16)} 0%, 
-           transparent ${pixelSize}%)`
-        );
+           transparent ${pixelSize}%)`,
+        )
       }
     }
-    return pixels.join(',');
-  };
+    return pixels.join(',')
+  }
 
-  return generatePixelGrid();
+  return generatePixelGrid()
 }
 
 // 创建 Minecraft 式边框纹理
 export function createBorderTexture(raised = true): {
-  backgroundImage: string;
-  backgroundSize: string;
-  backgroundPosition: string;
+  backgroundImage: string
+  backgroundSize: string
+  backgroundPosition: string
 } {
-  const lightColor = raised ? '#FFFFFF' : '#373737';
-  const darkColor = raised ? '#373737' : '#FFFFFF';
+  const lightColor = raised ? '#FFFFFF' : '#373737'
+  const darkColor = raised ? '#373737' : '#FFFFFF'
 
   return {
     backgroundImage: `
@@ -159,22 +159,22 @@ export function createBorderTexture(raised = true): {
     `,
     backgroundSize: '100% 100%, 100% 100%, 100% 100%, 100% 100%',
     backgroundPosition: 'left, top, right, bottom',
-  };
+  }
 }
 
 // 创建物品栏格子
 export function createInventorySlot(size = 36): {
-  width: string;
-  height: string;
-  backgroundImage: string;
-  backgroundSize: string;
+  width: string
+  height: string
+  backgroundImage: string
+  backgroundSize: string
 } {
   return {
     width: `${size}px`,
     height: `${size}px`,
     backgroundImage: textures.inventory,
     backgroundSize: '18px 18px',
-  };
+  }
 }
 
 // 生成附魔闪光效果
@@ -188,13 +188,13 @@ export function createEnchantmentGlint(): string {
       rgba(156, 107, 255, 0.3) 60%,
       transparent 100%
     )
-  `;
+  `
 }
 
 // 创建经验条纹理
 export function createExperienceBar(progress: number): {
-  background: string;
-  backgroundSize: string;
+  background: string
+  backgroundSize: string
 } {
   return {
     background: `
@@ -207,14 +207,17 @@ export function createExperienceBar(progress: number): {
       ${textures.stone}
     `,
     backgroundSize: `100% 100%, 8px 8px`,
-  };
+  }
 }
 
 // 创建生命值条纹理
-export function createHealthBar(health: number, maxHealth: number): {
-  background: string;
+export function createHealthBar(
+  health: number,
+  maxHealth: number,
+): {
+  background: string
 } {
-  const percentage = (health / maxHealth) * 100;
+  const percentage = (health / maxHealth) * 100
   return {
     background: `
       linear-gradient(90deg,
@@ -224,14 +227,17 @@ export function createHealthBar(health: number, maxHealth: number): {
         #3C0000 100%
       )
     `,
-  };
+  }
 }
 
 // 创建护甲条纹理
-export function createArmorBar(armor: number, maxArmor = 20): {
-  background: string;
+export function createArmorBar(
+  armor: number,
+  maxArmor = 20,
+): {
+  background: string
 } {
-  const percentage = (armor / maxArmor) * 100;
+  const percentage = (armor / maxArmor) * 100
   return {
     background: `
       linear-gradient(90deg,
@@ -241,52 +247,52 @@ export function createArmorBar(armor: number, maxArmor = 20): {
         #3C3C3C 100%
       )
     `,
-  };
+  }
 }
 
 // 动画纹理类
 export class AnimatedTexture {
-  private frames: string[];
-  private currentFrame: number;
-  private interval: number;
-  private animationId?: number;
+  private frames: string[]
+  private currentFrame: number
+  private interval: number
+  private animationId?: number
 
   constructor(frames: string[], interval = 100) {
-    this.frames = frames;
-    this.currentFrame = 0;
-    this.interval = interval;
+    this.frames = frames
+    this.currentFrame = 0
+    this.interval = interval
   }
 
   start(callback: (frame: string) => void): void {
     const animate = () => {
-      callback(this.frames[this.currentFrame]);
-      this.currentFrame = (this.currentFrame + 1) % this.frames.length;
-      this.animationId = window.setTimeout(animate, this.interval);
-    };
-    animate();
+      callback(this.frames[this.currentFrame])
+      this.currentFrame = (this.currentFrame + 1) % this.frames.length
+      this.animationId = window.setTimeout(animate, this.interval)
+    }
+    animate()
   }
 
   stop(): void {
     if (this.animationId) {
-      window.clearTimeout(this.animationId);
+      window.clearTimeout(this.animationId)
     }
   }
 }
 
 // 创建传送门效果
 export function createPortalEffect(): AnimatedTexture {
-  const frames = [];
+  const frames = []
   for (let i = 0; i < 8; i++) {
     frames.push(`
       radial-gradient(
         ellipse at center,
-        rgba(128, 0, 128, ${0.5 + Math.sin(i * Math.PI / 4) * 0.3}) 0%,
-        rgba(75, 0, 130, ${0.3 + Math.sin(i * Math.PI / 4) * 0.2}) 50%,
+        rgba(128, 0, 128, ${0.5 + Math.sin((i * Math.PI) / 4) * 0.3}) 0%,
+        rgba(75, 0, 130, ${0.3 + Math.sin((i * Math.PI) / 4) * 0.2}) 50%,
         transparent 100%
       )
-    `);
+    `)
   }
-  return new AnimatedTexture(frames, 125);
+  return new AnimatedTexture(frames, 125)
 }
 
-export default textures;
+export default textures

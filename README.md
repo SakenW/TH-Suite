@@ -3,10 +3,13 @@
 > 🌐 **T**rans-**H**ub Tools - 接入 Trans-Hub 项目的我的世界本地化本地运行工具
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![Tauri](https://img.shields.io/badge/Tauri-1.5+-orange.svg)](https://tauri.app/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-red.svg)](https://fastapi.tiangolo.com/)
+[![Tauri](https://img.shields.io/badge/Tauri-2.8+-orange.svg)](https://tauri.app/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-red.svg)](https://fastapi.tiangolo.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2+-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.3+-61dafb.svg)](https://reactjs.org/)
+[![Material_UI](https://img.shields.io/badge/Material--UI-5.14+-0081cb.svg)](https://mui.com/)
 
 ## 📖 项目简介
 
@@ -91,12 +94,35 @@ TransHub Suite 是一个专门接入 [Trans-Hub](https://trans-hub.net) 项目�
 
 ### 📋 环境要求
 
-- **Python**: 3.9 或更高版本
+- **Python**: 3.12 或更高版本
 - **Node.js**: 18 或更高版本
-- **Rust**: 1.70 或更高版本（用于 Tauri）
+- **Rust**: 1.77 或更高版本（用于 Tauri 2.x）
 - **Poetry**: Python 依赖管理
-- **pnpm**: Node.js 包管理器
-- **Task**: 任务运行器（可选，推荐）
+- **pnpm**: Node.js 包管理器（推荐）
+- **Task**: 任务运行器（推荐使用）
+
+### 🛠️ 核心技术栈
+
+#### 后端技术 (Python)
+- **FastAPI 0.115+**: 现代异步 Web 框架
+- **Pydantic 2.5+**: 数据验证和序列化
+- **SQLCipher**: 加密 SQLite 数据库
+- **Structlog**: 结构化日志系统
+- **httpx/aiohttp**: 异步 HTTP 客户端
+
+#### 前端技术 (TypeScript)
+- **React 18.3+**: 用户界面库
+- **Tauri 2.8+**: 跨平台桌面应用框架
+- **Material-UI 5.14+**: React UI 组件库
+- **TailwindCSS 4.1+**: 实用优先的 CSS 框架
+- **Zustand**: 轻量级状态管理
+- **React Query**: 服务器状态管理
+
+#### 开发工具
+- **Ruff**: Python 代码检查和格式化
+- **MyPy**: 静态类型检查
+- **ESLint/Prettier**: JavaScript/TypeScript 代码质量
+- **Vite**: 前端构建工具
 
 ### 🛠️ 安装步骤
 

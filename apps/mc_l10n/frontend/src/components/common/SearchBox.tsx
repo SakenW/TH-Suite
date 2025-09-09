@@ -3,7 +3,7 @@
  * 功能丰富的搜索组件，支持自动完成、历史记录、过滤器等
  */
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import {
   TextField,
   InputAdornment,
@@ -21,63 +21,54 @@ import {
   Chip,
   Fade,
   CircularProgress,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import {
-  Search,
-  X,
-  Clock,
-  Filter,
-  TrendingUp,
-  Star,
-  Tag,
-  ArrowUpRight,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+} from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
+import { Search, X, Clock, Filter, TrendingUp, Star, Tag, ArrowUpRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface SearchSuggestion {
-  id: string;
-  text: string;
-  type: 'recent' | 'popular' | 'suggestion' | 'filter' | 'tag';
-  count?: number;
-  icon?: React.ReactNode;
-  category?: string;
+  id: string
+  text: string
+  type: 'recent' | 'popular' | 'suggestion' | 'filter' | 'tag'
+  count?: number
+  icon?: React.ReactNode
+  category?: string
 }
 
 interface SearchBoxProps {
-  placeholder?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  onSearch?: (query: string) => void;
-  onClear?: () => void;
-  
+  placeholder?: string
+  value?: string
+  onChange?: (value: string) => void
+  onSearch?: (query: string) => void
+  onClear?: () => void
+
   // 自动完成功能
-  suggestions?: SearchSuggestion[];
-  showSuggestions?: boolean;
-  loading?: boolean;
-  onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
-  
+  suggestions?: SearchSuggestion[]
+  showSuggestions?: boolean
+  loading?: boolean
+  onSuggestionSelect?: (suggestion: SearchSuggestion) => void
+
   // 搜索历史
-  recentSearches?: string[];
-  maxRecentSearches?: number;
-  onRecentSearchClick?: (search: string) => void;
-  
+  recentSearches?: string[]
+  maxRecentSearches?: number
+  onRecentSearchClick?: (search: string) => void
+
   // 热门搜索
-  popularSearches?: string[];
-  onPopularSearchClick?: (search: string) => void;
-  
+  popularSearches?: string[]
+  onPopularSearchClick?: (search: string) => void
+
   // 过滤器标签
-  activeFilters?: Array<{ label: string; value: string; color?: string }>;
-  onFilterRemove?: (value: string) => void;
-  
+  activeFilters?: Array<{ label: string; value: string; color?: string }>
+  onFilterRemove?: (value: string) => void
+
   // 样式配置
-  size?: 'small' | 'medium' | 'large';
-  variant?: 'outlined' | 'filled' | 'standard';
-  fullWidth?: boolean;
-  debounceMs?: number;
-  
+  size?: 'small' | 'medium' | 'large'
+  variant?: 'outlined' | 'filled' | 'standard'
+  fullWidth?: boolean
+  debounceMs?: number
+
   // 快捷键支持
-  shortcutKey?: string; // 例如 "Ctrl+K"
+  shortcutKey?: string // 例如 "Ctrl+K"
 }
 
 export const SearchBox: React.FC<SearchBoxProps> = ({
@@ -103,157 +94,159 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
   debounceMs = 300,
   shortcutKey,
 }) => {
-  const theme = useTheme();
-  const [focused, setFocused] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const theme = useTheme()
+  const [focused, setFocused] = useState(false)
+  const [inputValue, setInputValue] = useState(value)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<NodeJS.Timeout>()
 
   // 同步外部 value 变化
   useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+    setInputValue(value)
+  }, [value])
 
   // 防抖处理
-  const debouncedOnChange = useCallback((newValue: string) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    
-    debounceRef.current = setTimeout(() => {
-      if (onChange) {
-        onChange(newValue);
+  const debouncedOnChange = useCallback(
+    (newValue: string) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
       }
-    }, debounceMs);
-  }, [onChange, debounceMs]);
+
+      debounceRef.current = setTimeout(() => {
+        if (onChange) {
+          onChange(newValue)
+        }
+      }, debounceMs)
+    },
+    [onChange, debounceMs],
+  )
 
   // 处理输入变化
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setInputValue(newValue);
-    debouncedOnChange(newValue);
-    
+    const newValue = event.target.value
+    setInputValue(newValue)
+    debouncedOnChange(newValue)
+
     if (showSuggestions && newValue.length > 0) {
-      setShowDropdown(true);
+      setShowDropdown(true)
     }
-  };
+  }
 
   // 处理搜索
   const handleSearch = () => {
     if (onSearch && inputValue.trim()) {
-      onSearch(inputValue.trim());
-      setShowDropdown(false);
+      onSearch(inputValue.trim())
+      setShowDropdown(false)
     }
-  };
+  }
 
   // 处理清除
   const handleClear = () => {
-    setInputValue('');
-    setShowDropdown(false);
-    if (onChange) onChange('');
-    if (onClear) onClear();
-  };
+    setInputValue('')
+    setShowDropdown(false)
+    if (onChange) onChange('')
+    if (onClear) onClear()
+  }
 
   // 处理建议选择
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     if (suggestion.type === 'filter') {
       // 过滤器类型的建议，不改变搜索框内容
       if (onSuggestionSelect) {
-        onSuggestionSelect(suggestion);
+        onSuggestionSelect(suggestion)
       }
     } else {
-      setInputValue(suggestion.text);
-      if (onChange) onChange(suggestion.text);
-      if (onSearch) onSearch(suggestion.text);
+      setInputValue(suggestion.text)
+      if (onChange) onChange(suggestion.text)
+      if (onSearch) onSearch(suggestion.text)
     }
-    setShowDropdown(false);
-  };
+    setShowDropdown(false)
+  }
 
   // 处理键盘事件
   const handleKeyDown = (event: React.KeyboardEvent) => {
     switch (event.key) {
       case 'Enter':
-        event.preventDefault();
-        handleSearch();
-        break;
+        event.preventDefault()
+        handleSearch()
+        break
       case 'Escape':
-        setShowDropdown(false);
-        inputRef.current?.blur();
-        break;
+        setShowDropdown(false)
+        inputRef.current?.blur()
+        break
       case 'ArrowDown':
         if (!showDropdown && inputValue.length > 0) {
-          setShowDropdown(true);
+          setShowDropdown(true)
         }
-        break;
+        break
     }
-  };
+  }
 
   // 快捷键支持
   useEffect(() => {
     if (shortcutKey) {
       const handleKeyDown = (event: KeyboardEvent) => {
-        const keys = shortcutKey.toLowerCase().split('+');
-        let match = true;
-        
-        if (keys.includes('ctrl') && !event.ctrlKey) match = false;
-        if (keys.includes('alt') && !event.altKey) match = false;
-        if (keys.includes('shift') && !event.shiftKey) match = false;
-        if (keys.includes('meta') && !event.metaKey) match = false;
-        
-        const mainKey = keys[keys.length - 1];
-        if (event.key.toLowerCase() !== mainKey) match = false;
-        
+        const keys = shortcutKey.toLowerCase().split('+')
+        let match = true
+
+        if (keys.includes('ctrl') && !event.ctrlKey) match = false
+        if (keys.includes('alt') && !event.altKey) match = false
+        if (keys.includes('shift') && !event.shiftKey) match = false
+        if (keys.includes('meta') && !event.metaKey) match = false
+
+        const mainKey = keys[keys.length - 1]
+        if (event.key.toLowerCase() !== mainKey) match = false
+
         if (match) {
-          event.preventDefault();
-          inputRef.current?.focus();
+          event.preventDefault()
+          inputRef.current?.focus()
         }
-      };
-      
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
+      }
+
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [shortcutKey]);
+  }, [shortcutKey])
 
   // 获取图标
   const getSuggestionIcon = (suggestion: SearchSuggestion) => {
-    if (suggestion.icon) return suggestion.icon;
-    
+    if (suggestion.icon) return suggestion.icon
+
     switch (suggestion.type) {
       case 'recent':
-        return <Clock size={16} />;
+        return <Clock size={16} />
       case 'popular':
-        return <TrendingUp size={16} />;
+        return <TrendingUp size={16} />
       case 'filter':
-        return <Filter size={16} />;
+        return <Filter size={16} />
       case 'tag':
-        return <Tag size={16} />;
+        return <Tag size={16} />
       default:
-        return <Search size={16} />;
+        return <Search size={16} />
     }
-  };
+  }
 
   // 构建建议列表
   const buildSuggestionList = () => {
-    const items: React.ReactNode[] = [];
-    
+    const items: React.ReactNode[] = []
+
     // 搜索建议
     if (suggestions.length > 0) {
-      const searchSuggestions = suggestions.filter(s => 
-        s.type === 'suggestion' && 
-        s.text.toLowerCase().includes(inputValue.toLowerCase())
-      );
-      
+      const searchSuggestions = suggestions.filter(
+        s => s.type === 'suggestion' && s.text.toLowerCase().includes(inputValue.toLowerCase()),
+      )
+
       if (searchSuggestions.length > 0) {
         items.push(
-          <Box key="suggestions-header" sx={{ px: 2, py: 1 }}>
-            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600 }}>
+          <Box key='suggestions-header' sx={{ px: 2, py: 1 }}>
+            <Typography variant='overline' color='text.secondary' sx={{ fontWeight: 600 }}>
               搜索建议
             </Typography>
-          </Box>
-        );
-        
+          </Box>,
+        )
+
         searchSuggestions.forEach(suggestion => {
           items.push(
             <MenuItem
@@ -266,9 +259,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                {getSuggestionIcon(suggestion)}
-              </ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 36 }}>{getSuggestionIcon(suggestion)}</ListItemIcon>
               <ListItemText
                 primary={suggestion.text}
                 secondary={suggestion.category}
@@ -276,92 +267,86 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
                 secondaryTypographyProps={{ variant: 'caption' }}
               />
               {suggestion.count && (
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                <Typography variant='caption' color='text.secondary' sx={{ ml: 1 }}>
                   {suggestion.count}
                 </Typography>
               )}
-            </MenuItem>
-          );
-        });
-        
-        items.push(<Divider key="suggestions-divider" />);
+            </MenuItem>,
+          )
+        })
+
+        items.push(<Divider key='suggestions-divider' />)
       }
     }
-    
+
     // 最近搜索
     if (recentSearches.length > 0 && (!inputValue || inputValue.length === 0)) {
       items.push(
-        <Box key="recent-header" sx={{ px: 2, py: 1 }}>
-          <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600 }}>
+        <Box key='recent-header' sx={{ px: 2, py: 1 }}>
+          <Typography variant='overline' color='text.secondary' sx={{ fontWeight: 600 }}>
             最近搜索
           </Typography>
-        </Box>
-      );
-      
+        </Box>,
+      )
+
       recentSearches.slice(0, maxRecentSearches).forEach((search, index) => {
         items.push(
           <MenuItem
             key={`recent-${index}`}
             onClick={() => {
-              setInputValue(search);
-              if (onRecentSearchClick) onRecentSearchClick(search);
-              setShowDropdown(false);
+              setInputValue(search)
+              if (onRecentSearchClick) onRecentSearchClick(search)
+              setShowDropdown(false)
             }}
             sx={{ py: 1 }}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
               <Clock size={16} />
             </ListItemIcon>
-            <ListItemText
-              primary={search}
-              primaryTypographyProps={{ variant: 'body2' }}
-            />
+            <ListItemText primary={search} primaryTypographyProps={{ variant: 'body2' }} />
             <ArrowUpRight size={14} style={{ opacity: 0.5 }} />
-          </MenuItem>
-        );
-      });
-      
+          </MenuItem>,
+        )
+      })
+
       if (popularSearches.length > 0) {
-        items.push(<Divider key="recent-divider" />);
+        items.push(<Divider key='recent-divider' />)
       }
     }
-    
+
     // 热门搜索
     if (popularSearches.length > 0 && (!inputValue || inputValue.length === 0)) {
       items.push(
-        <Box key="popular-header" sx={{ px: 2, py: 1 }}>
-          <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600 }}>
+        <Box key='popular-header' sx={{ px: 2, py: 1 }}>
+          <Typography variant='overline' color='text.secondary' sx={{ fontWeight: 600 }}>
             热门搜索
           </Typography>
-        </Box>
-      );
-      
+        </Box>,
+      )
+
       popularSearches.slice(0, 5).forEach((search, index) => {
         items.push(
           <MenuItem
             key={`popular-${index}`}
             onClick={() => {
-              setInputValue(search);
-              if (onPopularSearchClick) onPopularSearchClick(search);
-              setShowDropdown(false);
+              setInputValue(search)
+              if (onPopularSearchClick) onPopularSearchClick(search)
+              setShowDropdown(false)
             }}
             sx={{ py: 1 }}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
               <TrendingUp size={16} />
             </ListItemIcon>
-            <ListItemText
-              primary={search}
-              primaryTypographyProps={{ variant: 'body2' }}
-            />
+            <ListItemText primary={search} primaryTypographyProps={{ variant: 'body2' }} />
             <Star size={14} style={{ opacity: 0.5 }} />
-          </MenuItem>
-        );
-      });
+          </MenuItem>,
+        )
+      })
     }
-    
-    return items;
-  };
+
+    return items
+  }
 
   return (
     <Box ref={anchorRef} sx={{ position: 'relative' }}>
@@ -375,15 +360,15 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
             transition={{ duration: 0.2 }}
           >
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
-              {activeFilters.map((filter) => (
+              {activeFilters.map(filter => (
                 <Chip
                   key={filter.value}
                   label={filter.label}
-                  size="small"
+                  size='small'
                   onDelete={() => onFilterRemove?.(filter.value)}
                   sx={{
-                    backgroundColor: filter.color 
-                      ? alpha(filter.color, 0.1) 
+                    backgroundColor: filter.color
+                      ? alpha(filter.color, 0.1)
                       : alpha(theme.palette.primary.main, 0.1),
                     color: filter.color || theme.palette.primary.main,
                     '& .MuiChip-deleteIcon': {
@@ -404,9 +389,12 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => {
-          setFocused(true);
-          if (showSuggestions && (inputValue.length > 0 || recentSearches.length > 0 || popularSearches.length > 0)) {
-            setShowDropdown(true);
+          setFocused(true)
+          if (
+            showSuggestions &&
+            (inputValue.length > 0 || recentSearches.length > 0 || popularSearches.length > 0)
+          ) {
+            setShowDropdown(true)
           }
         }}
         onBlur={() => setFocused(false)}
@@ -416,7 +404,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
         fullWidth={fullWidth}
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start">
+            <InputAdornment position='start'>
               {loading ? (
                 <CircularProgress size={20} />
               ) : (
@@ -425,13 +413,8 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
             </InputAdornment>
           ),
           endAdornment: inputValue && (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="清除搜索"
-                onClick={handleClear}
-                edge="end"
-                size="small"
-              >
+            <InputAdornment position='end'>
+              <IconButton aria-label='清除搜索' onClick={handleClear} edge='end' size='small'>
                 <X size={16} />
               </IconButton>
             </InputAdornment>
@@ -456,7 +439,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
       <Popper
         open={showDropdown}
         anchorEl={anchorRef.current}
-        placement="bottom-start"
+        placement='bottom-start'
         style={{ width: anchorRef.current?.offsetWidth, zIndex: 1300 }}
         transition
       >
@@ -477,7 +460,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
                   {buildSuggestionList()}
                   {buildSuggestionList().length === 0 && inputValue && (
                     <Box sx={{ p: 3, textAlign: 'center' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant='body2' color='text.secondary'>
                         没有找到相关建议
                       </Typography>
                     </Box>
@@ -489,5 +472,5 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
         )}
       </Popper>
     </Box>
-  );
-};
+  )
+}

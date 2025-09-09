@@ -2,96 +2,81 @@
 MC L10n FastAPI应用主入口点
 
 启动Minecraft本地化工具的后端API服务
+基于Clean Architecture和依赖注入模式重构
 """
 
 import os
+import sqlite3
 import sys
 from contextlib import asynccontextmanager
 from typing import Any
-import uuid
-import sqlite3
-import asyncio
-from datetime import datetime
-from pathlib import Path
-import hashlib
-import zipfile
-import json
-from collections import defaultdict
-import logging
 
+# 导入依赖注入容器
+# 导入中间件和路由
+from api.middleware.cors_config import setup_cors
+from api.middleware.error_handler import setup_error_handlers
+from api.middleware.logging_middleware import LoggingMiddleware
+from api.routes import transhub  # TransHub 集成路由
+from api.routes.mod_routes import router as mod_router
+from api.routes.project_routes import router as project_router
+from api.routes.scan_routes import router as scan_router
+from api.routes.translation_routes import router as translation_router
+from core.di_container import (
+    get_database_service,
+    get_infrastructure_service,
+    initialize_container,
+)
 from dotenv import load_dotenv
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
+
+# 导入工具类
+from utils.process_manager import setup_process_manager
+from utils.simple_logging import StructLogFactory
 
 # 加载环境变量
 load_dotenv()
-from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
 
 # 添加项目根目录到Python路径
 sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
 
-# 设置日志
-logger = logging.getLogger(__name__)
+logger = StructLogFactory.get_logger(__name__)
 
-# 全局变量存储扫描状态
-active_scans = {}
+# 全局状态管理
+active_scans: dict[str, dict[str, Any]] = {}
+
 
 # 数据模型
 class ScanRequest(BaseModel):
     directory: str
     incremental: bool = True
 
-from api.middleware.cors_config import setup_cors
-from api.middleware.error_handler import setup_error_handlers
-from api.routes import transhub  # TransHub 集成路由
-
-# 中间件导入
-from api.middleware.logging_middleware import LoggingMiddleware
-from api.routes.mod_routes import router as mod_router
-
-# API路由导入
-from api.routes.project_routes import router as project_router
-from api.routes.scan_routes import router as scan_router
-from api.routes.translation_routes import router as translation_router
-
-# 基础设施初始化
-from infrastructure import initialize_infrastructure
-
-from simple_logging import StructLogFactory
-
-# 导入简单的扫描服务
-from ddd_scanner import get_scanner_instance
-
-logger = StructLogFactory.get_logger(__name__)
-
-# 全局扫描服务实例
-_scanner_service = None
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理"""
-    global _scanner_service
-    
+    """应用生命周期管理 - 使用依赖注入容器"""
     # 启动时执行
     logger.info("MC L10n API服务启动中...")
 
     try:
-        # 初始化数据库（如果需要）
-        from init_db import init_database
-        logger.info("检查并初始化数据库...")
-        init_database()
-        
-        # 初始化基础设施
-        logger.info("初始化基础设施组件...")
-        initialize_infrastructure()
+        # 初始化依赖注入容器
+        logger.info("初始化依赖注入容器...")
+        await initialize_container()
 
-        # 初始化简单扫描服务
-        logger.info("初始化简单扫描服务...")
-        _scanner_service = get_scanner_instance("mc_l10n.db")
+        # 通过容器获取服务并初始化
+        logger.info("初始化数据库服务...")
+        db_service = get_database_service()
+        if db_service:
+            await db_service.initialize()
+
+        logger.info("初始化基础设施服务...")
+        infra_service = get_infrastructure_service()
+        if infra_service:
+            await infra_service.initialize()
 
         logger.info("MC L10n API服务启动完成")
 
@@ -104,8 +89,10 @@ async def lifespan(app: FastAPI):
         # 关闭时执行
         logger.info("MC L10n API服务关闭中...")
 
-        # 清理资源
-        _scanner_service = None
+        # 通过容器清理资源
+        infra_service = get_infrastructure_service()
+        if infra_service:
+            await infra_service.cleanup()
 
         logger.info("MC L10n API服务关闭完成")
 
@@ -157,613 +144,293 @@ def create_app() -> FastAPI:
     app.include_router(scan_router)
     app.include_router(translation_router)
     app.include_router(transhub.router)  # Trans-Hub集成路由
-    
-    # 注册本地数据管理路由
-    try:
-        from src.mc_l10n.adapters.api.local_data_routes import router as local_data_router
-        app.include_router(local_data_router)
-        logger.info("已注册本地数据管理路由")
-    except ImportError as e:
-        logger.warning(f"无法导入本地数据管理路由: {e}")
-    
-    # 添加数据库统计路由
+
+    # 注册本地数据管理路由 (已移除，待迁移到新结构)
+
+    # 添加数据库统计路由 - 使用应用服务
     @app.get("/api/database/statistics")
     async def get_database_statistics():
         """获取数据库统计信息"""
-        try:
-            db_path = "mc_l10n.db"
-            stats = {
-                "total_mods": 0,
-                "total_language_files": 0,
-                "total_translation_keys": 0,
-                "languages": {},
-                "mod_details": [],
-                "total_entries": 0
-            }
-            
-            if os.path.exists(db_path):
-                conn = sqlite3.connect(db_path)
-                cursor = conn.cursor()
-                
-                # 从实际的表中获取统计数据
-                try:
-                    # 获取模组数量
-                    cursor.execute("SELECT COUNT(DISTINCT mod_id) FROM mods")
-                    stats["total_mods"] = cursor.fetchone()[0]
-                    
-                    # 获取语言文件数量
-                    cursor.execute("SELECT COUNT(*) FROM language_files")
-                    stats["total_language_files"] = cursor.fetchone()[0]
-                    
-                    # 获取翻译键数量
-                    cursor.execute("SELECT COUNT(*) FROM translation_entries")
-                    stats["total_translation_keys"] = cursor.fetchone()[0]
-                    
-                    # 获取语言分布
-                    cursor.execute("""
-                        SELECT locale_code, COUNT(*) 
-                        FROM language_files 
-                        GROUP BY locale_code
-                    """)
-                    stats["languages"] = dict(cursor.fetchall())
-                    
-                    # 获取模组详情（前10个最大的模组）
-                    cursor.execute("""
-                        SELECT m.mod_id, m.display_name, 
-                               COUNT(DISTINCT lf.locale_code) as lang_count,
-                               COUNT(DISTINCT te.entry_key) as key_count
-                        FROM mods m
-                        LEFT JOIN language_files lf ON m.mod_id = lf.mod_id
-                        LEFT JOIN translation_entries te ON lf.file_id = te.file_id
-                        GROUP BY m.mod_id, m.display_name
-                        ORDER BY key_count DESC
-                        LIMIT 10
-                    """)
-                    
-                    mod_rows = cursor.fetchall()
-                    stats["mod_details"] = [
-                        {
-                            "mod_id": row[0],
-                            "mod_name": row[1] or row[0],
-                            "language_count": row[2],
-                            "key_count": row[3]
-                        }
-                        for row in mod_rows
-                    ]
-                    
-                    # 获取总条目数
-                    stats["total_entries"] = stats["total_translation_keys"]
-                    
-                except Exception as e:
-                    logger.warning(f"读取数据库统计失败: {e}")
-                    
-                conn.close()
-            
-            return {
-                "success": True,
-                "data": stats
-            }
-        except Exception as e:
-            logger.error(f"获取数据库统计失败: {e}")
-            return {
-                "success": False,
-                "error": {
-                    "code": "STATS_ERROR",
-                    "message": str(e)
-                }
-            }
-    
-    # 添加全局的扫描结果路由
+        from application.services.scan_application_service import ScanApplicationService
+
+        scan_service = ScanApplicationService()
+        return await scan_service.get_database_statistics()
+
+    # 添加全局的扫描结果路由 - 使用应用服务
     @app.get("/scan-results/{scan_id}")
     async def get_scan_results_global(scan_id: str):
         """获取扫描结果（全局路由）"""
-        scanner_service = _scanner_service
-        if not scanner_service:
+        from application.services.scan_application_service import ScanApplicationService
+
+        scan_service = ScanApplicationService()
+        result = await scan_service.get_scan_results(scan_id)
+
+        if not result["success"]:
             return {
                 "success": False,
                 "error": {
-                    "code": "NO_SCANNER",
-                    "message": "Scanner service not initialized"
-                }
+                    "code": "NOT_FOUND" if "不存在" in result["message"] else "ERROR",
+                    "message": result["message"],
+                },
             }
-        
-        status = await scanner_service.get_scan_status(scan_id)
-        if not status:
-            return {
-                "success": False,
-                "error": {
-                    "code": "NOT_FOUND",
-                    "message": f"Scan not found: {scan_id}"
-                }
-            }
-        
-        statistics = status.get("statistics", {})
+
+        # 转换为兼容格式
+        data = result["data"]
+        statistics = data.get("statistics", {})
         return {
             "success": True,
             "data": {
                 "scan_id": scan_id,
-                "status": status.get("status"),
+                "status": "completed",
                 "statistics": statistics,
                 "total_mods": statistics.get("total_mods", 0),
                 "total_language_files": statistics.get("total_language_files", 0),
                 "total_keys": statistics.get("total_keys", 0),
                 "entries": {},
                 "errors": [],
-                "warnings": []
-            }
+                "warnings": [],
+            },
         }
-    
-    # 扫描相关函数
-    def init_database():
-        """初始化数据库"""
-        conn = sqlite3.connect("mc_l10n.db")
-        cursor = conn.cursor()
-        
-        # 创建扫描会话表
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS scan_sessions (
-                id TEXT PRIMARY KEY,
-                directory TEXT NOT NULL,
-                started_at TEXT NOT NULL,
-                completed_at TEXT,
-                status TEXT DEFAULT 'scanning',
-                total_mods INTEGER DEFAULT 0,
-                total_language_files INTEGER DEFAULT 0,
-                total_keys INTEGER DEFAULT 0,
-                scan_mode TEXT DEFAULT '全量'
-            )
-        """)
-        
-        # 创建模组信息表
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS mods (
-                id TEXT PRIMARY KEY,
-                scan_id TEXT,
-                mod_id TEXT,
-                display_name TEXT,
-                version TEXT,
-                file_path TEXT,
-                size INTEGER,
-                mod_loader TEXT,
-                description TEXT,
-                authors TEXT,
-                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id),
-                UNIQUE(mod_id, file_path)
-            )
-        """)
-        
-        # 创建语言文件表
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS language_files (
-                id TEXT PRIMARY KEY,
-                scan_id TEXT,
-                mod_id TEXT,
-                namespace TEXT,
-                locale TEXT,
-                file_path TEXT,
-                key_count INTEGER,
-                FOREIGN KEY (scan_id) REFERENCES scan_sessions(id),
-                UNIQUE(namespace, locale, file_path)
-            )
-        """)
-        
-        # 创建翻译条目表
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS translation_entries (
-                id TEXT PRIMARY KEY,
-                language_file_id TEXT,
-                key TEXT,
-                value TEXT,
-                FOREIGN KEY (language_file_id) REFERENCES language_files(id),
-                UNIQUE(language_file_id, key)
-            )
-        """)
-        
-        # 创建文件哈希表，用于增量扫描
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS file_hashes (
-                file_path TEXT PRIMARY KEY,
-                file_hash TEXT NOT NULL,
-                last_modified TIMESTAMP NOT NULL,
-                file_size INTEGER NOT NULL,
-                last_scanned TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        
-        # 创建唯一索引以防止重复数据（如果不存在）
-        try:
-            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_mods_unique ON mods(mod_id, file_path)")
-            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_language_files_unique ON language_files(namespace, locale, file_path)")
-        except Exception as e:
-            # 索引可能已存在或有冲突数据，忽略错误
-            print(f"创建唯一索引时出现警告（可能已存在）: {e}")
-        
-        conn.commit()
-        conn.close()
-    
-    def parse_mod_jar(jar_path: Path):
-        """简化的JAR解析函数"""
-        try:
-            mod_info = {"mod_id": jar_path.stem, "name": jar_path.stem}
-            language_files = []
-            
-            with zipfile.ZipFile(jar_path, 'r') as jar:
-                for file_info in jar.filelist:
-                    file_path = file_info.filename
-                    if '/lang/' in file_path and file_path.endswith('.json'):
-                        # 提取语言代码
-                        lang_file = file_path.split('/')[-1]
-                        locale = lang_file.replace('.json', '')
-                        
-                        try:
-                            with jar.open(file_info) as f:
-                                content = json.load(f)
-                                if isinstance(content, dict):
-                                    language_files.append({
-                                        "file_path": file_path,
-                                        "locale": locale,
-                                        "key_count": len(content),
-                                        "namespace": file_path.split('/')[1] if '/' in file_path else 'minecraft',
-                                        "entries": content  # 添加实际的翻译条目数据
-                                    })
-                        except:
-                            pass  # 忽略解析失败的文件
-            
-            return mod_info, language_files
-        except Exception as e:
-            logger.error(f"解析JAR失败 {jar_path}: {e}")
-            return None, []
-    
-    async def scan_directory_real(scan_id: str, directory: str, incremental: bool = True):
-        """实际扫描目录函数"""
-        logger.info(f"开始{'增量' if incremental else '全量'}扫描目录: {directory}")
-        
-        try:
-            scan_path = Path(directory)
-            if not scan_path.exists():
-                raise ValueError(f"目录不存在: {directory}")
-            
-            # 查找所有jar文件
-            jar_files = []
-            for root, dirs, files in os.walk(scan_path):
-                for file in files:
-                    if file.endswith('.jar'):
-                        jar_files.append(Path(root) / file)
-            
-            # 更新扫描状态
-            active_scans[scan_id] = {
-                "status": "scanning", 
-                "progress": 0,
-                "total_files": len(jar_files),
-                "processed_files": 0,
-                "current_file": "",
-                "total_mods": 0,
-                "total_language_files": 0,
-                "total_keys": 0,
-                "scan_mode": "增量" if incremental else "全量",
-                "started_at": datetime.now().isoformat()
-            }
-            
-            # 初始化数据库连接和统计
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            
-            total_mods = 0
-            total_language_files = 0
-            total_keys = 0
-            
-            for i, jar_path in enumerate(jar_files):
-                # 检查是否被取消
-                if scan_id in active_scans and active_scans[scan_id].get("status") == "cancelled":
-                    logger.info(f"扫描被取消: {scan_id}")
-                    conn.close()
-                    return
-                
-                # 更新当前处理的文件
-                active_scans[scan_id]["current_file"] = jar_path.name
-                active_scans[scan_id]["processed_files"] = i + 1
-                active_scans[scan_id]["progress"] = ((i + 1) / len(jar_files)) * 100
-                
-                logger.info(f"正在处理 ({i+1}/{len(jar_files)}): {jar_path.name}")
-                
-                try:
-                    mod_info, language_files = parse_mod_jar(jar_path)
-                    
-                    if mod_info:
-                        # 存储模组信息
-                        mod_id = str(uuid.uuid4())
-                        cursor.execute("""
-                            INSERT OR IGNORE INTO mods (id, scan_id, mod_id, display_name, version, file_path, size)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            mod_id, scan_id, mod_info.get('mod_id', jar_path.stem),
-                            mod_info.get('name', jar_path.stem), mod_info.get('version', '未知'),
-                            str(jar_path), jar_path.stat().st_size if jar_path.exists() else 0
-                        ))
-                        total_mods += 1
-                        
-                        # 存储语言文件和翻译条目
-                        for lang_file in language_files:
-                            lang_file_id = str(uuid.uuid4())
-                            cursor.execute("""
-                                INSERT OR IGNORE INTO language_files (id, scan_id, mod_id, namespace, locale, file_path, key_count)
-                                VALUES (?, ?, ?, ?, ?, ?, ?)
-                            """, (
-                                lang_file_id, scan_id, mod_info.get('mod_id', jar_path.stem),
-                                lang_file.get('namespace', 'minecraft'), lang_file.get('locale', 'en_us'),
-                                lang_file.get('file_path', ''), lang_file.get('key_count', 0)
-                            ))
-                            
-                            # 存储翻译条目
-                            if 'entries' in lang_file:
-                                for key, value in lang_file['entries'].items():
-                                    if isinstance(value, str):
-                                        stored_value = value
-                                    else:
-                                        stored_value = str(value)
-                                    
-                                    cursor.execute("""
-                                        INSERT OR IGNORE INTO translation_entries (id, language_file_id, key, value)
-                                        VALUES (?, ?, ?, ?)
-                                    """, (str(uuid.uuid4()), lang_file_id, key, stored_value))
-                            
-                            total_language_files += 1
-                            total_keys += lang_file.get('key_count', 0)
-                        
-                        # 每处理5个文件提交一次
-                        if (i + 1) % 5 == 0:
-                            conn.commit()
-                
-                except Exception as e:
-                    logger.error(f"处理文件 {jar_path} 时出错: {e}")
-                    continue
-                
-                # 每10个文件休息一下，避免阻塞
-                if i % 10 == 0:
-                    await asyncio.sleep(0.1)
-            
-            cursor.execute("""
-                UPDATE scan_sessions 
-                SET status = 'completed', completed_at = ?, total_mods = ?, 
-                    total_language_files = ?, total_keys = ?
-                WHERE id = ?
-            """, (datetime.now().isoformat(), total_mods, total_language_files, total_keys, scan_id))
-            conn.commit()
-            conn.close()
-            
-            # 更新内存状态
-            completion_data = {
-                "status": "completed",
-                "progress": 100,
-                "total_files": len(jar_files),
-                "processed_files": len(jar_files),
-                "total_mods": total_mods,
-                "total_language_files": total_language_files,
-                "total_keys": total_keys,
-                "completed_at": datetime.now().isoformat()
-            }
-            active_scans[scan_id].update(completion_data)
-            
-            logger.info(f"扫描完成: {scan_id}, 发现{total_mods}个模组，{total_language_files}个语言文件，{total_keys}个条目")
-            
-        except Exception as e:
-            logger.error(f"扫描失败: {e}")
-            active_scans[scan_id] = {"status": "failed", "error": str(e)}
-            
-            conn = sqlite3.connect("mc_l10n.db")
-            cursor = conn.cursor()
-            cursor.execute("UPDATE scan_sessions SET status = 'failed' WHERE id = ?", (scan_id,))
-            conn.commit()
-            conn.close()
-    
-    # 初始化数据库
-    init_database()
-    
+
+    # 数据库初始化已由依赖注入容器处理
+
     # 兼容性端点
     from fastapi import APIRouter
+
     compat_router = APIRouter()
-    
+
     @compat_router.get("/api/v1/scan-project-test-get")
     async def scan_project_test_get():
         """GET测试端点"""
         return {"success": True, "message": "GET test endpoint working"}
-    
+
     @compat_router.post("/api/v1/scan-project-test")
     async def scan_project_test():
         """最简单的测试端点"""
         return {"success": True, "message": "test endpoint working"}
-    
+
     @compat_router.post("/api/v1/scan-project-test-json")
     async def scan_project_test_json(request: dict):
         """测试JSON解析"""
         return {"success": True, "received": request}
-    
+
     @compat_router.post("/api/v1/scan-project")
     async def scan_project_v1_compat(request: ScanRequest):
-        """使用统一扫描服务的扫描端点"""
-        global _scanner_service
-        
+        """使用应用服务的扫描端点"""
+        from application.services.scan_application_service import ScanApplicationService
+
         try:
-            # 提取参数
-            directory = request.directory
-            incremental = request.incremental
-            
-            if not directory:
-                raise ValueError("directory参数是必需的")
-            
-            if not _scanner_service:
-                raise HTTPException(status_code=500, detail="扫描服务未初始化")
-            
-            # 使用统一扫描服务启动扫描
-            scan_info = await _scanner_service.start_scan(
-                target_path=directory,
-                incremental=incremental,
-                options={}
+            scan_service = ScanApplicationService()
+            result = await scan_service.start_project_scan(
+                directory=request.directory, incremental=request.incremental
             )
-            
-            return {
-                "success": True,
-                "message": f"扫描已开始: {directory} (使用统一扫描引擎)",
-                "job_id": scan_info["scan_id"],
-                "scan_id": scan_info["scan_id"]
-            }
-            
+
+            if result["success"]:
+                return {
+                    "success": True,
+                    "message": result["message"],
+                    "job_id": result["scan_id"],
+                    "scan_id": result["scan_id"],
+                }
+            else:
+                raise HTTPException(
+                    status_code=500, detail=result.get("message", "扫描启动失败")
+                )
+
         except Exception as e:
-            logger.error(f"启动统一扫描失败: {e}")
+            logger.error(f"启动扫描失败: {e}")
             raise HTTPException(status_code=500, detail=str(e))
-    
+
     @compat_router.get("/api/v1/scan-status/{scan_id}")
     async def get_scan_status_v1_compat(scan_id: str):
-        """使用统一扫描服务获取扫描状态"""
-        global _scanner_service
-        
-        try:
-            if not _scanner_service:
-                return {"success": False, "message": "扫描服务未初始化"}
-            
-            # 使用统一扫描服务获取状态
-            status = await _scanner_service.get_scan_status(scan_id)
-            
-            if status:
-                # 修正日志中的字段访问
-                logger.info(f"返回统一扫描状态 {scan_id}: status={status.get('status', 'unknown')}, progress={status.get('progress', 0)}, processed={status.get('processed_files', 0)}/{status.get('total_files', 0)}")
-                logger.info(f"完整状态数据: {status}")
-                return {"success": True, "data": status}
-            
-            # 扫描不存在
-            logger.warning(f"未找到扫描任务: {scan_id}")
-            return {"success": False, "message": "扫描任务未找到"}
-                
-        except Exception as e:
-            logger.error(f"获取扫描状态失败: {e}")
-            return {"success": False, "message": str(e)}
-    
+        """使用应用服务获取扫描状态"""
+        from application.services.scan_application_service import ScanApplicationService
+
+        scan_service = ScanApplicationService()
+        return await scan_service.get_scan_status(scan_id)
+
     @compat_router.get("/api/v1/scan-results/{scan_id}")
     async def get_scan_results_v1_compat(scan_id: str):
-        """使用统一扫描服务获取扫描结果"""
-        global _scanner_service
-        
-        try:
-            if not _scanner_service:
-                return {"success": False, "message": "扫描服务未初始化"}
-            
-            # 获取扫描状态，检查是否完成
-            status = await _scanner_service.get_scan_status(scan_id)
-            
-            if not status:
-                return {"success": False, "message": "扫描任务不存在"}
-            
-            if status.get("status") != "completed":
-                return {"success": False, "message": "扫描未完成"}
-            
-            # 获取内容项（模组和语言文件）
-            mods = await _scanner_service.get_content_items(content_type="mod", limit=500)
-            language_files = await _scanner_service.get_content_items(content_type="language_file", limit=1000)
-            
-            # 处理模组数据
-            mod_list = []
-            for mod in mods:
-                mod_data = {
-                    "id": mod.get("content_hash", "")[:8],
-                    "name": mod.get("name", "Unknown Mod"),
-                    "mod_id": mod.get("metadata", {}).get("mod_id", ""),
-                    "version": mod.get("metadata", {}).get("version", ""),
-                    "file_path": mod.get("metadata", {}).get("file_path", ""),
-                    "language_files": 0,
-                    "total_keys": 0
-                }
-                # 统计该模组的语言文件数
-                for lf in language_files:
-                    if lf.get("relationships", {}).get("mod_hash") == mod.get("content_hash"):
-                        mod_data["language_files"] += 1
-                        mod_data["total_keys"] += lf.get("metadata", {}).get("key_count", 0)
-                mod_list.append(mod_data)
-            
-            # 处理语言文件数据
-            lf_list = []
-            for lf in language_files[:100]:  # 限制返回前100个
-                lf_list.append({
-                    "id": lf.get("content_hash", "")[:8],
-                    "file_name": lf.get("name", ""),
-                    "language": lf.get("metadata", {}).get("language", "en_us"),
-                    "key_count": lf.get("metadata", {}).get("key_count", 0),
-                    "mod_id": lf.get("relationships", {}).get("mod_id", "")
-                })
-            
-            # 获取统计信息
-            statistics = {
-                "total_mods": len(mods),
-                "total_language_files": len(language_files),
-                "total_keys": sum(lf.get("metadata", {}).get("key_count", 0) for lf in language_files),
-                "scan_duration_ms": status.get("duration_seconds", 0) * 1000
-            }
-            
-            return {
-                "success": True,
-                "data": {
-                    "scan_id": scan_id,
-                    "mods": mod_list,
-                    "language_files": lf_list,
-                    "statistics": statistics
-                }
-            }
-                
-        except Exception as e:
-            logger.error(f"获取统一扫描结果失败: {e}")
-            return {"success": False, "message": str(e)}
-    
+        """使用应用服务获取扫描结果"""
+        from application.services.scan_application_service import ScanApplicationService
+
+        scan_service = ScanApplicationService()
+        return await scan_service.get_scan_results(scan_id)
+
     @compat_router.post("/api/v1/scan-cancel/{scan_id}")
     async def cancel_scan_v1_compat(scan_id: str):
-        """使用统一扫描服务取消扫描"""
-        global _scanner_service
-        
-        try:
-            if not _scanner_service:
-                return {"success": False, "message": "扫描服务未初始化"}
-            
-            # 使用统一扫描服务取消扫描
-            success = await _scanner_service.cancel_scan(scan_id)
-            
-            if success:
-                logger.info(f"统一扫描已取消: {scan_id}")
-                return {"success": True, "message": "扫描已取消"}
-            else:
-                return {"success": False, "message": "扫描任务不存在或已完成"}
-                
-        except Exception as e:
-            logger.error(f"取消统一扫描失败: {e}")
-            return {"success": False, "message": str(e)}
-    
+        """使用应用服务取消扫描"""
+        from application.services.scan_application_service import ScanApplicationService
+
+        scan_service = ScanApplicationService()
+        return await scan_service.cancel_scan(scan_id)
+
     @compat_router.get("/api/v1/scans/active")
     async def get_active_scans():
         """获取活跃的扫描状态"""
         try:
             active_scan_list = []
             for scan_id, scan_status in active_scans.items():
-                active_scan_list.append({
-                    "id": scan_id,
-                    "status": scan_status.get("status", "unknown"),
-                    "progress": scan_status.get("progress", 0),
-                    "processed_files": scan_status.get("processed_files", 0),
-                    "total_files": scan_status.get("total_files", 0),
-                    "current_file": scan_status.get("current_file", ""),
-                    "total_mods": scan_status.get("total_mods", 0),
-                    "total_language_files": scan_status.get("total_language_files", 0),
-                    "total_keys": scan_status.get("total_keys", 0),
-                    "scan_mode": scan_status.get("scan_mode", "未知"),
-                    "started_at": scan_status.get("started_at", "")
-                })
-            
-            return {
-                "success": True,
-                "data": active_scan_list
-            }
+                active_scan_list.append(
+                    {
+                        "id": scan_id,
+                        "status": scan_status.get("status", "unknown"),
+                        "progress": scan_status.get("progress", 0),
+                        "processed_files": scan_status.get("processed_files", 0),
+                        "total_files": scan_status.get("total_files", 0),
+                        "current_file": scan_status.get("current_file", ""),
+                        "total_mods": scan_status.get("total_mods", 0),
+                        "total_language_files": scan_status.get(
+                            "total_language_files", 0
+                        ),
+                        "total_keys": scan_status.get("total_keys", 0),
+                        "scan_mode": scan_status.get("scan_mode", "未知"),
+                        "started_at": scan_status.get("started_at", ""),
+                    }
+                )
+
+            return {"success": True, "data": active_scan_list}
         except Exception as e:
             logger.error(f"获取活跃扫描失败: {e}")
             return {"success": False, "error": str(e)}
-    
+
+    @compat_router.get("/api/v1/scans/history")
+    async def get_scan_history():
+        """获取历史扫描记录"""
+        try:
+            conn = sqlite3.connect("mc_l10n.db")
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # 获取所有扫描会话
+            cursor.execute("""
+                SELECT * FROM scan_sessions
+                ORDER BY started_at DESC
+                LIMIT 50
+            """)
+            sessions = cursor.fetchall()
+
+            scan_list = []
+            for session in sessions:
+                scan_list.append(
+                    {
+                        "id": session["id"],
+                        "directory": session["project_path"],
+                        "status": session["status"],
+                        "scan_type": session["scan_type"],
+                        "total_mods": session["discovered_mods"],
+                        "total_language_files": session["discovered_languages"],
+                        "total_keys": session["discovered_entries"],
+                        "started_at": session["started_at"],
+                        "completed_at": session["completed_at"],
+                    }
+                )
+
+            conn.close()
+            return {"success": True, "data": scan_list}
+
+        except Exception as e:
+            logger.error(f"获取历史扫描记录失败: {e}")
+            return {"success": False, "error": str(e)}
+
+    @compat_router.get("/api/v1/scans/latest")
+    async def get_latest_scan():
+        """获取最新的扫描结果"""
+        try:
+            conn = sqlite3.connect("mc_l10n.db")
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # 获取最新完成的扫描
+            cursor.execute("""
+                SELECT * FROM scan_sessions
+                WHERE status = 'completed'
+                ORDER BY completed_at DESC
+                LIMIT 1
+            """)
+            session = cursor.fetchone()
+
+            if not session:
+                conn.close()
+                return {"success": True, "data": None}
+
+            scan_id = session["id"]
+
+            # 获取该扫描的模组数据
+            cursor.execute(
+                """
+                SELECT * FROM mods
+                WHERE scan_id = ?
+                ORDER BY display_name
+            """,
+                (scan_id,),
+            )
+            mods = cursor.fetchall()
+
+            mod_list = []
+            for mod in mods:
+                # 获取该模组的语言文件统计
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) as lang_count, SUM(entry_count) as total_keys
+                    FROM language_files
+                    WHERE mod_id = ?
+                """,
+                    (mod["id"],),
+                )
+                stats = cursor.fetchone()
+
+                mod_list.append(
+                    {
+                        "id": mod["mod_id"],
+                        "name": mod["display_name"],
+                        "version": mod["version"] or "",
+                        "file_path": mod["file_path"],
+                        "mod_loader": mod["mod_loader"] or "",
+                        "language_files": stats["lang_count"] if stats else 0,
+                        "total_keys": stats["total_keys"] if stats else 0,
+                    }
+                )
+
+            conn.close()
+
+            # 解析 metadata JSON 字段以获取真实的统计数据
+            import json
+
+            metadata = {}
+            if session["metadata"]:
+                try:
+                    metadata = json.loads(session["metadata"])
+                except json.JSONDecodeError:
+                    pass
+
+            return {
+                "success": True,
+                "data": {
+                    "scan_id": scan_id,
+                    "directory": session["project_path"],
+                    "completed_at": session["completed_at"],
+                    "statistics": {
+                        "total_mods": metadata.get(
+                            "total_mods", session["discovered_mods"]
+                        ),
+                        "total_language_files": metadata.get(
+                            "total_language_files", session["discovered_languages"]
+                        ),
+                        "total_keys": metadata.get(
+                            "total_keys", session["discovered_entries"]
+                        ),
+                    },
+                    "mods": mod_list,
+                },
+            }
+
+        except Exception as e:
+            logger.error(f"获取最新扫描结果失败: {e}")
+            return {"success": False, "error": str(e)}
+
     app.include_router(compat_router)
-    
+
     # 直接在app上添加测试路由
     @app.get("/api/v1/direct-test")
     async def direct_test():
@@ -922,6 +589,17 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
 
+    # 设置进程管理器，自动清理旧进程
+    try:
+        # 检查是否有--kill-all参数
+        kill_all = "--kill-all" in sys.argv
+        if kill_all:
+            sys.argv.remove("--kill-all")
+        setup_process_manager(kill_all=kill_all)
+        logger.info("进程管理器已启动")
+    except Exception as e:
+        logger.warning(f"进程管理器启动失败: {e}")
+
     # 从环境变量获取配置，使用不常见的端口避免冲突
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "18000"))  # 使用18000端口，避免与其他服务冲突
@@ -970,9 +648,21 @@ if __name__ == "__main__":
                 },
             },
             "loggers": {
-                "uvicorn": {"level": "INFO", "handlers": ["default"], "propagate": False},
-                "uvicorn.error": {"level": "INFO", "handlers": ["default"], "propagate": False},
-                "uvicorn.access": {"level": "INFO", "handlers": ["access"], "propagate": False},
+                "uvicorn": {
+                    "level": "INFO",
+                    "handlers": ["default"],
+                    "propagate": False,
+                },
+                "uvicorn.error": {
+                    "level": "INFO",
+                    "handlers": ["default"],
+                    "propagate": False,
+                },
+                "uvicorn.access": {
+                    "level": "INFO",
+                    "handlers": ["access"],
+                    "propagate": False,
+                },
             },
             "root": {
                 "level": "INFO",

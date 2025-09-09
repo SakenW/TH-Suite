@@ -111,14 +111,14 @@ class DataConverter:
     @staticmethod
     def to_dict(model: BaseModel, exclude_none: bool = True) -> dict[str, Any]:
         """Convert a Pydantic model to dictionary."""
-        return model.dict(exclude_none=exclude_none)
+        return model.model_dump(exclude_none=exclude_none)
 
     @staticmethod
     def to_json(
         model: BaseModel, exclude_none: bool = True, indent: int | None = None
     ) -> str:
         """Convert a Pydantic model to JSON string."""
-        return model.json(exclude_none=exclude_none, indent=indent)
+        return model.model_dump_json(exclude_none=exclude_none, indent=indent)
 
     @staticmethod
     def from_dict(schema_class: type[T], data: dict[str, Any]) -> T:
@@ -128,7 +128,7 @@ class DataConverter:
     @staticmethod
     def from_json(schema_class: type[T], json_str: str) -> T:
         """Create a Pydantic model from JSON string."""
-        return schema_class.parse_raw(json_str)
+        return schema_class.model_validate_json(json_str)
 
     @staticmethod
     def convert_datetime(dt: datetime | str | None) -> datetime | None:

@@ -3,33 +3,33 @@
  * 简化组件中的 API 调用和状态管理
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { ApiResponse, ApiErrorResponse, AsyncTask } from '../types/api';
-import { handleApiError, isApiSuccess, getApiData, isTaskCompleted } from '../services';
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { ApiResponse, ApiErrorResponse, AsyncTask } from '../types/api'
+import { handleApiError, isApiSuccess, getApiData, isTaskCompleted } from '../services'
 
 // 基础 API 调用状态
 export interface ApiState<T = any> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  success: boolean;
+  data: T | null
+  loading: boolean
+  error: string | null
+  success: boolean
 }
 
 // 异步任务状态
 export interface TaskState extends ApiState<AsyncTask> {
-  progress: number;
-  taskId: string | null;
-  isCompleted: boolean;
-  isRunning: boolean;
+  progress: number
+  taskId: string | null
+  isCompleted: boolean
+  isRunning: boolean
 }
 
 // 分页数据状态
 export interface PaginatedState<T = any> extends ApiState<T[]> {
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  hasMore: boolean;
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasMore: boolean
 }
 
 /**
@@ -37,80 +37,80 @@ export interface PaginatedState<T = any> extends ApiState<T[]> {
  */
 export function useApi<T = any>(
   apiCall?: () => Promise<ApiResponse<T>>,
-  immediate: boolean = false
+  immediate: boolean = false,
 ): ApiState<T> & {
-  execute: () => Promise<T | null>;
-  reset: () => void;
+  execute: () => Promise<T | null>
+  reset: () => void
 } {
   const [state, setState] = useState<ApiState<T>>({
     data: null,
     loading: false,
     error: null,
     success: false,
-  });
+  })
 
-  const isMountedRef = useRef(true);
-  const currentRequestRef = useRef<Promise<any> | null>(null);
+  const isMountedRef = useRef(true)
+  const currentRequestRef = useRef<Promise<any> | null>(null)
 
   // 组件卸载时设置标记
   useEffect(() => {
-    isMountedRef.current = true;
+    isMountedRef.current = true
     return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+      isMountedRef.current = false
+    }
+  }, [])
 
   const execute = useCallback(async (): Promise<T | null> => {
-    if (!apiCall) return null;
+    if (!apiCall) return null
 
     // 取消之前的请求
-    currentRequestRef.current = null;
+    currentRequestRef.current = null
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      const requestPromise = apiCall();
-      currentRequestRef.current = requestPromise;
-      
-      const response = await requestPromise;
+      const requestPromise = apiCall()
+      currentRequestRef.current = requestPromise
+
+      const response = await requestPromise
 
       // 检查组件是否已卸载或者是否是当前请求
       if (!isMountedRef.current || currentRequestRef.current !== requestPromise) {
-        return null;
+        return null
       }
 
       if (isApiSuccess(response)) {
-        const data = getApiData<T>(response);
+        const data = getApiData<T>(response)
         setState({
           data,
           loading: false,
           error: null,
           success: true,
-        });
-        return data;
+        })
+        return data
       } else {
-        const errorMessage = handleApiError(response);
+        const errorMessage = handleApiError(response)
         setState({
           data: null,
           loading: false,
           error: errorMessage,
           success: false,
-        });
-        return null;
+        })
+        return null
       }
     } catch (error) {
-      if (!isMountedRef.current) return null;
+      if (!isMountedRef.current) return null
 
-      const errorMessage = handleApiError(error);
+      const errorMessage = handleApiError(error)
       setState({
         data: null,
         loading: false,
         error: errorMessage,
         success: false,
-      });
-      return null;
+      })
+      return null
     }
-  }, [apiCall]);
+  }, [apiCall])
 
   const reset = useCallback(() => {
     setState({
@@ -118,32 +118,32 @@ export function useApi<T = any>(
       loading: false,
       error: null,
       success: false,
-    });
-    currentRequestRef.current = null;
-  }, []);
+    })
+    currentRequestRef.current = null
+  }, [])
 
   // 立即执行
   useEffect(() => {
     if (immediate && apiCall) {
-      execute();
+      execute()
     }
-  }, [execute, immediate, apiCall]);
+  }, [execute, immediate, apiCall])
 
   return {
     ...state,
     execute,
     reset,
-  };
+  }
 }
 
 /**
  * 异步任务 Hook
  */
 export function useAsyncTask(): TaskState & {
-  startTask: (taskPromise: Promise<ApiResponse<AsyncTask>>) => Promise<AsyncTask | null>;
-  pollTask: (taskId: string, pollInterval?: number) => Promise<AsyncTask | null>;
-  cancelTask: () => void;
-  reset: () => void;
+  startTask: (taskPromise: Promise<ApiResponse<AsyncTask>>) => Promise<AsyncTask | null>
+  pollTask: (taskId: string, pollInterval?: number) => Promise<AsyncTask | null>
+  cancelTask: () => void
+  reset: () => void
 } {
   const [state, setState] = useState<TaskState>({
     data: null,
@@ -154,156 +154,157 @@ export function useAsyncTask(): TaskState & {
     taskId: null,
     isCompleted: false,
     isRunning: false,
-  });
+  })
 
-  const isMountedRef = useRef(true);
-  const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const currentTaskRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true)
+  const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const currentTaskRef = useRef<string | null>(null)
 
   useEffect(() => {
-    isMountedRef.current = true;
+    isMountedRef.current = true
     return () => {
-      isMountedRef.current = false;
+      isMountedRef.current = false
       if (pollTimerRef.current) {
-        clearTimeout(pollTimerRef.current);
+        clearTimeout(pollTimerRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
-  const startTask = useCallback(async (
-    taskPromise: Promise<ApiResponse<AsyncTask>>
-  ): Promise<AsyncTask | null> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+  const startTask = useCallback(
+    async (taskPromise: Promise<ApiResponse<AsyncTask>>): Promise<AsyncTask | null> => {
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
-    try {
-      const response = await taskPromise;
+      try {
+        const response = await taskPromise
 
-      if (!isMountedRef.current) return null;
+        if (!isMountedRef.current) return null
 
-      if (isApiSuccess(response)) {
-        const task = getApiData<AsyncTask>(response);
-        if (task) {
-          currentTaskRef.current = task.id;
-          setState({
-            data: task,
-            loading: false,
-            error: null,
-            success: true,
-            progress: task.progress || 0,
-            taskId: task.id,
-            isCompleted: isTaskCompleted(task.status),
-            isRunning: !isTaskCompleted(task.status),
-          });
-          
-          // 如果任务未完成，开始轮询
-          if (!isTaskCompleted(task.status)) {
-            pollTask(task.id);
+        if (isApiSuccess(response)) {
+          const task = getApiData<AsyncTask>(response)
+          if (task) {
+            currentTaskRef.current = task.id
+            setState({
+              data: task,
+              loading: false,
+              error: null,
+              success: true,
+              progress: task.progress || 0,
+              taskId: task.id,
+              isCompleted: isTaskCompleted(task.status),
+              isRunning: !isTaskCompleted(task.status),
+            })
+
+            // 如果任务未完成，开始轮询
+            if (!isTaskCompleted(task.status)) {
+              pollTask(task.id)
+            }
+
+            return task
           }
-          
-          return task;
+        } else {
+          const errorMessage = handleApiError(response)
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: errorMessage,
+            success: false,
+          }))
         }
-      } else {
-        const errorMessage = handleApiError(response);
+      } catch (error) {
+        if (!isMountedRef.current) return null
+
+        const errorMessage = handleApiError(error)
         setState(prev => ({
           ...prev,
           loading: false,
           error: errorMessage,
           success: false,
-        }));
+        }))
       }
-    } catch (error) {
-      if (!isMountedRef.current) return null;
 
-      const errorMessage = handleApiError(error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-        success: false,
-      }));
-    }
+      return null
+    },
+    [],
+  )
 
-    return null;
-  }, []);
-
-  const pollTask = useCallback(async (
-    taskId: string, 
-    pollInterval: number = 1000
-  ): Promise<AsyncTask | null> => {
-    // 清除之前的轮询
-    if (pollTimerRef.current) {
-      clearTimeout(pollTimerRef.current);
-    }
-
-    if (!isMountedRef.current || taskId !== currentTaskRef.current) {
-      return null;
-    }
-
-    try {
-      // 这里需要注入具体的任务状态查询服务
-      // const response = await systemService.getTask(taskId);
-      // 暂时模拟实现
-      const response: ApiResponse<AsyncTask> = {
-        success: true,
-        data: {
-          id: taskId,
-          task_type: 'scan',
-          status: 'running',
-          progress: 50,
-          created_at: new Date().toISOString(),
-        }
-      };
+  const pollTask = useCallback(
+    async (taskId: string, pollInterval: number = 1000): Promise<AsyncTask | null> => {
+      // 清除之前的轮询
+      if (pollTimerRef.current) {
+        clearTimeout(pollTimerRef.current)
+      }
 
       if (!isMountedRef.current || taskId !== currentTaskRef.current) {
-        return null;
+        return null
       }
 
-      if (isApiSuccess(response)) {
-        const task = getApiData<AsyncTask>(response);
-        if (task) {
-          const isCompleted = isTaskCompleted(task.status);
-          
-          setState(prev => ({
-            ...prev,
-            data: task,
-            progress: task.progress || prev.progress,
-            isCompleted,
-            isRunning: !isCompleted,
-            error: task.error || null,
-          }));
-
-          // 如果任务未完成，继续轮询
-          if (!isCompleted) {
-            pollTimerRef.current = setTimeout(() => {
-              pollTask(taskId, pollInterval);
-            }, pollInterval);
-          }
-
-          return task;
+      try {
+        // 这里需要注入具体的任务状态查询服务
+        // const response = await systemService.getTask(taskId);
+        // 暂时模拟实现
+        const response: ApiResponse<AsyncTask> = {
+          success: true,
+          data: {
+            id: taskId,
+            task_type: 'scan',
+            status: 'running',
+            progress: 50,
+            created_at: new Date().toISOString(),
+          },
         }
-      }
-    } catch (error) {
-      console.error('Task polling error:', error);
-    }
 
-    return null;
-  }, []);
+        if (!isMountedRef.current || taskId !== currentTaskRef.current) {
+          return null
+        }
+
+        if (isApiSuccess(response)) {
+          const task = getApiData<AsyncTask>(response)
+          if (task) {
+            const isCompleted = isTaskCompleted(task.status)
+
+            setState(prev => ({
+              ...prev,
+              data: task,
+              progress: task.progress || prev.progress,
+              isCompleted,
+              isRunning: !isCompleted,
+              error: task.error || null,
+            }))
+
+            // 如果任务未完成，继续轮询
+            if (!isCompleted) {
+              pollTimerRef.current = setTimeout(() => {
+                pollTask(taskId, pollInterval)
+              }, pollInterval)
+            }
+
+            return task
+          }
+        }
+      } catch (error) {
+        console.error('Task polling error:', error)
+      }
+
+      return null
+    },
+    [],
+  )
 
   const cancelTask = useCallback(() => {
     if (pollTimerRef.current) {
-      clearTimeout(pollTimerRef.current);
-      pollTimerRef.current = null;
+      clearTimeout(pollTimerRef.current)
+      pollTimerRef.current = null
     }
-    currentTaskRef.current = null;
+    currentTaskRef.current = null
     setState(prev => ({
       ...prev,
       loading: false,
       isRunning: false,
-    }));
-  }, []);
+    }))
+  }, [])
 
   const reset = useCallback(() => {
-    cancelTask();
+    cancelTask()
     setState({
       data: null,
       loading: false,
@@ -313,8 +314,8 @@ export function useAsyncTask(): TaskState & {
       taskId: null,
       isCompleted: false,
       isRunning: false,
-    });
-  }, [cancelTask]);
+    })
+  }, [cancelTask])
 
   return {
     ...state,
@@ -322,22 +323,26 @@ export function useAsyncTask(): TaskState & {
     pollTask,
     cancelTask,
     reset,
-  };
+  }
 }
 
 /**
  * 分页数据 Hook
  */
 export function usePaginatedApi<T = any>(
-  apiCall?: (params: any) => Promise<ApiResponse<{ items: T[]; total: number; page: number; page_size: number; total_pages: number }>>,
+  apiCall?: (
+    params: any,
+  ) => Promise<
+    ApiResponse<{ items: T[]; total: number; page: number; page_size: number; total_pages: number }>
+  >,
   initialPage: number = 1,
-  initialPageSize: number = 20
+  initialPageSize: number = 20,
 ): PaginatedState<T> & {
-  loadPage: (page: number) => Promise<T[] | null>;
-  loadMore: () => Promise<T[] | null>;
-  refresh: () => Promise<T[] | null>;
-  setPageSize: (size: number) => void;
-  reset: () => void;
+  loadPage: (page: number) => Promise<T[] | null>
+  loadMore: () => Promise<T[] | null>
+  refresh: () => Promise<T[] | null>
+  setPageSize: (size: number) => void
+  reset: () => void
 } {
   const [state, setState] = useState<PaginatedState<T>>({
     data: [],
@@ -349,83 +354,86 @@ export function usePaginatedApi<T = any>(
     pageSize: initialPageSize,
     totalPages: 0,
     hasMore: false,
-  });
+  })
 
-  const isMountedRef = useRef(true);
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
-    isMountedRef.current = true;
+    isMountedRef.current = true
     return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+      isMountedRef.current = false
+    }
+  }, [])
 
-  const loadPage = useCallback(async (page: number): Promise<T[] | null> => {
-    if (!apiCall) return null;
+  const loadPage = useCallback(
+    async (page: number): Promise<T[] | null> => {
+      if (!apiCall) return null
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
-    try {
-      const response = await apiCall({
-        page,
-        page_size: state.pageSize,
-      });
+      try {
+        const response = await apiCall({
+          page,
+          page_size: state.pageSize,
+        })
 
-      if (!isMountedRef.current) return null;
+        if (!isMountedRef.current) return null
 
-      if (isApiSuccess(response)) {
-        const data = getApiData(response);
-        if (data) {
-          const newState: PaginatedState<T> = {
-            data: data.items || [],
+        if (isApiSuccess(response)) {
+          const data = getApiData(response)
+          if (data) {
+            const newState: PaginatedState<T> = {
+              data: data.items || [],
+              loading: false,
+              error: null,
+              success: true,
+              total: data.total || 0,
+              page: data.page || page,
+              pageSize: data.page_size || state.pageSize,
+              totalPages: data.total_pages || 0,
+              hasMore: (data.page || page) < (data.total_pages || 0),
+            }
+            setState(newState)
+            return data.items || []
+          }
+        } else {
+          const errorMessage = handleApiError(response)
+          setState(prev => ({
+            ...prev,
             loading: false,
-            error: null,
-            success: true,
-            total: data.total || 0,
-            page: data.page || page,
-            pageSize: data.page_size || state.pageSize,
-            totalPages: data.total_pages || 0,
-            hasMore: (data.page || page) < (data.total_pages || 0),
-          };
-          setState(newState);
-          return data.items || [];
+            error: errorMessage,
+            success: false,
+          }))
         }
-      } else {
-        const errorMessage = handleApiError(response);
+      } catch (error) {
+        if (!isMountedRef.current) return null
+
+        const errorMessage = handleApiError(error)
         setState(prev => ({
           ...prev,
           loading: false,
           error: errorMessage,
           success: false,
-        }));
+        }))
       }
-    } catch (error) {
-      if (!isMountedRef.current) return null;
 
-      const errorMessage = handleApiError(error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-        success: false,
-      }));
-    }
-
-    return null;
-  }, [apiCall, state.pageSize]);
+      return null
+    },
+    [apiCall, state.pageSize],
+  )
 
   const loadMore = useCallback(async (): Promise<T[] | null> => {
-    if (!state.hasMore) return null;
-    return loadPage(state.page + 1);
-  }, [loadPage, state.hasMore, state.page]);
+    if (!state.hasMore) return null
+    return loadPage(state.page + 1)
+  }, [loadPage, state.hasMore, state.page])
 
   const refresh = useCallback(async (): Promise<T[] | null> => {
-    return loadPage(state.page);
-  }, [loadPage, state.page]);
+    return loadPage(state.page)
+  }, [loadPage, state.page])
 
   const setPageSize = useCallback((size: number) => {
-    setState(prev => ({ ...prev, pageSize: size, page: 1 }));
-  }, []);
+    setState(prev => ({ ...prev, pageSize: size, page: 1 }))
+  }, [])
 
   const reset = useCallback(() => {
     setState({
@@ -438,8 +446,8 @@ export function usePaginatedApi<T = any>(
       pageSize: initialPageSize,
       totalPages: 0,
       hasMore: false,
-    });
-  }, [initialPage, initialPageSize]);
+    })
+  }, [initialPage, initialPageSize])
 
   return {
     ...state,
@@ -448,7 +456,7 @@ export function usePaginatedApi<T = any>(
     refresh,
     setPageSize,
     reset,
-  };
+  }
 }
 
 /**
@@ -457,26 +465,26 @@ export function usePaginatedApi<T = any>(
 export function useDebouncedApi<T = any>(
   apiCall: () => Promise<ApiResponse<T>>,
   delay: number = 300,
-  deps: React.DependencyList = []
+  deps: React.DependencyList = [],
 ): ApiState<T> {
-  const { data, loading, error, success, execute } = useApi(apiCall, false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { data, loading, error, success, execute } = useApi(apiCall, false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (timerRef.current) {
-      clearTimeout(timerRef.current);
+      clearTimeout(timerRef.current)
     }
 
     timerRef.current = setTimeout(() => {
-      execute();
-    }, delay);
+      execute()
+    }, delay)
 
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearTimeout(timerRef.current)
       }
-    };
-  }, [...deps, execute, delay]);
+    }
+  }, [...deps, execute, delay])
 
-  return { data, loading, error, success };
+  return { data, loading, error, success }
 }

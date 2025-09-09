@@ -1,15 +1,15 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
+import React from 'react'
+import { Box, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 
 interface MinecraftProgressProps {
-  value: number;
-  max?: number;
-  label?: string;
-  variant?: 'experience' | 'health' | 'hunger' | 'armor' | 'loading';
-  showValue?: boolean;
-  animated?: boolean;
-  size?: 'small' | 'medium' | 'large';
+  value: number
+  max?: number
+  label?: string
+  variant?: 'experience' | 'health' | 'hunger' | 'armor' | 'loading'
+  showValue?: boolean
+  animated?: boolean
+  size?: 'small' | 'medium' | 'large'
 }
 
 export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
@@ -21,7 +21,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
   animated = true,
   size = 'medium',
 }) => {
-  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+  const percentage = Math.min(100, Math.max(0, (value / max) * 100))
 
   const getVariantStyles = () => {
     switch (variant) {
@@ -32,7 +32,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
           borderColor: '#2A0505',
           glowColor: '#FF0000',
           icon: '❤️',
-        };
+        }
       case 'hunger':
         return {
           barColor: 'linear-gradient(180deg, #D2691E 0%, #A0522D 50%, #8B4513 100%)',
@@ -40,7 +40,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
           borderColor: '#2E1A17',
           glowColor: '#D2691E',
           icon: '🍖',
-        };
+        }
       case 'armor':
         return {
           barColor: 'linear-gradient(180deg, #C0C0C0 0%, #808080 50%, #696969 100%)',
@@ -48,7 +48,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
           borderColor: '#1B1B1B',
           glowColor: '#C0C0C0',
           icon: '🛡️',
-        };
+        }
       case 'loading':
         return {
           barColor: 'linear-gradient(180deg, #4FC3F7 0%, #29B6F6 50%, #039BE5 100%)',
@@ -56,7 +56,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
           borderColor: '#014A8F',
           glowColor: '#29B6F6',
           icon: '⚙️',
-        };
+        }
       case 'experience':
       default:
         return {
@@ -65,24 +65,24 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
           borderColor: '#0D3E10',
           glowColor: '#7CB342',
           icon: '⭐',
-        };
+        }
     }
-  };
+  }
 
   const getSizeStyles = () => {
     switch (size) {
       case 'small':
-        return { height: 8, fontSize: '10px', padding: '2px 4px' };
+        return { height: 8, fontSize: '10px', padding: '2px 4px' }
       case 'large':
-        return { height: 24, fontSize: '16px', padding: '4px 12px' };
+        return { height: 24, fontSize: '16px', padding: '4px 12px' }
       case 'medium':
       default:
-        return { height: 16, fontSize: '12px', padding: '3px 8px' };
+        return { height: 16, fontSize: '12px', padding: '3px 8px' }
     }
-  };
+  }
 
-  const styles = getVariantStyles();
-  const sizeStyles = getSizeStyles();
+  const styles = getVariantStyles()
+  const sizeStyles = getSizeStyles()
 
   return (
     <Box sx={{ width: '100%', position: 'relative' }}>
@@ -275,7 +275,7 @@ export const MinecraftProgress: React.FC<MinecraftProgressProps> = ({
         </Box>
       )}
     </Box>
-  );
-};
+  )
+}
 
-export default MinecraftProgress;
+export default MinecraftProgress
