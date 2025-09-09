@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Typography,
@@ -91,35 +91,56 @@ export default function ProjectPageMinecraft() {
     version: '1.20.1',
   })
 
+  // 稳定的状态更新回调
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }, [])
+
+  const handleNewProjectNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewProject(prev => ({ ...prev, name: e.target.value }))
+  }, [])
+
+  const handleNewProjectDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewProject(prev => ({ ...prev, description: e.target.value }))
+  }, [])
+
+  const handleNewProjectPathChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewProject(prev => ({ ...prev, path: e.target.value }))
+  }, [])
+
   // 从API加载真实项目数据
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        // 获取最新扫描结果
-        const response = await fetch('http://localhost:18000/api/v1/scans/latest')
+        // 获取所有扫描历史
+        const response = await fetch('http://localhost:18000/api/v1/scans/history')
         const data = await response.json()
 
-        if (data.success && data.data) {
+        if (data.success && data.data && Array.isArray(data.data)) {
           // 将扫描数据转换为项目格式
-          const project: Project = {
-            id: data.data.scan_id,
-            name: data.data.directory?.split('/').pop() || '未知项目',
-            description: `包含 ${data.data.statistics?.total_mods || 0} 个模组的项目`,
-            path: data.data.directory || '',
-            modCount: data.data.statistics?.total_mods || 0,
-            langFileCount: data.data.statistics?.total_language_files || 0,
-            totalKeys: data.data.statistics?.total_keys || 0,
-            translatedKeys: data.data.statistics?.total_keys || 0, // 暂时假设全部已翻译，避免NaN
-            status: 'active' as 'active' | 'paused' | 'completed',
+          const projectList: Project[] = data.data.map((scan: any) => ({
+            id: scan.scan_id,
+            name: scan.project_path?.split('/').pop() || scan.project_path?.split('\\').pop() || '未知项目',
+            description: `包含 ${scan.total_mods || 0} 个模组的项目`,
+            path: scan.project_path || '',
+            modCount: scan.total_mods || 0,
+            langFileCount: scan.total_language_files || 0,
+            totalKeys: scan.total_keys || 0,
+            translatedKeys: Math.floor((scan.total_keys || 0) * 0.6), // 模拟 60% 翻译率
+            status: 'completed' as 'active' | 'paused' | 'completed',
             favorite: false,
-            createdAt: data.data.completed_at || new Date().toISOString(),
-            updatedAt: data.data.completed_at || new Date().toISOString(),
+            createdAt: scan.started_at || new Date().toISOString(),
+            updatedAt: scan.completed_at || new Date().toISOString(),
             author: 'User',
             version: '1.20.1',
-            tags: [],
-          }
+            tags: [scan.scan_type || '扫描'],
+          }))
 
-          setProjects([project])
+          setProjects(projectList)
+          console.log(`加载了 ${projectList.length} 个扫描项目`)
+        } else {
+          console.warn('没有找到扫描历史数据')
+          setProjects([])
         }
       } catch (error) {
         console.error('加载项目数据失败:', error)
@@ -287,7 +308,7 @@ export default function ProjectPageMinecraft() {
             fullWidth
             placeholder='搜索项目...'
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             InputProps={{
               startAdornment: (
                 <InputAdornment position='start'>
@@ -881,7 +902,7 @@ export default function ProjectPageMinecraft() {
                 fullWidth
                 label='项目名称'
                 value={newProject.name}
-                onChange={e => setNewProject({ ...newProject, name: e.target.value })}
+                onChange={handleNewProjectNameChange}
                 InputLabelProps={{
                   sx: {
                     fontFamily: '"Minecraft", monospace',
@@ -908,7 +929,7 @@ export default function ProjectPageMinecraft() {
                 multiline
                 rows={3}
                 value={newProject.description}
-                onChange={e => setNewProject({ ...newProject, description: e.target.value })}
+                onChange={handleNewProjectDescriptionChange}
                 InputLabelProps={{
                   sx: {
                     fontFamily: '"Minecraft", monospace',
@@ -934,7 +955,7 @@ export default function ProjectPageMinecraft() {
                   fullWidth
                   label='项目路径'
                   value={newProject.path}
-                  onChange={e => setNewProject({ ...newProject, path: e.target.value })}
+                  onChange={handleNewProjectPathChange}
                   InputLabelProps={{
                     sx: {
                       fontFamily: '"Minecraft", monospace',

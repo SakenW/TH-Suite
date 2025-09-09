@@ -4,6 +4,7 @@
 """
 
 import hashlib
+import blake3
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -116,14 +117,16 @@ class ContentHash:
     """内容哈希值对象"""
 
     value: str
-    algorithm: str = "sha256"
+    algorithm: str = "blake3"
 
     def __post_init__(self):
         if not self.value:
             raise ValueError("Hash value cannot be empty")
 
         # 验证哈希格式
-        if self.algorithm == "sha256" and len(self.value) != 64:
+        if self.algorithm == "blake3" and len(self.value) != 64:
+            raise ValueError("Invalid BLAKE3 hash length")
+        elif self.algorithm == "sha256" and len(self.value) != 64:
             raise ValueError("Invalid SHA256 hash length")
         elif self.algorithm == "md5" and len(self.value) != 32:
             raise ValueError("Invalid MD5 hash length")
@@ -132,20 +135,25 @@ class ContentHash:
         object.__setattr__(self, "value", self.value.lower())
 
     @classmethod
-    def from_content(cls, content: bytes, algorithm: str = "sha256") -> "ContentHash":
+    def from_content(cls, content: bytes, algorithm: str = "blake3") -> "ContentHash":
         """从内容生成哈希"""
-        if algorithm == "sha256":
+        if algorithm == "blake3":
+            hasher = blake3.blake3()
+            hasher.update(content)
+            return cls(hasher.hexdigest(), algorithm)
+        elif algorithm == "sha256":
             hash_obj = hashlib.sha256()
+            hash_obj.update(content)
+            return cls(hash_obj.hexdigest(), algorithm)
         elif algorithm == "md5":
             hash_obj = hashlib.md5()
+            hash_obj.update(content)
+            return cls(hash_obj.hexdigest(), algorithm)
         else:
             raise ValueError(f"Unsupported algorithm: {algorithm}")
 
-        hash_obj.update(content)
-        return cls(hash_obj.hexdigest(), algorithm)
-
     @classmethod
-    def from_file(cls, file_path: str, algorithm: str = "sha256") -> "ContentHash":
+    def from_file(cls, file_path: str, algorithm: str = "blake3") -> "ContentHash":
         """从文件生成哈希"""
         with open(file_path, "rb") as f:
             return cls.from_content(f.read(), algorithm)

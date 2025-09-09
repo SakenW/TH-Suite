@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -22,12 +22,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Tooltip,
   CircularProgress,
@@ -68,6 +62,8 @@ import toast from 'react-hot-toast'
 import { useAppStore } from '@stores/appStore'
 import { apiService } from '@services/apiService'
 import { useMcStudioTranslation } from '@hooks/useTranslation'
+import { DataTable } from '../components/ui/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
 
 interface IntegrityCheckResult {
   id: string
@@ -150,6 +146,161 @@ function SecurityPage() {
   // 对话框状态
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null)
   const [selectedLicense, setSelectedLicense] = useState<LicenseRecord | null>(null)
+
+  // 表格列定义
+  const integrityColumns = useMemo<ColumnDef<IntegrityCheckResult>[]>(() => [
+    {
+      accessorKey: 'is_valid',
+      header: t('security.integrity.status'),
+      cell: ({ row }) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {getStatusIcon(row.original.is_valid)}
+          <Chip
+            label={row.original.is_valid ? t('security.status.valid') : t('security.status.invalid')}
+            color={row.original.is_valid ? 'success' : 'error'}
+            size='small'
+          />
+        </Box>
+      ),
+    },
+    {
+      accessorKey: 'file_path',
+      header: t('security.integrity.filePath'),
+      cell: ({ row }) => (
+        <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
+          {row.original.file_path}
+        </Typography>
+      ),
+    },
+    {
+      accessorKey: 'algorithm',
+      header: t('security.integrity.algorithm'),
+    },
+    {
+      accessorKey: 'file_size',
+      header: t('security.integrity.fileSize'),
+      cell: ({ row }) => `${(row.original.file_size / 1024).toFixed(1)} KB`,
+    },
+    {
+      accessorKey: 'check_time',
+      header: t('security.integrity.checkTime'),
+      cell: ({ row }) => new Date(row.original.check_time).toLocaleString(),
+    },
+    {
+      id: 'actions',
+      header: t('security.actions.actions'),
+      cell: () => (
+        <Tooltip title={t('security.actions.viewDetails')}>
+          <IconButton size='small'>
+            <Eye size={16} />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
+  ], [t])
+
+  const licenseColumns = useMemo<ColumnDef<LicenseRecord>[]>(() => [
+    {
+      accessorKey: 'asset_id',
+      header: t('security.license.assetId'),
+      cell: ({ row }) => (
+        <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
+          {row.original.asset_id}
+        </Typography>
+      ),
+    },
+    {
+      accessorKey: 'source_platform',
+      header: t('security.license.platform'),
+      cell: ({ row }) => (
+        <Chip label={row.original.source_platform} size='small' variant='outlined' />
+      ),
+    },
+    {
+      accessorKey: 'license_type',
+      header: t('security.license.type'),
+      cell: ({ row }) => (
+        <Chip label={row.original.license_type} size='small' />
+      ),
+    },
+    {
+      id: 'permissions',
+      header: t('security.license.permissions'),
+      cell: ({ row }) => {
+        const permissions = []
+        if (row.original.commercial_use_allowed) permissions.push(t('security.license.commercial'))
+        if (row.original.modification_allowed) permissions.push(t('security.license.modify'))
+        if (row.original.redistribution_allowed) permissions.push(t('security.license.redistribute'))
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {permissions.map(perm => (
+              <Chip key={perm} label={perm} size='small' variant='outlined' color='success' />
+            ))}
+          </Box>
+        )
+      },
+    },
+    {
+      accessorKey: 'recorded_at',
+      header: t('security.license.recordedAt'),
+      cell: ({ row }) => new Date(row.original.recorded_at).toLocaleString(),
+    },
+    {
+      id: 'actions',
+      header: t('security.actions.actions'),
+      cell: ({ row }) => (
+        <Tooltip title={t('security.actions.viewDetails')}>
+          <IconButton size='small' onClick={() => setSelectedLicense(row.original)}>
+            <Eye size={16} />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
+  ], [t])
+
+  const auditColumns = useMemo<ColumnDef<AuditLogEntry>[]>(() => [
+    {
+      accessorKey: 'event_type',
+      header: t('security.audit.eventType'),
+      cell: ({ row }) => (
+        <Chip label={row.original.event_type} size='small' variant='outlined' />
+      ),
+    },
+    {
+      accessorKey: 'action',
+      header: t('security.audit.action'),
+    },
+    {
+      accessorKey: 'result',
+      header: t('security.audit.result'),
+      cell: ({ row }) => getResultChip(row.original.result),
+    },
+    {
+      accessorKey: 'resource_id',
+      header: t('security.audit.resource'),
+      cell: ({ row }) => (
+        <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
+          {row.original.resource_id || '-'}
+        </Typography>
+      ),
+    },
+    {
+      accessorKey: 'timestamp',
+      header: t('security.audit.timestamp'),
+      cell: ({ row }) => new Date(row.original.timestamp).toLocaleString(),
+    },
+    {
+      id: 'actions',
+      header: t('security.actions.actions'),
+      cell: ({ row }) => (
+        <Tooltip title={t('security.actions.viewDetails')}>
+          <IconButton size='small' onClick={() => setSelectedLog(row.original)}>
+            <Eye size={16} />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
+  ], [t])
 
   // 加载安全统计
   const loadSecurityStats = async () => {
@@ -557,207 +708,59 @@ function SecurityPage() {
 
             {/* 完整性检查结果 */}
             {activeTab === 0 && (
-              <TableContainer component={Paper} variant='outlined'>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('security.integrity.status')}</TableCell>
-                      <TableCell>{t('security.integrity.filePath')}</TableCell>
-                      <TableCell>{t('security.integrity.algorithm')}</TableCell>
-                      <TableCell>{t('security.integrity.fileSize')}</TableCell>
-                      <TableCell>{t('security.integrity.checkTime')}</TableCell>
-                      <TableCell align='right'>{t('security.actions.actions')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {loading.integrity ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          <CircularProgress />
-                        </TableCell>
-                      </TableRow>
-                    ) : filteredIntegrityResults.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          {t('security.messages.noData')}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredIntegrityResults.map(result => (
-                        <TableRow key={result.id}>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {getStatusIcon(result.is_valid)}
-                              <Chip
-                                label={
-                                  result.is_valid
-                                    ? t('security.status.valid')
-                                    : t('security.status.invalid')
-                                }
-                                color={result.is_valid ? 'success' : 'error'}
-                                size='small'
-                              />
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
-                              {result.file_path}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>{result.algorithm}</TableCell>
-                          <TableCell>{(result.file_size / 1024).toFixed(1)} KB</TableCell>
-                          <TableCell>{new Date(result.check_time).toLocaleString()}</TableCell>
-                          <TableCell align='right'>
-                            <Tooltip title={t('security.actions.viewDetails')}>
-                              <IconButton size='small'>
-                                <Eye size={16} />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Paper variant='outlined' sx={{ p: 2 }}>
+                {loading.integrity ? (
+                  <Box display='flex' justifyContent='center' py={4}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <DataTable
+                    columns={integrityColumns}
+                    data={filteredIntegrityResults}
+                    enableSorting
+                    enableVirtualization={filteredIntegrityResults.length > 50}
+                    maxHeight={400}
+                  />
+                )}
+              </Paper>
             )}
 
             {/* 许可记录 */}
             {activeTab === 1 && (
-              <TableContainer component={Paper} variant='outlined'>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('security.license.assetId')}</TableCell>
-                      <TableCell>{t('security.license.platform')}</TableCell>
-                      <TableCell>{t('security.license.type')}</TableCell>
-                      <TableCell>{t('security.license.permissions')}</TableCell>
-                      <TableCell>{t('security.license.recordedAt')}</TableCell>
-                      <TableCell align='right'>{t('security.actions.actions')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {loading.licenses ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          <CircularProgress />
-                        </TableCell>
-                      </TableRow>
-                    ) : filteredLicenseRecords.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          {t('security.messages.noData')}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredLicenseRecords.map(record => (
-                        <TableRow key={record.id}>
-                          <TableCell>
-                            <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
-                              {record.asset_id}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={record.source_platform} size='small' />
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={record.license_type} color='primary' size='small' />
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                              {record.commercial_use_allowed && (
-                                <Chip
-                                  label={t('security.license.commercial')}
-                                  size='small'
-                                  color='success'
-                                />
-                              )}
-                              {record.modification_allowed && (
-                                <Chip
-                                  label={t('security.license.modify')}
-                                  size='small'
-                                  color='info'
-                                />
-                              )}
-                              {record.redistribution_allowed && (
-                                <Chip
-                                  label={t('security.license.redistribute')}
-                                  size='small'
-                                  color='secondary'
-                                />
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell>{new Date(record.recorded_at).toLocaleString()}</TableCell>
-                          <TableCell align='right'>
-                            <Tooltip title={t('security.actions.viewLicense')}>
-                              <IconButton size='small' onClick={() => setSelectedLicense(record)}>
-                                <Eye size={16} />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Paper variant='outlined' sx={{ p: 2 }}>
+                {loading.licenses ? (
+                  <Box display='flex' justifyContent='center' py={4}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <DataTable
+                    columns={licenseColumns}
+                    data={filteredLicenseRecords}
+                    enableSorting
+                    enableVirtualization={filteredLicenseRecords.length > 50}
+                    maxHeight={400}
+                  />
+                )}
+              </Paper>
             )}
 
             {/* 审计日志 */}
             {activeTab === 2 && (
-              <TableContainer component={Paper} variant='outlined'>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('security.audit.eventType')}</TableCell>
-                      <TableCell>{t('security.audit.action')}</TableCell>
-                      <TableCell>{t('security.audit.result')}</TableCell>
-                      <TableCell>{t('security.audit.resource')}</TableCell>
-                      <TableCell>{t('security.audit.timestamp')}</TableCell>
-                      <TableCell align='right'>{t('security.actions.actions')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {loading.audit ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          <CircularProgress />
-                        </TableCell>
-                      </TableRow>
-                    ) : filteredAuditLogs.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align='center'>
-                          {t('security.messages.noData')}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredAuditLogs.map(log => (
-                        <TableRow key={log.id}>
-                          <TableCell>
-                            <Chip label={log.event_type} size='small' />
-                          </TableCell>
-                          <TableCell>{log.action}</TableCell>
-                          <TableCell>{getResultChip(log.result)}</TableCell>
-                          <TableCell>
-                            <Typography variant='body2'>
-                              {log.resource_type}: {log.resource_id}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
-                          <TableCell align='right'>
-                            <Tooltip title={t('security.actions.viewLog')}>
-                              <IconButton size='small' onClick={() => setSelectedLog(log)}>
-                                <Eye size={16} />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Paper variant='outlined' sx={{ p: 2 }}>
+                {loading.audit ? (
+                  <Box display='flex' justifyContent='center' py={4}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <DataTable
+                    columns={auditColumns}
+                    data={filteredAuditLogs}
+                    enableSorting
+                    enableVirtualization={filteredAuditLogs.length > 50}
+                    maxHeight={400}
+                  />
+                )}
+              </Paper>
             )}
           </CardContent>
         </Card>

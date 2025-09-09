@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Alert,
   Box,
@@ -23,12 +23,6 @@ import {
   MenuItem,
   Paper,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Tooltip,
   Typography,
@@ -59,6 +53,8 @@ import toast from 'react-hot-toast'
 import { useAppStore } from '@stores/appStore'
 import { apiService } from '@services/apiService'
 import { useMcStudioTranslation } from '@hooks/useTranslation'
+import { DataTable } from '../components/ui/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
 
 interface ServerStatus {
   status: 'healthy' | 'unhealthy' | 'unreachable'
@@ -116,6 +112,48 @@ function ServerPage() {
   const [serverUrl, setServerUrl] = useState('https://api.mc-studio.com')
   const [showServerDialog, setShowServerDialog] = useState(false)
   const [tempServerUrl, setTempServerUrl] = useState('')
+
+  // 表格列定义
+  const cacheColumns = useMemo<ColumnDef<CacheInfo>[]>(() => [
+    {
+      accessorKey: 'type',
+      header: t('server.cache.type'),
+    },
+    {
+      accessorKey: 'size',
+      header: t('server.cache.size'),
+    },
+    {
+      accessorKey: 'entries',
+      header: t('server.cache.entries'),
+    },
+    {
+      accessorKey: 'hit_rate',
+      header: t('server.cache.hitRate'),
+      cell: ({ row }) => row.original.hit_rate ? `${row.original.hit_rate.toFixed(1)}%` : '-',
+    },
+    {
+      accessorKey: 'last_updated',
+      header: t('server.languages.lastUpdated'),
+      cell: ({ row }) => new Date(row.original.last_updated).toLocaleDateString(),
+    },
+    {
+      id: 'actions',
+      header: t('server.actions.actions'),
+      cell: ({ row }) => (
+        <Tooltip title={t('server.actions.clearCache')}>
+          <IconButton
+            size='small'
+            onClick={() => clearCache(row.original.type)}
+            color='error'
+          >
+            <Trash2 size={16} />
+          </IconButton>
+        </Tooltip>
+      ),
+      enableSorting: false,
+    },
+  ], [t])
 
   // 检查服务器状态
   const checkServerStatus = async () => {
@@ -664,46 +702,12 @@ function ServerPage() {
                     <Typography>{t('server.cache.loading')}</Typography>
                   </Box>
                 ) : (
-                  <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
-                    <Table stickyHeader>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>{t('server.cache.type')}</TableCell>
-                          <TableCell align='right'>{t('server.cache.size')}</TableCell>
-                          <TableCell align='right'>{t('server.cache.entries')}</TableCell>
-                          <TableCell align='right'>{t('server.cache.hitRate')}</TableCell>
-                          <TableCell align='right'>{t('server.languages.lastUpdated')}</TableCell>
-                          <TableCell align='right'>{t('server.actions.actions')}</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {cacheInfo.map(cache => (
-                          <TableRow key={cache.type}>
-                            <TableCell>{cache.type}</TableCell>
-                            <TableCell align='right'>{cache.size}</TableCell>
-                            <TableCell align='right'>{cache.entries}</TableCell>
-                            <TableCell align='right'>
-                              {cache.hit_rate ? `${cache.hit_rate.toFixed(1)}%` : '-'}
-                            </TableCell>
-                            <TableCell align='right'>
-                              {new Date(cache.last_updated).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell align='right'>
-                              <Tooltip title={t('server.actions.clearCache')}>
-                                <IconButton
-                                  size='small'
-                                  onClick={() => clearCache(cache.type)}
-                                  color='error'
-                                >
-                                  <Trash2 size={16} />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <DataTable
+                    columns={cacheColumns}
+                    data={cacheInfo}
+                    enableSorting
+                    maxHeight={400}
+                  />
                 )}
               </CardContent>
             </Card>

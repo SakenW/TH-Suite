@@ -11,8 +11,10 @@ export interface ServiceDefinition<T = any> {
 
 export interface ServiceRegistry {
   apiClient: ServiceDefinition
+  v6ApiClient: ServiceDefinition
   projectService: ServiceDefinition
   scanService: ServiceDefinition
+  localDataService: ServiceDefinition
 }
 
 export interface ServiceResult<T = any> {

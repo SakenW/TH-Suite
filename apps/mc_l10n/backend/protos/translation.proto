@@ -1,0 +1,408 @@
+syntax = "proto3";
+
+package mc_l10n;
+
+option java_package = "com.th_suite.mc_l10n.proto";
+option java_outer_classname = "TranslationProtos";
+
+// 翻译条目消息
+message TranslationEntry {
+    string uid = 1;
+    string key = 2;
+    string locale = 3;
+    string src_text = 4;
+    string dst_text = 5;
+    string status = 6;
+    
+    // 时间戳 (Unix timestamp)
+    int64 created_at = 7;
+    int64 updated_at = 8;
+    
+    // 关联信息
+    string language_file_uid = 9;
+    string pack_uid = 10;
+    
+    // 元数据
+    map<string, string> metadata = 11;
+    
+    // 可选字段
+    optional string notes = 12;
+    optional string translator = 13;
+    optional int32 version = 14;
+}
+
+// 翻译条目批次
+message TranslationBatch {
+    repeated TranslationEntry entries = 1;
+    
+    // 批次信息
+    string batch_id = 2;
+    int64 timestamp = 3;
+    string source = 4;
+    int32 total_entries = 5;
+    
+    // 批次元数据
+    map<string, string> metadata = 6;
+}
+
+// 语言文件消息
+message LanguageFile {
+    string uid = 1;
+    string filename = 2;
+    string locale = 3;
+    string format = 4;  // json, properties, lang, etc.
+    
+    // 文件信息
+    int64 size = 5;
+    string hash = 6;  // BLAKE3 hash
+    int64 last_modified = 7;
+    
+    // 关联信息
+    string pack_uid = 8;
+    
+    // 翻译条目数量
+    int32 entry_count = 9;
+    
+    // 元数据
+    map<string, string> metadata = 10;
+}
+
+// 模组/资源包消息
+message Pack {
+    string uid = 1;
+    string name = 2;
+    string type = 3;  // mod, resource_pack, data_pack
+    string version = 4;
+    
+    // 路径信息
+    string path = 5;
+    string filename = 6;
+    
+    // 文件信息
+    int64 size = 7;
+    string hash = 8;  // BLAKE3 hash
+    int64 last_modified = 9;
+    
+    // 语言文件
+    repeated LanguageFile language_files = 10;
+    
+    // 统计信息
+    int32 total_translations = 11;
+    int32 translated_count = 12;
+    
+    // 元数据
+    map<string, string> metadata = 13;
+}
+
+// 同步协议消息
+
+// Bloom过滤器
+message BloomFilter {
+    bytes data = 1;
+    int32 hash_count = 2;
+    int32 bit_count = 3;
+    repeated string hash_functions = 4;
+}
+
+// 同步请求
+message SyncRequest {
+    string session_id = 1;
+    string client_id = 2;
+    string locale = 3;
+    
+    // Bloom过滤器用于快速比较
+    BloomFilter client_bloom = 4;
+    
+    // 请求的数据范围
+    repeated string pack_uids = 5;
+    int64 since_timestamp = 6;
+    
+    // 压缩选项
+    string compression = 7;  // none, gzip, zstd, brotli
+    
+    // 元数据
+    map<string, string> metadata = 8;
+}
+
+// 同步响应
+message SyncResponse {
+    string session_id = 1;
+    SyncStatus status = 2;
+    
+    // 数据增量
+    repeated TranslationEntry added_entries = 3;
+    repeated TranslationEntry updated_entries = 4;
+    repeated string deleted_entry_uids = 5;
+    
+    // 服务器Bloom过滤器
+    BloomFilter server_bloom = 6;
+    
+    // 分页信息
+    string next_cursor = 7;
+    bool has_more = 8;
+    
+    // 统计信息
+    int32 total_changes = 9;
+    int64 server_timestamp = 10;
+    
+    // 错误信息
+    repeated SyncError errors = 11;
+    
+    // 元数据
+    map<string, string> metadata = 12;
+}
+
+// 同步状态
+enum SyncStatus {
+    SYNC_UNKNOWN = 0;
+    SYNC_SUCCESS = 1;
+    SYNC_PARTIAL = 2;
+    SYNC_CONFLICT = 3;
+    SYNC_ERROR = 4;
+    SYNC_RATE_LIMITED = 5;
+}
+
+// 同步错误
+message SyncError {
+    string code = 1;
+    string message = 2;
+    string entry_uid = 3;
+    map<string, string> context = 4;
+}
+
+// 分块传输消息
+message DataChunk {
+    string chunk_id = 1;
+    int32 sequence = 2;
+    int32 total_chunks = 3;
+    
+    bytes data = 4;
+    string compression = 5;
+    
+    // 校验信息
+    string checksum = 6;  // BLAKE3 hash of data
+    
+    // 元数据
+    map<string, string> metadata = 7;
+}
+
+// 分块响应
+message ChunkResponse {
+    string chunk_id = 1;
+    ChunkStatus status = 2;
+    string error_message = 3;
+}
+
+enum ChunkStatus {
+    CHUNK_UNKNOWN = 0;
+    CHUNK_RECEIVED = 1;
+    CHUNK_ERROR = 2;
+    CHUNK_DUPLICATE = 3;
+}
+
+// 缓存消息
+message CacheEntry {
+    string key = 1;
+    bytes data = 2;
+    int64 created_at = 3;
+    int64 expires_at = 4;
+    
+    // 内容寻址
+    string content_id = 5;  // BLAKE3 CID
+    string compression = 6;
+    
+    // 访问统计
+    int64 access_count = 7;
+    int64 last_access = 8;
+    
+    // 元数据
+    map<string, string> metadata = 9;
+}
+
+// 性能监控消息
+message PerformanceMetrics {
+    string session_id = 1;
+    int64 timestamp = 2;
+    
+    // Bloom过滤器性能
+    BloomFilterMetrics bloom_metrics = 3;
+    
+    // 压缩性能
+    CompressionMetrics compression_metrics = 4;
+    
+    // 网络性能
+    NetworkMetrics network_metrics = 5;
+    
+    // 缓存性能
+    CacheMetrics cache_metrics = 6;
+}
+
+message BloomFilterMetrics {
+    int32 elements_checked = 1;
+    int32 filter_size_bytes = 2;
+    int32 false_positives = 3;
+    double false_positive_rate = 4;
+    double processing_time_ms = 5;
+}
+
+message CompressionMetrics {
+    string algorithm = 1;
+    int64 input_bytes = 2;
+    int64 output_bytes = 3;
+    double compression_ratio = 4;
+    double processing_time_ms = 5;
+}
+
+message NetworkMetrics {
+    int64 bytes_sent = 1;
+    int64 bytes_received = 2;
+    double latency_ms = 3;
+    double throughput_mbps = 4;
+    int32 packet_loss = 5;
+}
+
+message CacheMetrics {
+    int32 hits = 1;
+    int32 misses = 2;
+    double hit_rate = 3;
+    int64 total_size_bytes = 4;
+    int32 evictions = 5;
+}
+
+// API服务定义
+
+// 翻译服务
+service TranslationService {
+    // 获取翻译条目
+    rpc GetTranslations(GetTranslationsRequest) returns (GetTranslationsResponse);
+    
+    // 批量更新翻译
+    rpc UpdateTranslations(TranslationBatch) returns (UpdateTranslationsResponse);
+    
+    // 同步翻译数据
+    rpc SyncTranslations(SyncRequest) returns (stream SyncResponse);
+    
+    // 获取统计信息
+    rpc GetStatistics(StatisticsRequest) returns (StatisticsResponse);
+}
+
+// 文件服务
+service FileService {
+    // 扫描文件
+    rpc ScanFiles(ScanRequest) returns (stream ScanResponse);
+    
+    // 上传文件分块
+    rpc UploadChunk(DataChunk) returns (ChunkResponse);
+    
+    // 下载文件分块
+    rpc DownloadChunk(DownloadChunkRequest) returns (DataChunk);
+}
+
+// 缓存服务
+service CacheService {
+    // 获取缓存
+    rpc GetCache(CacheGetRequest) returns (CacheGetResponse);
+    
+    // 设置缓存
+    rpc SetCache(CacheSetRequest) returns (CacheSetResponse);
+    
+    // 清理缓存
+    rpc ClearCache(CacheClearRequest) returns (CacheClearResponse);
+}
+
+// 请求/响应消息
+
+message GetTranslationsRequest {
+    repeated string pack_uids = 1;
+    string locale = 2;
+    string status = 3;
+    int32 limit = 4;
+    int32 offset = 5;
+    map<string, string> filters = 6;
+}
+
+message GetTranslationsResponse {
+    repeated TranslationEntry entries = 1;
+    int32 total_count = 2;
+    bool has_more = 3;
+    string next_cursor = 4;
+}
+
+message UpdateTranslationsResponse {
+    int32 updated_count = 1;
+    int32 error_count = 2;
+    repeated SyncError errors = 3;
+}
+
+message StatisticsRequest {
+    repeated string pack_uids = 1;
+    string locale = 2;
+    int64 since_timestamp = 3;
+}
+
+message StatisticsResponse {
+    int32 total_translations = 1;
+    int32 translated_count = 2;
+    int32 pending_count = 3;
+    int32 approved_count = 4;
+    map<string, int32> status_counts = 5;
+    map<string, int32> pack_counts = 6;
+}
+
+message ScanRequest {
+    string path = 1;
+    repeated string file_patterns = 2;
+    bool recursive = 3;
+    map<string, string> options = 4;
+}
+
+message ScanResponse {
+    Pack pack = 1;
+    ScanStatus scan_status = 2;
+    string error_message = 3;
+    double progress = 4;
+}
+
+enum ScanStatus {
+    SCAN_UNKNOWN = 0;
+    SCAN_STARTED = 1;
+    SCAN_IN_PROGRESS = 2;
+    SCAN_COMPLETED = 3;
+    SCAN_ERROR = 4;
+}
+
+message DownloadChunkRequest {
+    string file_id = 1;
+    int32 chunk_sequence = 2;
+    string compression = 3;
+}
+
+message CacheGetRequest {
+    string key = 1;
+    bool include_metadata = 2;
+}
+
+message CacheGetResponse {
+    CacheEntry entry = 1;
+    bool found = 2;
+}
+
+message CacheSetRequest {
+    CacheEntry entry = 1;
+    int32 ttl_seconds = 2;
+}
+
+message CacheSetResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message CacheClearRequest {
+    repeated string keys = 1;  // 空数组表示清除所有
+    string pattern = 2;  // 支持通配符
+}
+
+message CacheClearResponse {
+    int32 cleared_count = 1;
+    bool success = 2;
+}

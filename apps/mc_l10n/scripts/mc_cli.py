@@ -40,7 +40,7 @@ class MCL10nCLI:
         self.scripts_dir = Path(__file__).parent
         self.backend_dir = self.scripts_dir.parent / "backend"
         self.frontend_dir = self.scripts_dir.parent / "frontend"
-        self.db_path = self.backend_dir / "data" / "mc_l10n.db"
+        self.db_path = self.backend_dir / "mc_l10n.db"
         self.api_url = "http://localhost:18000"
 
     # ========== 服务管理 ==========
@@ -212,7 +212,8 @@ class MCL10nCLI:
                 print(f"  缓存文件: {cache_stats.get('total_cached_files', 0)}")
                 print(f"  有效缓存: {cache_stats.get('valid_cache_entries', 0)}")
                 print(f"  过期缓存: {cache_stats.get('expired_cache_entries', 0)}")
-                cache_size = cache_stats.get("total_cache_size", 0) / 1024 / 1024
+                cache_size_bytes = cache_stats.get("total_cache_size", 0) or 0
+                cache_size = cache_size_bytes / 1024 / 1024
                 print(f"  缓存大小: {cache_size:.2f} MB")
 
             # 数据库大小
@@ -327,6 +328,62 @@ class MCL10nCLI:
 
         except Exception as e:
             print(f"{Colors.FAIL}❌ 重置失败: {e}{Colors.ENDC}")
+
+    def db_viewer(self, args):
+        """启动数据库Web查看器"""
+        if not self.db_path.exists():
+            print(f"{Colors.FAIL}❌ 数据库不存在: {self.db_path}{Colors.ENDC}")
+            print("请先进行扫描以创建数据库")
+            return
+
+        viewer_script = self.backend_dir / "tools" / "db_viewer" / "db_web_advanced.py"
+        if not viewer_script.exists():
+            print(f"{Colors.FAIL}❌ 数据库查看器不存在: {viewer_script}{Colors.ENDC}")
+            return
+
+        print(f"{Colors.OKBLUE}🚀 正在启动数据库Web查看器...{Colors.ENDC}")
+        print(f"📂 数据库: {self.db_path}")
+        print(f"🌐 Web界面: http://localhost:{args.port}")
+        print(f"📝 按 Ctrl+C 停止服务器")
+        print(f"{Colors.HEADER}{'-' * 60}{Colors.ENDC}")
+
+        try:
+            import subprocess
+            import webbrowser
+            import threading
+            import time
+
+            # 在新线程中延迟打开浏览器
+            if not args.no_browser:
+                def open_browser():
+                    time.sleep(2)
+                    try:
+                        webbrowser.open(f"http://localhost:{args.port}")
+                        print(f"{Colors.OKGREEN}🌐 已在浏览器中打开数据库查看器{Colors.ENDC}")
+                    except:
+                        print(f"{Colors.WARNING}💡 请手动打开浏览器访问: http://localhost:{args.port}{Colors.ENDC}")
+
+                browser_thread = threading.Thread(target=open_browser, daemon=True)
+                browser_thread.start()
+
+            # 启动查看器
+            cmd = [
+                "poetry", "run", "python", "db_web_advanced.py",
+                "--db", str(self.db_path.resolve()),
+                "--port", str(args.port),
+                "--host", "127.0.0.1"
+            ]
+
+            process = subprocess.run(
+                cmd,
+                cwd=viewer_script.parent,
+                check=False
+            )
+
+        except KeyboardInterrupt:
+            print(f"\n{Colors.OKGREEN}👋 数据库查看器已停止{Colors.ENDC}")
+        except Exception as e:
+            print(f"{Colors.FAIL}❌ 启动失败: {e}{Colors.ENDC}")
 
     # ========== 扫描管理 ==========
 
@@ -558,25 +615,44 @@ class MCL10nCLI:
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
-        description="MC L10n 统一管理工具",
+        description="MC L10n 统一管理工具 - Minecraft 本地化项目管理和翻译工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  %(prog)s server start backend      # 启动后端服务
-  %(prog)s server start fullstack    # 启动全栈服务
-  %(prog)s db info                   # 查看数据库信息
-  %(prog)s scan start /path/to/mods  # 扫描MOD目录
-  %(prog)s system info               # 查看系统信息
+🚀 常用命令示例:
+  %(prog)s server start fullstack           # 启动完整服务 (前端+后端)
+  %(prog)s scan start ~/minecraft/mods -m   # 扫描MOD目录并监控进度
+  %(prog)s db viewer                        # 启动数据库Web管理界面
+  %(prog)s db info                          # 查看项目统计信息
+
+📊 数据库管理:
+  %(prog)s db export -o backup.json        # 导出数据备份
+  %(prog)s db cleanup                       # 清理过期缓存
+  %(prog)s db reset --force                 # 强制重置数据库
+
+🔧 系统维护:
+  %(prog)s system info                      # 检查系统状态
+  %(prog)s system cleanup                   # 清理Python缓存
+
+🌐 访问地址:
+  前端界面: http://localhost:18001
+  后端API:  http://localhost:18000/docs
+  数据库查看器: http://localhost:8080
         """,
     )
 
     subparsers = parser.add_subparsers(dest="command", help="可用命令")
 
     # ========== 服务管理命令 ==========
-    server_parser = subparsers.add_parser("server", help="服务管理")
+    server_parser = subparsers.add_parser(
+        "server",
+        help="服务管理 - 启动/停止前端后端服务"
+    )
     server_sub = server_parser.add_subparsers(dest="subcommand")
 
-    server_start = server_sub.add_parser("start", help="启动服务")
+    server_start = server_sub.add_parser(
+        "start",
+        help="启动服务 (backend/frontend/fullstack)"
+    )
     server_start.add_argument(
         "service", choices=["backend", "frontend", "fullstack"], help="要启动的服务"
     )
@@ -584,42 +660,55 @@ def main():
         "--kill-old", action="store_true", help="启动前先杀死旧进程"
     )
 
-    server_sub.add_parser("stop", help="停止所有服务")
+    server_sub.add_parser("stop", help="停止所有运行中的服务")
 
     # ========== 数据库管理命令 ==========
-    db_parser = subparsers.add_parser("db", help="数据库管理")
+    db_parser = subparsers.add_parser(
+        "db",
+        help="数据库管理 - 查看统计、导出数据、Web界面"
+    )
     db_sub = db_parser.add_subparsers(dest="subcommand")
 
-    db_sub.add_parser("info", help="显示数据库信息")
-    db_sub.add_parser("cleanup", help="清理数据库")
+    db_sub.add_parser("info", help="显示数据库统计信息 (MOD数量、语言文件等)")
+    db_sub.add_parser("cleanup", help="清理过期缓存并优化数据库")
 
-    db_export = db_sub.add_parser("export", help="导出数据")
-    db_export.add_argument("-o", "--output", help="输出文件路径")
+    db_export = db_sub.add_parser("export", help="导出数据库内容到JSON文件")
+    db_export.add_argument("-o", "--output", help="输出文件路径 (默认: 自动生成)")
 
-    db_reset = db_sub.add_parser("reset", help="重置数据库")
-    db_reset.add_argument("-f", "--force", action="store_true", help="跳过确认")
+    db_reset = db_sub.add_parser("reset", help="重置数据库 (会自动备份现有数据)")
+    db_reset.add_argument("-f", "--force", action="store_true", help="跳过确认提示")
+
+    db_viewer = db_sub.add_parser("viewer", help="启动数据库Web管理界面")
+    db_viewer.add_argument("-p", "--port", type=int, default=8080, help="Web服务端口 (默认: 8080)")
+    db_viewer.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
 
     # ========== 扫描管理命令 ==========
-    scan_parser = subparsers.add_parser("scan", help="扫描管理")
+    scan_parser = subparsers.add_parser(
+        "scan",
+        help="扫描管理 - MOD目录扫描和进度监控"
+    )
     scan_sub = scan_parser.add_subparsers(dest="subcommand")
 
-    scan_start = scan_sub.add_parser("start", help="启动扫描")
-    scan_start.add_argument("directory", help="要扫描的目录")
-    scan_start.add_argument("--full", action="store_true", help="全量扫描")
-    scan_start.add_argument("--monitor", action="store_true", help="监控进度")
+    scan_start = scan_sub.add_parser("start", help="启动MOD目录扫描")
+    scan_start.add_argument("directory", help="要扫描的MOD目录路径")
+    scan_start.add_argument("--full", action="store_true", help="全量扫描 (默认为增量扫描)")
+    scan_start.add_argument("-m", "--monitor", action="store_true", help="实时监控扫描进度")
 
-    scan_status = scan_sub.add_parser("status", help="查看扫描状态")
-    scan_status.add_argument("scan_id", help="扫描ID")
-    scan_status.add_argument("--monitor", action="store_true", help="监控进度")
+    scan_status = scan_sub.add_parser("status", help="查看指定扫描的状态和进度")
+    scan_status.add_argument("scan_id", help="扫描任务ID")
+    scan_status.add_argument("-m", "--monitor", action="store_true", help="持续监控状态变化")
 
-    scan_sub.add_parser("list", help="列出活跃扫描")
+    scan_sub.add_parser("list", help="列出所有活跃的扫描任务")
 
     # ========== 系统管理命令 ==========
-    system_parser = subparsers.add_parser("system", help="系统管理")
+    system_parser = subparsers.add_parser(
+        "system",
+        help="系统管理 - 状态检查和缓存清理"
+    )
     system_sub = system_parser.add_subparsers(dest="subcommand")
 
-    system_sub.add_parser("info", help="显示系统信息")
-    system_sub.add_parser("cleanup", help="清理系统缓存")
+    system_sub.add_parser("info", help="显示系统状态和服务运行情况")
+    system_sub.add_parser("cleanup", help="清理Python缓存和临时文件")
 
     # 解析参数
     args = parser.parse_args()
@@ -647,6 +736,8 @@ def main():
                 cli.db_export(args)
             elif args.subcommand == "reset":
                 cli.db_reset(args)
+            elif args.subcommand == "viewer":
+                cli.db_viewer(args)
         elif args.command == "scan":
             if args.subcommand == "start":
                 cli.scan_start(args)

@@ -178,12 +178,22 @@ export const useRealTimeProgress = (
 
         // 检查是否完成
         if (newStatus.status === 'completed') {
+          console.log(`🎉 扫描完成，停止轮询: ${currentScanId.current}`)
+          
+          // 立即清理定时器，防止重复轮询
+          if (intervalRef.current) {
+            clearTimeout(intervalRef.current)
+            intervalRef.current = null
+            console.log('⏹️ 已清理轮询定时器')
+          }
+          
           setIsPolling(false)
           isPollingRef.current = false
+          currentScanId.current = null // 清空扫描ID，防止重新触发
 
           // 获取最终结果
           try {
-            const resultResponse = await scanService.getResults(currentScanId.current)
+            const resultResponse = await scanService.getResults(newStatus.scan_id)
             if (resultResponse.success && resultResponse.data) {
               setResult(resultResponse.data)
               onComplete?.(resultResponse.data)
@@ -199,13 +209,17 @@ export const useRealTimeProgress = (
         // 检查是否失败或取消
         if (newStatus.status === 'failed' || newStatus.status === 'cancelled') {
           console.log(`❌ 扫描${newStatus.status}，停止轮询`)
-          setIsPolling(false)
-          isPollingRef.current = false
-          // 清除定时器
+          
+          // 立即清理定时器
           if (intervalRef.current) {
             clearTimeout(intervalRef.current)
             intervalRef.current = null
           }
+          
+          setIsPolling(false)
+          isPollingRef.current = false
+          currentScanId.current = null // 清空扫描ID
+          
           return
         }
       } else {
@@ -246,9 +260,16 @@ export const useRealTimeProgress = (
       console.log(`🔄 开始轮询扫描状态: ${scanId}`)
       console.log(`🔄 轮询URL将是: /scan-status/${scanId}`)
 
+      // 如果已经在轮询相同的scanId，则不重复启动
+      if (currentScanId.current === scanId && isPollingRef.current) {
+        console.log(`🔄 已在轮询相同扫描ID: ${scanId}，跳过`)
+        return
+      }
+
       // 停止当前轮询
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        clearTimeout(intervalRef.current)
+        intervalRef.current = null
       }
 
       // 重置状态
@@ -274,16 +295,26 @@ export const useRealTimeProgress = (
         // 再次检查是否应该继续轮询
         if (!isPollingRef.current || !currentScanId.current) {
           console.log('⏹️ 轮询已停止，不再安排下次轮询')
+          // 确保清理定时器引用
+          if (intervalRef.current) {
+            clearTimeout(intervalRef.current)
+            intervalRef.current = null
+          }
           return
         }
+        
         console.log(`⏰ 定时轮询触发 (间隔: ${currentPollingInterval.current}ms)`)
         pollStatus().catch(err => {
           console.error('❌ 定时轮询失败:', err)
+        }).finally(() => {
+          // 只有在仍然需要轮询时才安排下次
+          if (isPollingRef.current && currentScanId.current) {
+            intervalRef.current = setTimeout(poll, currentPollingInterval.current)
+          } else {
+            console.log('⏹️ 轮询条件不满足，停止调度')
+            intervalRef.current = null
+          }
         })
-        // 只有在仍然需要轮询时才安排下次
-        if (isPollingRef.current && currentScanId.current) {
-          intervalRef.current = setTimeout(poll, currentPollingInterval.current)
-        }
       }
 
       intervalRef.current = setTimeout(poll, currentPollingInterval.current)
@@ -296,27 +327,34 @@ export const useRealTimeProgress = (
   const stopPolling = useCallback(() => {
     console.log('⏹️ 停止轮询扫描状态')
 
+    // 清理定时器
     if (intervalRef.current) {
       clearTimeout(intervalRef.current)
       intervalRef.current = null
+      console.log('🧹 已清理轮询定时器')
     }
 
+    // 重置所有状态
     currentScanId.current = null
     setIsPolling(false)
     isPollingRef.current = false
     progressHistory.current = []
+    
+    console.log('🛑 轮询已完全停止')
   }, [])
 
   // 自动启动轮询（如果提供了初始扫描ID）
   useEffect(() => {
-    if (initialScanId) {
+    if (initialScanId && initialScanId !== currentScanId.current) {
+      console.log(`🎮 启动新的扫描轮询: ${initialScanId}`)
       startPolling(initialScanId)
     }
 
     return () => {
+      console.log('🧹 useEffect cleanup triggered')
       stopPolling()
     }
-  }, [initialScanId]) // 只依赖initialScanId，避免函数引用变化
+  }, [initialScanId, startPolling, stopPolling]) // 添加必要依赖
 
   // 清理资源
   useEffect(() => {

@@ -29,6 +29,13 @@ aiohttp = "^3.12.15"
 psutil = "^7.0.0"
 httpx = "^0.28.1"
 chardet = "^5.2.0"
+rfc8785 = "^0.1.4"
+keyring = "^25.6.0"
+zstandard = "^0.24.0"
+blake3 = "^1.0.5"
+protobuf = "^6.32.0"
+grpcio = "^1.74.0"
+grpcio-tools = "^1.74.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"

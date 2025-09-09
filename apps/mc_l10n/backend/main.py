@@ -21,6 +21,8 @@ from api.routes.mod_routes import router as mod_router
 from api.routes.project_routes import router as project_router
 from api.routes.scan_routes import router as scan_router
 from api.routes.translation_routes import router as translation_router
+from api.v6.router import v6_router  # V6 API路由
+from api.v6.middleware.middleware import setup_v6_middlewares, V6MiddlewareConfig  # V6中间件
 from core.di_container import (
     get_database_service,
     get_infrastructure_service,
@@ -123,6 +125,16 @@ def create_app() -> FastAPI:
     # 设置全局错误处理
     setup_error_handlers(app)
 
+    # 添加V6中间件 (在日志中间件之前)
+    v6_middleware_config = V6MiddlewareConfig(
+        enable_idempotency=True,
+        enable_ndjson=True,
+        enable_etag=True,
+        idempotency_ttl=3600,  # 1小时幂等窗口
+        enable_weak_etag=True
+    )
+    setup_v6_middlewares(app, v6_middleware_config)
+
     # 添加日志中间件
     app.add_middleware(
         LoggingMiddleware,
@@ -135,10 +147,15 @@ def create_app() -> FastAPI:
             "/redoc",
             "/openapi.json",
             "/api/v1/openapi.json",
+            "/api/v6/",  # V6 API路径也排除详细日志
         ],
     )
 
     # 注册路由
+    # V6 API路由 (优先注册)
+    app.include_router(v6_router)
+    
+    # 现有路由 (兼容性保留)
     app.include_router(project_router)
     app.include_router(mod_router)
     app.include_router(scan_router)

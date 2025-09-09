@@ -5,7 +5,9 @@
 
 // === 核心服务类 ===
 export { BaseApiService } from './baseApiService'
+export { V6ApiClient, v6ApiClient } from './api/V6ApiClient'
 import { BaseApiService } from './baseApiService'
+import { V6ApiClient } from './api/V6ApiClient'
 import { API_BASE_URL } from '../config/api'
 
 // === 领域服务 ===
@@ -48,6 +50,25 @@ export type {
   ListOptions,
 } from './domain/types'
 
+// V6 API类型
+export type {
+  V6Pack,
+  V6Mod,
+  V6LanguageFile,
+  V6TranslationEntry,
+  V6DatabaseStatistics,
+  V6HealthCheck,
+  V6WorkItem,
+  V6QueryParams,
+  V6PaginatedResponse,
+  BloomHandshakeRequest,
+  BloomHandshakeResponse,
+  EntryDelta,
+  SyncSession,
+  V6ApiError,
+  V6Response,
+} from './api/v6Types'
+
 // === 服务初始化 ===
 
 /**
@@ -57,6 +78,12 @@ function initializeServices() {
   // 基础服务
   serviceContainer.register('apiClient', {
     factory: () => new BaseApiService(API_BASE_URL),
+    singleton: true,
+  })
+
+  // V6 API客户端
+  serviceContainer.register('v6ApiClient', {
+    factory: () => new V6ApiClient(),
     singleton: true,
   })
 
@@ -112,15 +139,24 @@ export function getLocalDataService(): LocalDataService {
   return serviceContainer.resolve('localDataService')
 }
 
+/**
+ * 获取V6 API客户端
+ */
+export function getV6ApiClient(): V6ApiClient {
+  return serviceContainer.resolve('v6ApiClient')
+}
+
 // 兼容性导出（保持旧的命名）
 export const useProjectService = getProjectService
 export const useScanService = getScanService
 export const useLocalDataService = getLocalDataService
+export const useV6ApiClient = getV6ApiClient
 
 // 便捷导出（作为getter函数）
 export const scanService = () => getScanService()
 export const projectService = () => getProjectService()
 export const localDataService = () => getLocalDataService()
+export const v6ApiService = () => getV6ApiClient()
 
 // === 工具函数 ===
 

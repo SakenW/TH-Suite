@@ -5,6 +5,7 @@ Minecraft模组扫描器
 
 import json
 import logging
+import re
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -55,6 +56,48 @@ class MinecraftModScanner:
             "data/*/lang/*.json",
         ]
 
+    def _extract_version_from_filename(self, filename: str) -> str:
+        """从文件名中提取版本号"""
+        # 移除文件扩展名
+        name = Path(filename).stem
+        
+        # 按优先级排序的版本号模式 - 优先匹配更具体的模式
+        version_patterns = [
+            # modname-mc1.20.1-1.2.3.jar (提取第二个版本号)
+            r"-mc\d+(?:\.\d+)*-(\d+(?:\.\d+)*)",
+            # modname-1.20.1-1.2.3.jar (提取最后一个版本号)
+            r"-\d+(?:\.\d+)*-(\d+(?:\.\d+)*)",
+            # modname_v1.2.3.jar
+            r"[_-]v(\d+(?:\.\d+)*(?:[.-](?:alpha|beta|rc|snapshot|SNAPSHOT)\d*)?)",
+            # modname-1.2.3.jar (最后匹配，避免匹配到MC版本)
+            r"-(\d+(?:\.\d+)*(?:[.-](?:alpha|beta|rc|snapshot|SNAPSHOT)\d*)?)$",
+        ]
+        
+        for pattern in version_patterns:
+            match = re.search(pattern, name, re.IGNORECASE)
+            if match:
+                return match.group(1)
+        
+        # 如果没有找到版本号，返回 "unknown"
+        return "unknown"
+
+    def _resolve_template_variables(self, template_str: str, file_path: str) -> str:
+        """解析模板变量"""
+        if not isinstance(template_str, str):
+            return str(template_str)
+            
+        result = template_str
+        
+        # 解析 ${file.jarVersion}
+        if "${file.jarVersion}" in result:
+            version = self._extract_version_from_filename(file_path)
+            result = result.replace("${file.jarVersion}", version)
+            
+        # 可以添加更多模板变量的解析
+        # ${file.name}, ${file.baseName} 等
+        
+        return result
+
     def scan(self, file_path: str) -> ModScanResult:
         """扫描模组文件"""
         path = Path(file_path)
@@ -73,7 +116,7 @@ class MinecraftModScanner:
                 loader_type = self._detect_loader_type(zip_file)
 
                 # 提取模组信息
-                mod_info = self._extract_mod_info(zip_file, loader_type)
+                mod_info = self._extract_mod_info(zip_file, loader_type, file_path)
 
                 # 提取翻译文件
                 translations = self._extract_translations(zip_file)
@@ -109,12 +152,12 @@ class MinecraftModScanner:
             return "forge"
 
     def _extract_mod_info(
-        self, zip_file: zipfile.ZipFile, loader_type: str
+        self, zip_file: zipfile.ZipFile, loader_type: str, file_path: str
     ) -> dict[str, Any]:
         """提取模组信息"""
         try:
             if loader_type == "forge":
-                return self._extract_forge_info(zip_file)
+                return self._extract_forge_info(zip_file, file_path)
             elif loader_type == "fabric":
                 return self._extract_fabric_info(zip_file)
             elif loader_type == "quilt":
@@ -125,7 +168,7 @@ class MinecraftModScanner:
             logger.warning(f"Failed to extract mod info: {e}")
             return {}
 
-    def _extract_forge_info(self, zip_file: zipfile.ZipFile) -> dict[str, Any]:
+    def _extract_forge_info(self, zip_file: zipfile.ZipFile, file_path: str) -> dict[str, Any]:
         """提取Forge模组信息"""
         try:
             with zip_file.open("META-INF/mods.toml") as f:
@@ -134,10 +177,14 @@ class MinecraftModScanner:
                 # 获取第一个mod的信息
                 mod = data.get("mods", [{}])[0]
 
+                # 获取版本号并解析模板变量
+                version = mod.get("version", "${file.jarVersion}")
+                resolved_version = self._resolve_template_variables(version, file_path)
+
                 return {
                     "mod_id": mod.get("modId", ""),
                     "name": mod.get("displayName", ""),
-                    "version": mod.get("version", "${file.jarVersion}"),
+                    "version": resolved_version,
                     "authors": [mod.get("authors", "")],
                     "description": mod.get("description", ""),
                     "minecraft_version": self._extract_forge_mc_version(data),

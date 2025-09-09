@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -32,12 +32,6 @@ import {
   Paper,
   Divider,
   Badge,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TablePagination,
   Checkbox,
 } from '@mui/material'
@@ -91,6 +85,8 @@ import type {
   QueueStatistics,
   StorageStatistics,
 } from '../services/domain/localDataService'
+import { DataTable } from '../components/ui/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
 
 interface LocalData {
   id: string
@@ -170,6 +166,131 @@ export default function LocalDataPageMinecraft() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+
+  // 表格列定义
+  const columns = useMemo<ColumnDef<LocalData>[]>(() => [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          indeterminate={table.getIsSomePageRowsSelected()}
+          onChange={(value) => table.toggleAllPageRowsSelected(!!value.target.checked)}
+          aria-label="选中所有项"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onChange={(value) => row.toggleSelected(!!value.target.checked)}
+          aria-label={`选中行 ${row.index + 1}`}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'name',
+      header: '名称',
+      cell: ({ row }) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {getTypeIcon(row.original.type)}
+          <Box>
+            <Typography variant='body2'>{row.original.name}</Typography>
+            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+              {row.original.tags.map(tag => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  size='small'
+                  sx={{
+                    height: 16,
+                    fontSize: '10px',
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      accessorKey: 'type',
+      header: '类型',
+      cell: ({ row }) => (
+        <Chip
+          label={row.original.type}
+          size='small'
+          sx={{
+            bgcolor: getTypeColor(row.original.type),
+            color: '#FFFFFF',
+          }}
+        />
+      ),
+    },
+    {
+      accessorKey: 'size',
+      header: '大小',
+      cell: ({ row }) => formatFileSize(row.original.size),
+    },
+    {
+      accessorKey: 'modified',
+      header: '修改时间',
+      cell: ({ row }) => row.original.modified.toLocaleDateString(),
+    },
+    {
+      id: 'status',
+      header: '状态',
+      cell: ({ row }) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {row.original.synced ? (
+            <Tooltip title='已同步'>
+              <Cloud size={16} style={{ color: minecraftColors.emerald }} />
+            </Tooltip>
+          ) : (
+            <Tooltip title='仅本地'>
+              <CloudOff size={16} style={{ color: minecraftColors.iron }} />
+            </Tooltip>
+          )}
+          {row.original.encrypted && (
+            <Tooltip title='已加密'>
+              <Lock size={16} style={{ color: minecraftColors.goldYellow }} />
+            </Tooltip>
+          )}
+        </Box>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '操作',
+      cell: ({ row }) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            size='small'
+            onClick={() => {
+              setSelectedData(row.original)
+              setDetailDialogOpen(true)
+            }}
+          >
+            <Eye size={16} />
+          </IconButton>
+          <IconButton size='small'>
+            <Download size={16} />
+          </IconButton>
+          <IconButton size='small' sx={{ color: 'error.main' }}>
+            <Trash2 size={16} />
+          </IconButton>
+        </Box>
+      ),
+      enableSorting: false,
+    },
+  ], [])
+
+  // 行选择变化回调
+  const handleRowSelectionChange = React.useCallback((selectedRows: LocalData[]) => {
+    setSelectedItems(selectedRows.map(row => row.id))
+  }, [])
 
   // 加载真实数据
   const fetchStatistics = useCallback(async () => {
@@ -808,117 +929,19 @@ export default function LocalDataPageMinecraft() {
             </Box>
 
             {/* 数据表格 */}
-            <TableContainer
-              component={Paper}
-              sx={{ bgcolor: 'transparent', border: '1px solid #2A2A4E' }}
+            <Paper
+              sx={{ bgcolor: 'transparent', border: '1px solid #2A2A4E', p: 2 }}
             >
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell padding='checkbox'>
-                      <Checkbox
-                        indeterminate={
-                          selectedItems.length > 0 && selectedItems.length < localData.length
-                        }
-                        checked={localData.length > 0 && selectedItems.length === localData.length}
-                        onChange={handleSelectAll}
-                      />
-                    </TableCell>
-                    <TableCell>名称</TableCell>
-                    <TableCell>类型</TableCell>
-                    <TableCell>大小</TableCell>
-                    <TableCell>修改时间</TableCell>
-                    <TableCell>状态</TableCell>
-                    <TableCell>操作</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map(data => (
-                      <TableRow key={data.id} hover selected={selectedItems.includes(data.id)}>
-                        <TableCell padding='checkbox'>
-                          <Checkbox
-                            checked={selectedItems.includes(data.id)}
-                            onChange={() => handleSelect(data.id)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {getTypeIcon(data.type)}
-                            <Box>
-                              <Typography variant='body2'>{data.name}</Typography>
-                              <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                                {data.tags.map(tag => (
-                                  <Chip
-                                    key={tag}
-                                    label={tag}
-                                    size='small'
-                                    sx={{
-                                      height: 16,
-                                      fontSize: '10px',
-                                      bgcolor: 'rgba(255,255,255,0.1)',
-                                    }}
-                                  />
-                                ))}
-                              </Box>
-                            </Box>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={data.type}
-                            size='small'
-                            sx={{
-                              bgcolor: getTypeColor(data.type),
-                              color: '#FFFFFF',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>{formatFileSize(data.size)}</TableCell>
-                        <TableCell>{data.modified.toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            {data.synced ? (
-                              <Tooltip title='已同步'>
-                                <Cloud size={16} style={{ color: minecraftColors.emerald }} />
-                              </Tooltip>
-                            ) : (
-                              <Tooltip title='仅本地'>
-                                <CloudOff size={16} style={{ color: minecraftColors.iron }} />
-                              </Tooltip>
-                            )}
-                            {data.encrypted && (
-                              <Tooltip title='已加密'>
-                                <Lock size={16} style={{ color: minecraftColors.goldYellow }} />
-                              </Tooltip>
-                            )}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <IconButton
-                              size='small'
-                              onClick={() => {
-                                setSelectedData(data)
-                                setDetailDialogOpen(true)
-                              }}
-                            >
-                              <Eye size={16} />
-                            </IconButton>
-                            <IconButton size='small'>
-                              <Download size={16} />
-                            </IconButton>
-                            <IconButton size='small' sx={{ color: 'error.main' }}>
-                              <Trash2 size={16} />
-                            </IconButton>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+              <DataTable
+                columns={columns}
+                data={filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+                enableSorting
+                enableRowSelection
+                enableVirtualization={filteredData.length > 50}
+                maxHeight={400}
+                onRowSelectionChange={handleRowSelectionChange}
+              />
+            </Paper>
             <TablePagination
               component='div'
               count={filteredData.length}

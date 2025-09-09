@@ -135,7 +135,7 @@ itemGroup.test_forge_mod.items=测试物品"""
 
         # 检查文件指纹
         assert mod_info.fingerprint is not None
-        assert mod_info.fingerprint.hash_sha256 is not None
+        assert mod_info.fingerprint.hash_blake3 is not None
 
     @pytest.mark.asyncio
     async def test_scan_forge_mod(self, mod_scanner, temp_forge_mod):

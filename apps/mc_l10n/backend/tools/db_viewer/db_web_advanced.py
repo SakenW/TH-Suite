@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 # 全局数据库路径
-DB_PATH = "mc_l10n_unified.db"
+DB_PATH = "../../mc_l10n.db"
 
 
 def get_db_connection():

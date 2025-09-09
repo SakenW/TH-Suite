@@ -7,6 +7,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +34,48 @@ class DDDScanner:
         self.database_path = database_path
         self.active_scans = {}
         logger.info(f"DDD扫描器已初始化，数据库路径: {database_path}")
+
+    def _extract_version_from_filename(self, filename: str) -> str:
+        """从文件名中提取版本号"""
+        # 移除文件扩展名
+        name = Path(filename).stem
+        
+        # 按优先级排序的版本号模式 - 优先匹配更具体的模式
+        version_patterns = [
+            # modname-mc1.20.1-1.2.3.jar (提取第二个版本号)
+            r"-mc\d+(?:\.\d+)*-(\d+(?:\.\d+)*)",
+            # modname-1.20.1-1.2.3.jar (提取最后一个版本号)
+            r"-\d+(?:\.\d+)*-(\d+(?:\.\d+)*)",
+            # modname_v1.2.3.jar
+            r"[_-]v(\d+(?:\.\d+)*(?:[.-](?:alpha|beta|rc|snapshot|SNAPSHOT)\d*)?)",
+            # modname-1.2.3.jar (最后匹配，避免匹配到MC版本)
+            r"-(\d+(?:\.\d+)*(?:[.-](?:alpha|beta|rc|snapshot|SNAPSHOT)\d*)?)$",
+        ]
+        
+        for pattern in version_patterns:
+            match = re.search(pattern, name, re.IGNORECASE)
+            if match:
+                return match.group(1)
+        
+        # 如果没有找到版本号，返回 "unknown"
+        return "unknown"
+
+    def _resolve_template_variables(self, template_str: str, file_path: str) -> str:
+        """解析模板变量"""
+        if not isinstance(template_str, str):
+            return str(template_str)
+            
+        result = template_str
+        
+        # 解析 ${file.jarVersion}
+        if "${file.jarVersion}" in result:
+            version = self._extract_version_from_filename(file_path)
+            result = result.replace("${file.jarVersion}", version)
+            
+        # 可以添加更多模板变量的解析
+        # ${file.name}, ${file.baseName} 等
+        
+        return result
 
     async def start_scan(
         self, target_path: str, incremental: bool = True, options: dict[str, Any] = None
@@ -317,7 +360,9 @@ class DDDScanner:
                 data = json.load(f)
                 mod_info["mod_id"] = data.get("id", mod_info["mod_id"])
                 mod_info["name"] = data.get("name", mod_info["name"])
-                mod_info["version"] = data.get("version", "unknown")
+                raw_version = data.get("version", "unknown")
+                # 解析模板变量
+                mod_info["version"] = self._resolve_template_variables(raw_version, str(jar_path))
                 mod_info["description"] = data.get("description", "")
                 mod_info["mod_loader"] = "fabric"
 
@@ -350,9 +395,9 @@ class DDDScanner:
                             line.split('"')[1] if '"' in line else mod_info["name"]
                         )
                     elif "version=" in line:
-                        mod_info["version"] = (
-                            line.split('"')[1] if '"' in line else "unknown"
-                        )
+                        raw_version = line.split('"')[1] if '"' in line else "unknown"
+                        # 解析模板变量
+                        mod_info["version"] = self._resolve_template_variables(raw_version, str(jar_path))
                 mod_info["mod_loader"] = "forge"
         except (KeyError, UnicodeDecodeError):
             pass
@@ -365,7 +410,9 @@ class DDDScanner:
                     mod_data = data[0]
                     mod_info["mod_id"] = mod_data.get("modid", mod_info["mod_id"])
                     mod_info["name"] = mod_data.get("name", mod_info["name"])
-                    mod_info["version"] = mod_data.get("version", "unknown")
+                    raw_version = mod_data.get("version", "unknown")
+                    # 解析模板变量
+                    mod_info["version"] = self._resolve_template_variables(raw_version, str(jar_path))
                     mod_info["description"] = mod_data.get("description", "")
                     mod_info["mod_loader"] = "forge"
                     mod_info["authors"] = mod_data.get("authorList", [])

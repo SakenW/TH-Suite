@@ -1,6 +1,8 @@
 # MC L10n Scripts
 
-MC L10n 统一命令行管理工具。
+MC L10n 统一命令行管理工具 - 提供完整的项目管理、扫描、数据库操作和系统维护功能。
+
+📋 **快速开始**: [查看快速参考](./QUICK_REFERENCE.md) | 📖 **详细文档**: 继续阅读下方内容
 
 ## 安装依赖
 
@@ -67,6 +69,11 @@ python mc_cli.py db export -o my_export.json
 # 重置数据库（会备份现有数据）
 python mc_cli.py db reset
 python mc_cli.py db reset --force  # 跳过确认
+
+# 🆕 启动数据库Web查看器
+python mc_cli.py db viewer
+python mc_cli.py db viewer --port 8080
+python mc_cli.py db viewer --no-browser  # 不自动打开浏览器
 ```
 
 ### 3. 扫描管理
@@ -91,7 +98,7 @@ python mc_cli.py scan list
 # 查看系统信息
 python mc_cli.py system info
 
-# 清理系统缓存（__pycache__, *.pyc）
+# 清理系统缓存（__pycache__、*.pyc 文件）
 python mc_cli.py system cleanup
 ```
 
@@ -113,6 +120,7 @@ poetry run python mc_cli.py db info
 - **后端API**: http://localhost:18000
 - **API文档**: http://localhost:18000/docs
 - **前端界面**: http://localhost:18001
+- **数据库查看器**: http://localhost:8080 (可配置端口)
 
 ## 特性
 
@@ -120,7 +128,9 @@ poetry run python mc_cli.py db info
 - 🎨 **彩色输出**: 清晰的终端输出和进度显示
 - 📊 **实时监控**: 支持扫描进度实时监控
 - 💾 **数据管理**: 完整的数据库管理功能
+- 🌐 **Web界面**: 高级数据库Web查看器
 - 🔧 **系统维护**: 缓存清理和系统信息查看
+- 📈 **统计分析**: 详细的MOD、语言文件和翻译条目统计
 
 ## 示例用例
 
@@ -139,10 +149,13 @@ python mc_cli.py scan start ~/minecraft/mods --monitor
 # 4. 查看结果
 python mc_cli.py db info
 
-# 5. 导出数据
+# 5. 启动Web查看器进行详细分析
+python mc_cli.py db viewer
+
+# 6. 导出数据
 python mc_cli.py db export -o mods_data.json
 
-# 6. 定期维护
+# 7. 定期维护
 python mc_cli.py db cleanup
 python mc_cli.py system cleanup
 ```
@@ -180,10 +193,55 @@ python mc_cli.py scan list
 
 ## 注意事项
 
-- 数据库文件位置: `backend/data/mc_l10n.db`
+- 数据库文件位置: `backend/mc_l10n.db` (主数据库)
 - 重置数据库前会自动创建备份
 - 全栈模式下按 Ctrl+C 会停止所有服务
 - 扫描大型MOD目录时建议使用增量模式（默认）
+- 数据库查看器提供完整的Web管理界面
+
+## 数据库Web查看器功能
+
+通过 `python mc_cli.py db viewer` 启动的Web界面提供：
+
+- 📊 **完整统计**: MOD数量、语言文件、翻译条目统计
+- 🔍 **数据浏览**: 表格化浏览所有数据表
+- 📈 **可视化分析**: 图表展示数据分布
+- 🛠️ **管理工具**: 数据操作和维护功能
+- 📁 **项目管理**: 扫描历史和项目组织
+- 🌍 **多语言支持**: 语言文件和翻译状态管理
+
+### Web查看器使用示例
+
+```bash
+# 启动查看器（默认端口8080）
+python mc_cli.py db viewer
+
+# 使用自定义端口
+python mc_cli.py db viewer --port 9000
+
+# 后台模式（不打开浏览器）
+python mc_cli.py db viewer --no-browser
+```
+
+## 最新更新 (2025-09-09)
+
+### 🔧 修复内容
+- ✅ 修复数据库路径配置错误
+- ✅ 解决 "no such column: language_code" 错误
+- ✅ 统计计算中的 NoneType 除法错误修复
+- ✅ 数据库查看器路径更新
+
+### 🆕 新增功能
+- ✅ 集成数据库Web查看器命令
+- ✅ 自动浏览器打开功能
+- ✅ 可配置端口和主机设置
+- ✅ 完善的命令行帮助信息
+
+### 📊 当前数据统计
+- MOD数量: 564个
+- 语言文件: 3,573个
+- 翻译条目: 1,604,370个
+- 数据库大小: 616.70 MB
 
 ## 已弃用的脚本
 
