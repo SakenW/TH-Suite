@@ -63,13 +63,13 @@ FastAPI应用主入口，提供以下功能：
 ## 导入示例
 
 ```python
-# 从main.py导入
-from core.mc_database import Database
-from core.ddd_scanner import get_scanner_instance
+# 从main.py导入（V6架构）
+from database.core.manager import get_database_manager
+from core.ddd_scanner_simple import get_scanner_instance
 from utils.simple_logging import StructLogFactory
 
-# 从其他模块导入
-from ..core.mc_database import Database
+# 从其他模块导入（V6架构）
+from ..database.core.manager import get_database_manager
 from ..utils.simple_logging import StructLogFactory
 ```
 

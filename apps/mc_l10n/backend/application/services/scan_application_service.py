@@ -146,7 +146,7 @@ class ScanApplicationService:
 
             if status:
                 # 如果状态中缺少新字段，从 ddd_scanner 的 active_scans 获取
-                from core.ddd_scanner import get_scanner_instance
+                from core.ddd_scanner_simple import get_scanner_instance
                 from pathlib import Path
 
                 # 使用V6 API数据库路径，保持数据库一致性

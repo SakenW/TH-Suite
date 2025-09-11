@@ -76,10 +76,10 @@ cleanup() {
         kill $FRONTEND_PID 2>/dev/null || true
     fi
     
-    # 清理端口
+    # 清理端口（使用正确的端口）
     if command -v lsof &> /dev/null; then
         lsof -ti:18000 | xargs kill -9 2>/dev/null || true
-        lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+        lsof -ti:18001 | xargs kill -9 2>/dev/null || true
     fi
     
     log_info "所有服务已停止"

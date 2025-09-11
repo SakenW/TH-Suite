@@ -17,7 +17,7 @@ def main():
     script_dir = Path(__file__).parent
     backend_dir = script_dir.parent / "backend"
     db_viewer_path = backend_dir / "tools" / "db_viewer" / "db_web_advanced.py"
-    db_path = backend_dir / "mc_l10n.db"
+    db_path = backend_dir / "data" / "mc_l10n_v6.db"
     
     if not db_viewer_path.exists():
         print(f"❌ 数据库查看器文件不存在: {db_viewer_path}")

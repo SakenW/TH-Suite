@@ -53,55 +53,8 @@ const PatchesPage: React.FC = () => {
 
   // 模拟加载补丁
   useEffect(() => {
-    const mockPatches: Patch[] = [
-      {
-        id: 'patch-001',
-        name: 'Chinese Translation Pack v1.2',
-        version: '1.2.0',
-        description: 'Complete Chinese translation for all mods',
-        createdAt: new Date('2024-01-15'),
-        appliedAt: new Date('2024-01-16'),
-        status: 'applied',
-        type: 'overlay',
-        targetLanguages: ['zh_cn', 'zh_tw'],
-        affectedFiles: 156,
-        totalEntries: 8432,
-        conflicts: 0,
-        author: 'TransHub Team',
-        size: '2.3 MB',
-      },
-      {
-        id: 'patch-002',
-        name: 'Japanese Localization Update',
-        version: '0.9.5',
-        description: 'Updated Japanese translations for tech mods',
-        createdAt: new Date('2024-01-18'),
-        status: 'pending',
-        type: 'jar_modify',
-        targetLanguages: ['ja_jp'],
-        affectedFiles: 42,
-        totalEntries: 1256,
-        conflicts: 3,
-        author: 'Community',
-        size: '856 KB',
-      },
-      {
-        id: 'patch-003',
-        name: 'Emergency Hotfix',
-        version: '1.0.1',
-        description: 'Fixes critical translation errors',
-        createdAt: new Date('2024-01-20'),
-        status: 'failed',
-        type: 'directory',
-        targetLanguages: ['en_us'],
-        affectedFiles: 5,
-        totalEntries: 32,
-        conflicts: 12,
-        author: 'System',
-        size: '12 KB',
-      },
-    ]
-    setPatches(mockPatches)
+    // 暂时显示空状态，等待真实API实现
+    setPatches([])
   }, [])
 
   // 应用补丁

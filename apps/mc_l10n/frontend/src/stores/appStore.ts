@@ -533,6 +533,7 @@ export const useAppStore = create<AppState>()(
           state.scanState.isScanning = false
           state.scanState.scanResult = result
           state.scanState.progress = 100
+          state.scanState.scanId = null  // 清空 scanId 以停止轮询
         })
         console.log('✅ 扫描完成:', result)
       },

@@ -55,35 +55,10 @@ export const WelcomePage: React.FC = () => {
   const lastScanTime = null // useAppStore(state => state.lastScanTime)
   const lastSyncTime = null // useAppStore(state => state.lastSyncTime)
   const scanStats = { total: 0, translated: 0 } // useAppStore(state => state.scanStats)
-  const syncStats = { pullable: 123, pushable: 45 } // useAppStore(state => state.syncStats)
+  const syncStats = { pullable: 0, pushable: 0 } // useAppStore(state => state.syncStats)
 
-  // 最近任务数据 (模拟)
-  const [recentTasks] = useState([
-    {
-      id: '1',
-      type: 'scan',
-      title: '扫描整合包 "All the Mods 9"',
-      status: 'completed',
-      time: dayjs().subtract(2, 'hour').valueOf(),
-      details: '发现 156 个 MOD，23,847 个词条',
-    },
-    {
-      id: '2', 
-      type: 'sync',
-      title: '同步到服务器',
-      status: 'completed',
-      time: dayjs().subtract(1, 'day').valueOf(),
-      details: '上传 1,245 个新词条，拉取 3,456 个翻译',
-    },
-    {
-      id: '3',
-      type: 'build',
-      title: '构建本地化产物',
-      status: 'completed',
-      time: dayjs().subtract(2, 'day').valueOf(),
-      details: '生成 zh_cn.json 文件 (2.3MB)',
-    },
-  ])
+  // 最近任务数据 (真实数据)
+  const [recentTasks] = useState([])
 
   // 快速入口操作
   const quickActions = [

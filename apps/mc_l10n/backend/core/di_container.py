@@ -230,23 +230,23 @@ class DatabaseServiceAdapter(IDatabaseService):
                 cursor.execute("SELECT COUNT(*) FROM core_translation_entries")
                 stats["total_translation_keys"] = cursor.fetchone()[0]
 
-                # 获取语言分布
+                # 获取语言分布 - 使用V6表结构
                 cursor.execute("""
                     SELECT locale_code, COUNT(*)
-                    FROM language_files
+                    FROM core_language_files
                     GROUP BY locale_code
                 """)
                 stats["languages"] = dict(cursor.fetchall())
 
-                # 获取模组详情（前10个最大的模组）
+                # 获取模组详情（前10个最大的模组）- 使用V6表结构
                 cursor.execute("""
-                    SELECT m.mod_id, m.display_name,
+                    SELECT m.modid, m.display_name,
                            COUNT(DISTINCT lf.locale_code) as lang_count,
-                           COUNT(DISTINCT te.entry_key) as key_count
-                    FROM mods m
-                    LEFT JOIN language_files lf ON m.mod_id = lf.mod_id
-                    LEFT JOIN translation_entries te ON lf.file_id = te.file_id
-                    GROUP BY m.mod_id, m.display_name
+                           COUNT(DISTINCT te.translation_key) as key_count
+                    FROM core_mods m
+                    LEFT JOIN core_language_files lf ON m.modid = lf.mod_id
+                    LEFT JOIN core_translation_entries te ON lf.file_id = te.file_id
+                    GROUP BY m.modid, m.display_name
                     ORDER BY key_count DESC
                     LIMIT 10
                 """)

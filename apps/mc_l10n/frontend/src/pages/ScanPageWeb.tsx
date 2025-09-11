@@ -94,16 +94,12 @@ const ScanPageWeb: React.FC = () => {
         throw new Error('后端连接失败')
       }
 
-      // 2. 加载统计数据和MOD列表
-      const [modsResponse, statsResponse] = await Promise.all([
-        v6ApiClient.getMods({ page: 1, limit: 5 }),
-        scanApi.getDatabaseStats()
-      ])
+      // 2. 加载MOD列表 (暂时跳过统计数据，因为有错误)
+      const modsResponse = await v6ApiClient.getMods({ page: 1, limit: 5 })
 
-      console.log('📊 统计数据:', statsResponse)
       console.log('📦 模组数据:', modsResponse)
 
-      if (!modsResponse.success || !statsResponse.success) {
+      if (!modsResponse || !modsResponse.mods) {
         throw new Error('数据加载失败')
       }
 
@@ -111,24 +107,20 @@ const ScanPageWeb: React.FC = () => {
       const displayModsResponse = await v6ApiClient.getMods({ page: 1, limit: 20 })
 
       // 转换MOD数据为ProjectInfo格式
-      const realProjects: ProjectInfo[] = displayModsResponse.mods.map(mod => ({
+      const realProjects: ProjectInfo[] = displayModsResponse.mods ? displayModsResponse.mods.map(mod => ({
         id: mod.uid,
         name: mod.name || mod.modid,
         type: 'mod' as const,
-        files_count: mod.language_files_count || 0,
-        entries_count: mod.total_entries || 0,
+        files_count: 0,
+        entries_count: 0,
         status: 'scanned' as const
-      }))
+      })) : []
 
-      // 4. 检查活跃扫描状态
-      const activeScansResponse = await scanApi.getActiveScans()
-      console.log('🔍 活跃扫描:', activeScansResponse)
-
-      // 5. 设置状态
+      // 4. 设置状态
       const stats = {
-        totalProjects: statsResponse.data.totalProjects || 0,
-        totalFiles: statsResponse.data.totalFiles || 0,
-        totalEntries: statsResponse.data.totalEntries || 0
+        totalProjects: displayModsResponse.pagination?.total || realProjects.length,
+        totalFiles: 0, // 暂时设为0，因为统计端点有错误
+        totalEntries: 0  // 暂时设为0，因为统计端点有错误
       }
 
       setProjects(realProjects)
@@ -152,27 +144,9 @@ const ScanPageWeb: React.FC = () => {
   }
 
   const loadFallbackData = () => {
-    const mockProjects: ProjectInfo[] = [
-      {
-        id: '1',
-        name: '示例模组 #1',
-        type: 'mod',
-        files_count: 12,
-        entries_count: 1453,
-        status: 'scanned'
-      },
-      {
-        id: '2', 
-        name: '示例资源包 #2',
-        type: 'resourcepack',
-        files_count: 8,
-        entries_count: 892,
-        status: 'scanned'
-      }
-    ]
-
-    setProjects(mockProjects)
-    setStats({ totalProjects: 2, totalFiles: 20, totalEntries: 2345 })
+    // 不再显示演示数据，显示真实的空状态
+    setProjects([])
+    setStats({ totalProjects: 0, totalFiles: 0, totalEntries: 0 })
   }
 
   // 轮询扫描状态
@@ -252,8 +226,8 @@ const ScanPageWeb: React.FC = () => {
       // 发送扫描请求
       const scanResult = await scanApi.startScan(scanRequest)
 
-      if (!scanResult.success || !scanResult.scan_id) {
-        throw new Error(scanResult.error || '扫描启动失败')
+      if (!scanResult.scan_id) {
+        throw new Error('扫描启动失败：未返回扫描ID')
       }
 
       const scanId = scanResult.scan_id

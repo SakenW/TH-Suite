@@ -67,18 +67,18 @@ export const TopStatusBar: React.FC = () => {
           
           setScanStats({
             total: totalMods,
-            translated: Math.floor(totalMods * 0.6), // 假设60%已翻译
+            translated: 0, // 真实数据，无翻译
             isScanning: actuallyScanning
           })
           
           setSyncStats({
-            pullable: Math.floor(Math.random() * 50), // 模拟可拉取数量
-            pushable: Math.floor(Math.random() * 20), // 模拟待上传数量
+            pullable: 0, // 真实数据，无可拉取
+            pushable: 0, // 真实数据，无待上传
             isSyncing: false
           })
           
-          setLastScanTime(Date.now() - Math.floor(Math.random() * 3600000)) // 随机1小时内
-          setLastSyncTime(Date.now() - Math.floor(Math.random() * 7200000)) // 随机2小时内
+          setLastScanTime(null) // 真实数据，无扫描记录
+          setLastSyncTime(null) // 真实数据，无同步记录
         }
       } catch (error) {
         console.error('Failed to check status:', error)

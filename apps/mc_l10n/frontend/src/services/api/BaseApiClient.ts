@@ -205,8 +205,8 @@ export class BaseApiClient {
   // 健康检查
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.get('/api/health', { timeout: 5000, retries: 0 })
-      return response.success
+      const response = await this.get('/health', { timeout: 5000, retries: 0 })
+      return response.status === 'healthy'
     } catch {
       return false
     }

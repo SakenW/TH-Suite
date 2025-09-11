@@ -40,30 +40,31 @@ const DataViewPage: React.FC = () => {
     
     try {
       // 获取统计信息
-      const statsResponse = await fetch('http://localhost:18000/api/v1/scan/active')
+      const statsResponse = await fetch('http://localhost:18000/api/v1/scan/stats')
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
         console.log('统计数据:', statsData)
+        setStats(statsData)
       }
 
-      // 尝试使用扫描API获取测试数据
-      const testResponse = await fetch('http://localhost:18000/api/v1/scan/test')
-      if (testResponse.ok) {
-        const testData = await testResponse.json()
-        console.log('测试数据:', testData)
-        setStats(testData)
-      }
-
-      // 直接查询数据库
-      setMods([
-        {
-          id: '1',
-          mod_id: 'example_mod',
-          display_name: '数据库连接成功',
-          version: '1.0.0',
-          description: '如果您看到这个，说明前端已经成功连接到后端API'
+      // 获取真实的模组数据
+      const modsResponse = await fetch('http://localhost:18000/api/v6/mods?page=1&limit=50')
+      if (modsResponse.ok) {
+        const modsData = await modsResponse.json()
+        console.log('模组数据:', modsData)
+        
+        if (modsData.mods && Array.isArray(modsData.mods)) {
+          setMods(modsData.mods.map((mod: any) => ({
+            id: mod.uid || mod.id,
+            mod_id: mod.modid || mod.mod_id,
+            display_name: mod.name || mod.display_name || mod.modid,
+            version: mod.version || '未知',
+            description: mod.description || `最后更新: ${mod.updated_at || mod.created_at || '未知'}`
+          })))
+        } else {
+          setMods([])
         }
-      ])
+      }
 
     } catch (err) {
       setError(`网络错误: ${err instanceof Error ? err.message : '未知错误'}`)
@@ -129,14 +130,17 @@ const DataViewPage: React.FC = () => {
             
             {stats && (
               <Row gutter={16} style={{ marginBottom: '24px' }}>
-                <Col span={8}>
+                <Col span={6}>
+                  <Statistic title="总项目数" value={stats.data?.totalProjects || 0} />
+                </Col>
+                <Col span={6}>
+                  <Statistic title="语言文件数" value={stats.data?.totalFiles || 0} />
+                </Col>
+                <Col span={6}>
+                  <Statistic title="翻译条目数" value={stats.data?.totalEntries || 0} />
+                </Col>
+                <Col span={6}>
                   <Statistic title="服务状态" value={stats.success ? '正常' : '异常'} />
-                </Col>
-                <Col span={8}>
-                  <Statistic title="后端服务" value="MC L10n API" />
-                </Col>
-                <Col span={8}>
-                  <Statistic title="数据库" value="SQLite" />
                 </Col>
               </Row>
             )}

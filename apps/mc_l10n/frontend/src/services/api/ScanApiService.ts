@@ -18,12 +18,13 @@ export class ScanApiService {
   /**
    * 测试扫描服务连接
    */
-  async testConnection(): Promise<boolean> {
+  async testConnection(): Promise<{success: boolean}> {
     try {
-      const response = await this.client.get('/api/v1/scan/test')
-      return response.success
+      // 使用健康检查端点测试连接
+      const isHealthy = await this.client.healthCheck()
+      return { success: isHealthy }
     } catch {
-      return false
+      return { success: false }
     }
   }
 
@@ -306,6 +307,19 @@ export class ScanApiService {
     }
 
     return results
+  }
+
+  /**
+   * 获取数据库统计信息
+   */
+  async getDatabaseStats(): Promise<any> {
+    try {
+      const response = await this.client.get('/api/v6/database/statistics')
+      return response
+    } catch (error) {
+      console.error('获取数据库统计失败:', error)
+      throw error
+    }
   }
 }
 
