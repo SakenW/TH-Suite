@@ -1,0 +1,107 @@
+# Minecraft本地化投影规范 - Core-First架构
+# 定义Minecraft数据格式与Trans-Hub Core格式之间的双向转换规则
+
+version: 1
+app: mc-l10n
+namespace: mc
+description: "Minecraft MOD和资源包本地化投影规范"
+
+# 项目标识符表达式
+# 格式: pack:{pack_id}
+project_id_expr: "pack:{pack_id}"
+
+# 内容标识符表达式组合
+# 按顺序组合形成唯一标识符
+key_exprs:
+  - "mod:{mod_id}"        # MOD标识符
+  - "key:{lang_key}"      # 翻译键
+  - "lang:{lang}"         # 语言代码
+
+# 上下文信息表达式
+# 保存额外的元数据信息
+context_exprs:
+  resource_path: "{resource_path}"    # 资源文件路径
+  mod_version: "{mod_version}"        # MOD版本
+  pack_format: "{pack_format}"        # 资源包格式版本
+  loader_type: "{loader_type}"        # MOD加载器类型 (forge/fabric/quilt)
+  minecraft_version: "{minecraft_version}"  # Minecraft版本
+  mod_name: "{mod_name}"              # MOD显示名称
+  authors: "{authors}"                # MOD作者列表
+  file_format: "{file_format}"        # 语言文件格式 (json/lang/properties)
+
+# 文本稳定化规则
+# 确保翻译文本的一致性和规范性
+stabilizers: 
+  - "canon"     # 文本规范化 (Unicode正规化、空白符处理)
+  - "lower"     # 关键字小写化
+
+# 反向转换映射规则
+# 从Trans-Hub Core格式转换回Minecraft格式
+reverse:
+  object_map:
+    # 从project_id中提取pack_id (移除pack:前缀)
+    pack_id: "{project_id|strip_prefix:pack:}"
+    
+    # 从keys数组中提取各组件
+    mod_id: "{keys[0]|strip_prefix:mod:}"
+    lang_key: "{keys[1]|strip_prefix:key:}"
+    lang: "{keys[2]|strip_prefix:lang:}"
+    
+    # 从context中提取元数据
+    resource_path: "{ctx[resource_path]}"
+    mod_version: "{ctx[mod_version]}"
+    pack_format: "{ctx[pack_format]}"
+    loader_type: "{ctx[loader_type]}"
+    minecraft_version: "{ctx[minecraft_version]}"
+    mod_name: "{ctx[mod_name]}"
+    authors: "{ctx[authors]}"
+    file_format: "{ctx[file_format]}"
+
+# 验证规则
+validation:
+  # 必填字段验证
+  required_fields:
+    - pack_id
+    - mod_id
+    - lang_key
+    - lang
+  
+  # 字段格式验证
+  patterns:
+    pack_id: "^[a-zA-Z0-9_-]+$"           # 包ID格式
+    mod_id: "^[a-zA-Z0-9_.-]+$"           # MOD ID格式
+    lang_key: "^[a-zA-Z0-9._-]+$"         # 翻译键格式
+    lang: "^[a-z]{2}(_[A-Z]{2})?$"        # 语言代码格式 (如: zh_CN, en)
+  
+  # 值约束
+  constraints:
+    loader_type: ["forge", "fabric", "quilt", "neoforge", "unknown"]
+    file_format: ["json", "lang", "properties"]
+
+# 默认值配置
+defaults:
+  loader_type: "unknown"
+  file_format: "json"
+  pack_format: "9"  # MC 1.20默认格式版本
+
+# 兼容性配置
+compatibility:
+  # 支持的Minecraft版本范围
+  minecraft_versions: ["1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
+  
+  # MOD加载器兼容性映射
+  loader_mapping:
+    forge: ["forge", "neoforge"]
+    fabric: ["fabric", "quilt"]
+    quilt: ["quilt", "fabric"]
+
+# 性能优化配置
+optimization:
+  # 批量处理大小
+  batch_size: 1000
+  
+  # 缓存策略
+  cache_ttl: 3600  # 缓存生存时间（秒）
+  
+  # 并发限制
+  max_concurrent: 10

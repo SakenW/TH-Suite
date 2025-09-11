@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TransHub Suite is a game localization toolkit specifically designed for integration with the Trans-Hub translation platform. This is a monorepo containing multiple desktop applications using Tauri (frontend) + FastAPI (backend) architecture:
+TH-Suite v2.0 是完全重构的Core-First专业适配器，专为Trans-Hub生态系统设计的游戏本地化工具。通过投影适配器系统与Trans-Hub Core深度集成，删除了15,000+行重复基础设施代码。这是一个monorepo，包含多个桌面应用，使用Tauri (前端) + FastAPI (后端) 架构：
 
 - **TH Suite MC L10n** (`apps/mc_l10n/`) - Minecraft mod and resource pack localization tool
 - **RW Studio** (`apps/rw_l10n/`) - Rusted Warfare localization tool
@@ -20,12 +20,14 @@ TransHub Suite is a game localization toolkit specifically designed for integrat
 - **Task Runner**: Taskfile (recommended) or npm scripts
 - **Real-time Communication**: WebSocket + Server-Sent Events + Polling
 
-### ⚠️ 重要更新 (2024.09)
-MC L10n 前端已完全重构，基于《我的世界工具前端设计.md》规范：
-- ✅ **Ant Design 5.x** 替代 Material-UI 作为唯一组件库
-- ✅ **Minecraft 轻装饰主题系统** - 像素化描边、方块化阴影、网格背景
-- ✅ **玩家友好界面** - "人话化"文案，隐藏工程参数，安全默认策略
-- ✅ **标准化工作流** - 扫描 → 差量同步 → 构建本地化产物
+### ⚠️ v2.0 Core-First架构重构 (2025.09)
+TH-Suite已完成Core-First架构全面升级：
+- ✅ **投影适配器系统**: Minecraft ↔ UIDA双向转换，数据一致性保证
+- ✅ **多MOD加载器支持**: 智能识别Forge、Fabric、Quilt、NeoForge
+- ✅ **高级JAR处理**: 安全修改、备份管理、冲突解决、回滚机制
+- ✅ **现代化UI**: Ant Design 5.x + Minecraft轻装饰主题
+- ✅ **Clean Architecture**: DDD六边形架构，适配器-领域-服务分层
+- ✅ **零冗余代码**: 删除15,000+行重复基础设施，专注Minecraft特定逻辑
 
 ### 架构模式
 

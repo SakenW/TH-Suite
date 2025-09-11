@@ -1,0 +1,95 @@
+# Minecraft 投影规范配置
+# 用于将Minecraft特定数据映射到Trans-Hub Core的通用格式
+
+version: "1.0"
+app: "mc-l10n"
+namespace: "mc"
+
+# 项目ID表达式
+project_id_expr: "pack:{pack_id}"
+
+# 键表达式（按优先级排序）
+key_exprs:
+  - "mod:{mod_id}"
+  - "key:{lang_key}"  
+  - "lang:{lang}"
+
+# 上下文表达式
+context_exprs:
+  resource_path: "{resource_path}"
+  mod_version: "{mod_version}"
+  pack_format: "{pack_format}"
+  loader_type: "{loader_type}"
+  minecraft_version: "{minecraft_version}"
+
+# 文本稳定化器
+stabilizers: 
+  - "canon"  # 标准化字符
+  - "lower"  # 小写化
+
+# 反向映射规范（从Core格式回到Minecraft格式）
+reverse:
+  object_map:
+    pack_id: "{project_id|strip_prefix:pack:}"
+    mod_id: "{keys[0]|strip_prefix:mod:}"
+    lang_key: "{keys[1]|strip_prefix:key:}"
+    lang: "{keys[2]|strip_prefix:lang:}"
+    resource_path: "{ctx[resource_path]}"
+    mod_version: "{ctx[mod_version]}"
+    pack_format: "{ctx[pack_format]}"
+    loader_type: "{ctx[loader_type]}"
+    minecraft_version: "{ctx[minecraft_version]}"
+
+# 验证规则
+validation:
+  required_keys:
+    - "mod_id"
+    - "lang_key" 
+    - "lang"
+  
+  key_patterns:
+    mod_id: "^[a-z0-9_-]+$"
+    lang_key: "^[a-zA-Z0-9_.]+$"
+    lang: "^[a-z]{2}_[a-z]{2}$"
+  
+  context_patterns:
+    resource_path: "^assets/.+/lang/.+\\.(json|lang)$"
+    pack_format: "^\\d+$"
+
+# 命名空间映射
+namespaces:
+  minecraft_translation:
+    description: "Minecraft MOD翻译条目"
+    required_keys: ["mod_id", "lang_key", "lang"]
+    context_keys: ["resource_path", "mod_version", "loader_type"]
+  
+  minecraft_language_file:
+    description: "Minecraft语言文件"
+    required_keys: ["mod_id", "lang"]
+    context_keys: ["resource_path", "file_format", "entry_count"]
+
+# 示例映射
+examples:
+  - description: "Minecraft MOD翻译条目"
+    input:
+      pack_id: "my_modpack"
+      mod_id: "create"
+      lang_key: "item.create.brass_ingot"
+      lang: "zh_cn"
+      resource_path: "assets/create/lang/zh_cn.json"
+      mod_version: "0.5.1"
+      pack_format: "9"
+      loader_type: "forge"
+    
+    expected_uida_keys:
+      - "mod:create"
+      - "key:item.create.brass_ingot"
+      - "lang:zh_cn"
+    
+    expected_project_id: "pack:my_modpack"
+    
+    expected_context:
+      resource_path: "assets/create/lang/zh_cn.json"
+      mod_version: "0.5.1"
+      pack_format: "9"
+      loader_type: "forge"

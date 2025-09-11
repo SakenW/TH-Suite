@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "th-suite"
-version = "0.1.0"
-description = "TransHub Tools - A toolkit for game/application localization"
-authors = ["TransHub Team"]
+version = "2.0.0"
+description = "TH-Suite v2.0 - Core-First专业适配器，Trans-Hub生态系统的游戏本地化工具。支持Minecraft多MOD加载器、投影适配器、高级JAR处理等企业级功能"
+authors = ["Saken <saken@trans-hub.net>"]
 readme = "README.md"
 packages = [
     {include = "packages"},

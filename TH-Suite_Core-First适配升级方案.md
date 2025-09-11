@@ -1131,4 +1131,17 @@ const MinecraftProjectDashboard: React.FC<{projectId: string}> = ({ projectId })
 
 **无迁移风险**: 由于无生产环境，可直接重构，无数据迁移负担
 
-**结论**: TH-Suite v2.0升级将彻底解决V6架构问题，转型为专业的Trans-Hub生态应用，专注Minecraft特定功能优化，通过Core-First架构实现更高的可靠性和可维护性。
+**结论**: TH-Suite v2.0直接重构将彻底解决V6架构问题，通过文件重命名避免冗余，转型为专业的Trans-Hub生态应用。专注Minecraft特定功能优化，无迁移负担，通过Core-First架构实现更高的可靠性和可维护性。
+
+### 📁 最终文件结构映射
+
+**重构前 → 重构后**:
+```
+apps/mc_l10n/backend/services/content_addressing.py → apps/mc_l10n/src/adapters/core_client.py
+apps/mc_l10n/backend/services/uida_service.py → apps/mc_l10n/src/adapters/projection.py
+apps/mc_l10n/backend/processors/jar_processor.py → apps/mc_l10n/src/domain/jar_processor.py
+apps/mc_l10n/backend/processors/mod_scanner.py → apps/mc_l10n/src/domain/mod_scanner.py
+apps/mc_l10n/backend/workflows/ → apps/mc_l10n/src/services/
+apps/mc_l10n/backend/database/ → 删除
+apps/mc_l10n/backend/api/v6/ → 删除
+```

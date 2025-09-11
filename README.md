@@ -1,53 +1,68 @@
-# TransHub Suite
+# TH-Suite v2.0 - Core-First专业适配器
 
-> 🌐 **T**rans-**H**ub Tools - 接入 Trans-Hub 项目的我的世界本地化本地运行工具
+> 🌐 **专业游戏本地化适配器** - Trans-Hub生态系统的Minecraft专业工具
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Tauri](https://img.shields.io/badge/Tauri-2.8+-orange.svg)](https://tauri.app/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-red.svg)](https://fastapi.tiangolo.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2+-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.3+-61dafb.svg)](https://reactjs.org/)
-[![Material_UI](https://img.shields.io/badge/Material--UI-5.14+-0081cb.svg)](https://mui.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9+-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.1+-61dafb.svg)](https://reactjs.org/)
+[![Ant Design](https://img.shields.io/badge/Ant%20Design-5.27+-0170fe.svg)](https://ant.design/)
 
 ## 📖 项目简介
 
-TransHub Suite 是一个专门接入 [Trans-Hub](https://trans-hub.net) 项目的游戏本地化工具套件。基于 Tauri + FastAPI 架构，为游戏玩家和开发者提供专业的本地化管理解决方案。通过与 Trans-Hub 云端翻译平台的深度集成，实现自动提取、检测、翻译、回写的完整本地化工作流程。
+TH-Suite v2.0是完全重构的Core-First专业适配器，专为Trans-Hub生态系统设计的Minecraft本地化工具。通过投影适配器系统与Trans-Hub Core深度集成，删除了15,000+行重复基础设施代码，专注于Minecraft特定的用户体验优化。
 
-当前包含的应用模块：
+**🚀 Core-First架构优势**：
+- **零重复基础设施** - 依赖Trans-Hub Core提供翻译引擎、存储、同步等核心服务  
+- **投影适配系统** - UIDA双向转换，确保数据一致性和可追溯性
+- **多MOD加载器支持** - 智能识别Forge、Fabric、Quilt、NeoForge
+- **专业化界面** - 游戏玩家友好的"人话化"设计
 
-- **🎮 TH Suite MC L10n** - Minecraft 本地化套件（主要功能）
-- **🏠 RW Studio** - Rusted Warfare 本地化工具（扩展功能）
+**🎯 目标用户**：
+- Minecraft整合包制作者和本地化团队
+- MOD开发者需要多语言支持
+- 游戏玩家希望获得高质量中文体验
 
-## ✨ 核心特性
+## ✨ v2.0 核心特性
 
-### 🏗️ 架构特点
-- **Clean Architecture**: 领域驱动设计，业务逻辑与技术细节分离
-- **双层数据模型**: Artifact/Container 架构，支持灵活的物理/逻辑映射
-- **内容寻址存储**: 基于 SHA256 的 Blob 去重系统，大幅减少存储空间
-- **Minecraft 主题 UI**: 完全仿真的 MC 风格界面，包括像素渲染、3D 边框、附魔效果
-- **实时进度系统**: WebSocket + 轮询混合模式，提供流畅的实时反馈
-- **全链路追踪**: 分布式链路追踪系统，完整的操作可观测性
+### 🔧 Core-First架构重构  
+- **投影适配系统**: Minecraft ↔ UIDA双向转换，数据一致性保证
+- **Trans-Hub客户端**: 完整的HTTP API集成，支持摄入、翻译、同步工作流
+- **零冗余代码**: 删除15,000+行重复基础设施，仅保留Minecraft特定逻辑  
+- **Clean Architecture**: DDD六边形架构，适配器-领域-服务清晰分层
 
-### 🔄 自动化翻译工作流程
-- **智能提取**: 自动提取整合包或模组中的可翻译文本
-- **在线检测**: 检测 Trans-Hub 数据库中是否存在对应翻译
-- **自动翻译**: 不存在的文本自动写入数据库，由 TH 进行翻译
-- **本地同步**: 翻译完成后自动拉回本地，写入相应文件
-- **版本管理**: 支持翻译版本控制和增量更新
+### 🎮 多MOD加载器支持
+- **智能检测**: 自动识别Forge、NeoForge、Fabric、Quilt MOD类型
+- **元数据提取**: 完整解析mods.toml、fabric.mod.json、quilt.mod.json  
+- **依赖分析**: 可视化MOD依赖关系，自动检测缺失和冲突
+- **版本兼容**: 支持各加载器的版本需求检查和兼容性验证
 
-### 🎮 TH Suite MC L10n 核心功能
+### 🛠️ 高级JAR处理能力
+- **安全修改**: 自动备份、完整性检查、签名验证  
+- **冲突解决**: 智能检测翻译冲突，支持自动合并和手动解决
+- **多策略构建**: Resource Pack、JAR直接修改、Overlay包三种输出模式
+- **回滚机制**: 一键回滚到任意备份版本，保障数据安全
 
-#### 🎨 Minecraft 主题界面
-- **完全仿真 MC UI**: 像素艺术、3D 边框效果、附魔动画
-- **主题组件库**: MinecraftButton、MinecraftCard、MinecraftProgress、MinecraftLoader
-- **游戏风格交互**: 经验条进度、方块图标、粒子效果
-- **响应式设计**: 适配各种屏幕尺寸，保持游戏美感
+### 🎨 现代化用户界面  
+- **Minecraft轻装饰主题**: 像素化描边、方块阴影、网格背景
+- **Ant Design 5.x**: 专业UI组件库，替代废弃的Material-UI
+- **玩家友好设计**: "人话化"文案，隐藏技术参数，安全默认策略
+- **响应式布局**: 适配桌面和移动设备，保持一致体验
 
-#### 📦 内容管理
-- **Artifact/Container 双层架构**: 物理载体与逻辑容器分离，灵活管理复杂结构
-- **Blob 去重存储**: SHA256 哈希内容寻址，相同内容仅存储一次
+### 🔄 完整本地化工作流
+```
+扫描MOD → 提取语言文件 → 投影转换 → 摄入Trans-Hub → 
+自动翻译 → 同步回本地 → 冲突解决 → 构建本地化包
+```
+
+### 📊 智能分析与统计
+- **加载器分布**: 可视化Forge/Fabric/Quilt/NeoForge占比
+- **版本兼容性**: Minecraft版本支持情况统计  
+- **翻译覆盖率**: 各语言翻译完成度和质量评分
+- **依赖关系图**: 树形结构展示MOD依赖，循环依赖检测
 - **增量扫描**: 基于指纹的智能缓存，仅处理变更部分
 - **多格式支持**: JSON、Properties、YAML、TOML 等格式自动识别
 
@@ -92,37 +107,34 @@ TransHub Suite 是一个专门接入 [Trans-Hub](https://trans-hub.net) 项目�
 
 ## 🚀 快速开始
 
-### 📋 环境要求
+### 📋 系统要求
 
-- **Python**: 3.12 或更高版本
-- **Node.js**: 18 或更高版本
-- **Rust**: 1.77 或更高版本（用于 Tauri 2.x）
-- **Poetry**: Python 依赖管理
-- **pnpm**: Node.js 包管理器（推荐）
-- **Task**: 任务运行器（推荐使用）
+- **Python**: 3.12+ (推荐3.12.7)
+- **Node.js**: 18+ (推荐18.19.0)
+- **Rust**: 1.70+ (Tauri构建需要)
+- **Trans-Hub Core**: v1.0+ (依赖服务)
+- **操作系统**: Windows 10+, macOS 12+, Linux (Ubuntu 20.04+)
 
-### 🛠️ 核心技术栈
+### 🛠️ v2.0技术架构
 
-#### 后端技术 (Python)
-- **FastAPI 0.115+**: 现代异步 Web 框架
-- **Pydantic 2.5+**: 数据验证和序列化
-- **SQLCipher**: 加密 SQLite 数据库
-- **Structlog**: 结构化日志系统
-- **httpx/aiohttp**: 异步 HTTP 客户端
+#### Core-First后端 (Python 3.12)
+- **FastAPI 0.115+**: RESTful API服务
+- **投影适配器**: Minecraft ↔ UIDA双向转换
+- **多加载器支持**: Forge、Fabric、Quilt、NeoForge智能识别
+- **工作流引擎**: 完整的本地化流水线
+- **JAR处理器**: 安全修改、备份、回滚机制
 
-#### 前端技术 (TypeScript)
-- **React 18.3+**: 用户界面库
-- **Tauri 2.8+**: 跨平台桌面应用框架
-- **Material-UI 5.14+**: React UI 组件库
-- **TailwindCSS 4.1+**: 实用优先的 CSS 框架
-- **Zustand**: 轻量级状态管理
-- **React Query**: 服务器状态管理
+#### 现代化前端 (TypeScript 5.9)
+- **React 19.1+**: 现代化UI框架
+- **Tauri 2.8+**: 高性能桌面应用
+- **Ant Design 5.27+**: 专业UI组件库 (替代Material-UI)
+- **Minecraft轻装饰主题**: 像素化风格、方块阴影
+- **响应式设计**: 桌面和移动设备适配
 
-#### 开发工具
-- **Ruff**: Python 代码检查和格式化
-- **MyPy**: 静态类型检查
-- **ESLint/Prettier**: JavaScript/TypeScript 代码质量
-- **Vite**: 前端构建工具
+#### 核心依赖服务
+- **Trans-Hub Core**: 翻译引擎、内容寻址存储
+- **UIDA系统**: 统一标识符和寻址规范
+- **投影规范**: YAML配置驱动的数据映射
 
 ### 🛠️ 安装步骤
 
@@ -211,6 +223,7 @@ th-suite/
 │   └── protocol/                  # API 协议定义
 ├── docs/                          # 文档
 │   ├── ARCHITECTURE.md           # 架构设计文档
+│   ├── database-schema.md        # 数据库架构文档
 │   ├── API.md                     # API 接口文档
 │   └── USAGE.md                   # 使用指南
 ├── tests/                         # 测试文件
@@ -288,7 +301,7 @@ poetry run mypy apps packages
 
 启动开发服务器后，可以访问以下地址查看 API 文档：
 
-- **TH Suite MC L10n API**: http://localhost:8000/docs (FastAPI 自动生成)
+- **TH Suite MC L10n API**: http://localhost:18000/docs (FastAPI 自动生成)
 - **RW Studio API**: http://localhost:8002/docs (FastAPI 自动生成)
 
 ### 核心 API 端点
@@ -384,8 +397,8 @@ ParserManager.register(MyFileParser);
    docker-compose -f docker-compose.prod.yml up -d
    
    # 或直接运行
-   poetry run uvicorn apps.mc_studio.backend.main:app --host 0.0.0.0 --port 8001
-   poetry run uvicorn apps.rw_studio.backend.main:app --host 0.0.0.0 --port 8002
+   poetry run uvicorn apps.mc_l10n.backend.main:app --host 0.0.0.0 --port 18000
+   poetry run uvicorn apps.rw_l10n.backend.main:app --host 0.0.0.0 --port 8002
    ```
 
 ### 桌面应用分发
@@ -399,6 +412,14 @@ task build:rw
 # apps/mc-l10n/frontend/src-tauri/target/release/
 # apps/rw-studio/frontend/src-tauri/target/release/
 ```
+
+## 📚 相关文档
+
+- **[完整开发指南](DEVELOPER_GUIDE.md)** - 详细的开发环境配置和工作流程
+- **[数据库架构文档](docs/database-schema.md)** - 完整的数据库表结构和设计说明
+- **[项目架构设计](docs/ARCHITECTURE.md)** - Core-First架构设计文档
+- **[API接口文档](docs/API.md)** - RESTful API详细规范
+- **[使用指南](docs/USAGE.md)** - 用户操作手册和最佳实践
 
 ## 🤝 贡献指南
 

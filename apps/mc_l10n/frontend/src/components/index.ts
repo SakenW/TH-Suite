@@ -21,3 +21,6 @@ export { default as ProjectScan } from './ProjectScan'
 
 // Minecraft主题组件
 export * from './MinecraftComponents'
+
+// MOD加载器相关组件
+export * from './ModLoader'
