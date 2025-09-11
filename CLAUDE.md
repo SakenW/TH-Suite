@@ -13,12 +13,19 @@ TransHub Suite is a game localization toolkit specifically designed for integrat
 ## Core Architecture
 
 ### Tech Stack
-- **Frontend**: Tauri + React + TypeScript + Material-UI + Tailwind CSS
+- **Frontend**: Tauri + React + TypeScript + **Ant Design** + Tailwind CSS (~~Material-UI 已废弃~~)
 - **Backend**: FastAPI + Python 3.12 + SQLite/SQLCipher + Structlog
 - **State Management**: Dependency injection pattern (backend), Service Container pattern (frontend)
 - **Package Management**: Poetry (Python), pnpm (Node.js)
 - **Task Runner**: Taskfile (recommended) or npm scripts
 - **Real-time Communication**: WebSocket + Server-Sent Events + Polling
+
+### ⚠️ 重要更新 (2024.09)
+MC L10n 前端已完全重构，基于《我的世界工具前端设计.md》规范：
+- ✅ **Ant Design 5.x** 替代 Material-UI 作为唯一组件库
+- ✅ **Minecraft 轻装饰主题系统** - 像素化描边、方块化阴影、网格背景
+- ✅ **玩家友好界面** - "人话化"文案，隐藏工程参数，安全默认策略
+- ✅ **标准化工作流** - 扫描 → 差量同步 → 构建本地化产物
 
 ### 架构模式
 
@@ -41,20 +48,34 @@ src/mc_l10n/
     └── scanners/      # 文件扫描器
 ```
 
-#### 前端架构（Service-Based）
+#### 前端架构（Ant Design + Minecraft 轻装饰）
 ```
 src/
-├── components/        # 可复用的 React 组件
-│   ├── common/       # 通用组件
-│   ├── ui/           # UI 基础组件
-│   └── Layout/       # 布局组件
-├── hooks/            # 自定义 React Hooks
-├── pages/            # 页面组件
-├── services/         # 业务逻辑服务
-│   ├── domain/       # 领域服务
-│   ├── infrastructure/ # 基础设施服务
-│   └── container/    # 依赖注入容器
-└── stores/           # 状态管理
+├── theme/                    # 主题系统
+│   └── minecraft.ts         # Minecraft 轻装饰主题配置
+├── contexts/                 # React 上下文
+│   └── ThemeProvider.tsx    # 主题提供者（集成 AntD ConfigProvider）
+├── layouts/                  # 布局组件
+│   └── MainLayout.tsx       # 主布局（左侧导航+顶部状态条）
+├── components/               # 组件系统
+│   ├── TopStatusBar.tsx     # 顶部状态条（连接状态+快速指标）
+│   ├── common/              # 通用组件
+│   └── ui/                  # UI 基础组件（基于 AntD）
+├── pages/                    # 页面组件（符合设计文档）
+│   ├── WelcomePage.tsx      # 欢迎页（工具介绍+快速入口）
+│   ├── ProjectsPacksPage.tsx # 整合包项目页
+│   ├── ProjectsModsPage.tsx  # MOD 项目页  
+│   ├── ScanPage.tsx         # 扫描中心
+│   ├── SyncPage.tsx         # 同步中心
+│   ├── BuildPage.tsx        # 构建中心
+│   ├── ServerPage.tsx       # 服务器状态
+│   └── SettingsPage.tsx     # 设置页
+├── services/                 # 业务逻辑服务（保留原架构）
+│   ├── domain/              # 领域服务
+│   ├── infrastructure/      # 基础设施服务
+│   └── container/           # 依赖注入容器
+├── stores/                   # 状态管理（保留 Zustand）
+└── hooks/                    # 自定义 React Hooks
 ```
 
 ### 关键设计模式
@@ -188,6 +209,25 @@ npm run lint:python:mc
 - **代码检查**: `eslint . --ext ts,tsx`
 - **类型检查**: `tsc --noEmit`
 - **格式化**: `prettier --write .`
+
+### 新版前端架构特殊说明
+⚠️ **重要**: MC L10n 前端已完全重构，请注意：
+
+1. **使用新版文件**:
+   - `src/App.new.tsx` - 新版主应用组件（基于 Ant Design）
+   - `src/main.new.tsx` - 新版入口文件
+   - 临时共存，可通过修改 index.html 脚本引用切换
+
+2. **依赖管理**:
+   - ✅ **仅使用 Ant Design**: `import { Button, Card } from 'antd'`
+   - ❌ **禁用 Material-UI**: 已移除，避免导入 `@mui/*`
+   - ✅ **主题系统**: 使用 `./contexts/ThemeProvider.tsx`
+
+3. **设计原则**:
+   - 严格遵循《我的世界工具前端设计.md》规范
+   - 界面文案必须"人话化"，避免专业术语
+   - 安全默认：默认旁路产物，破坏性操作双确认
+   - Minecraft 轻装饰：像素化元素仅作装饰
 
 ## 关键业务概念
 

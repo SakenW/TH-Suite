@@ -203,7 +203,7 @@ class DatabaseServiceAdapter(IDatabaseService):
         import os
         import sqlite3
 
-        db_path = "mc_l10n.db"
+        db_path = "data/mc_l10n_v6.db"
         stats = {
             "total_mods": 0,
             "total_language_files": 0,
@@ -218,16 +218,16 @@ class DatabaseServiceAdapter(IDatabaseService):
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
 
-                # 获取模组数量
-                cursor.execute("SELECT COUNT(DISTINCT mod_id) FROM mods")
+                # 获取模组数量 - 使用V6架构的core_mods表
+                cursor.execute("SELECT COUNT(DISTINCT modid) FROM core_mods")
                 stats["total_mods"] = cursor.fetchone()[0]
 
-                # 获取语言文件数量
-                cursor.execute("SELECT COUNT(*) FROM language_files")
+                # 获取语言文件数量 - 使用V6架构的core_language_files表
+                cursor.execute("SELECT COUNT(*) FROM core_language_files")
                 stats["total_language_files"] = cursor.fetchone()[0]
 
-                # 获取翻译键数量
-                cursor.execute("SELECT COUNT(*) FROM translation_entries")
+                # 获取翻译键数量 - 使用V6架构的core_translation_entries表
+                cursor.execute("SELECT COUNT(*) FROM core_translation_entries")
                 stats["total_translation_keys"] = cursor.fetchone()[0]
 
                 # 获取语言分布
@@ -271,16 +271,19 @@ class DatabaseServiceAdapter(IDatabaseService):
         return stats
 
     async def initialize(self) -> bool:
-        """初始化数据库"""
+        """初始化数据库 - 使用V6架构"""
         try:
-            from core.mc_database import Database
-
-            Database()  # 这将创建数据库表
+            # 已归档旧数据库代码: from core.mc_database import Database
+            # 使用V6数据库管理器
+            from database.core.manager import get_database_manager
+            
+            # V6数据库管理器在创建时自动初始化，无需额外调用initialize
+            db_manager = get_database_manager()
             self._initialized = True
-            logger.info("数据库初始化成功")
+            logger.info("V6数据库初始化成功")
             return True
         except Exception as e:
-            logger.error(f"数据库初始化失败: {e}")
+            logger.error(f"V6数据库初始化失败: {e}")
             return False
 
 
@@ -335,9 +338,12 @@ async def initialize_container() -> DIContainer:
 
     # 延迟注册扫描服务（需要在基础设施初始化后）
     def scanner_factory() -> IScannerService:
-        from core.ddd_scanner import get_scanner_instance
-
-        scanner_instance = get_scanner_instance("mc_l10n.db")
+        from core.ddd_scanner_simple import get_scanner_instance
+        from pathlib import Path
+        
+        # 使用V6 API数据库路径，保持数据库一致性
+        v6_db_path = Path(__file__).parent.parent / "data" / "mc_l10n_v6.db"
+        scanner_instance = get_scanner_instance(str(v6_db_path))
         return ScannerServiceAdapter(scanner_instance)
 
     container.register_factory(IScannerService, scanner_factory)
@@ -360,3 +366,9 @@ def get_database_service() -> IDatabaseService | None:
 def get_infrastructure_service() -> IInfrastructureService | None:
     """获取基础设施服务"""
     return get_container().get(IInfrastructureService)
+
+
+def get_database_manager():
+    """获取数据库管理器（兼容旧代码）"""
+    from database.core.manager import get_database_manager as create_db_manager
+    return create_db_manager()

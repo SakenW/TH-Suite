@@ -59,6 +59,7 @@ async def project_test_endpoint():
     }
 
 
+@router.get("", response_model=dict[str, Any])
 @router.get("/", response_model=dict[str, Any])
 async def list_projects():
     """
@@ -78,6 +79,7 @@ async def list_projects():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("", response_model=dict[str, Any])
 @router.post("/", response_model=dict[str, Any])
 async def create_project(project: ProjectCreate):
     """

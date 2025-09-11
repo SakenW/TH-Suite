@@ -11,11 +11,11 @@ from apps.mc_l10n.backend.core.di_container import get_database_manager
 from packages.core.infrastructure.database.manager import WorkQueueManager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/queue", tags=["工作队列管理"])
+router = APIRouter(prefix="/queue", tags=["工作队列管理"])
 
 
 class TaskCreateRequest(BaseModel):
-    type: str = Field(..., regex=r"^(import_delta_block|export_stream|tm_index|qa_run|merge_resolve|sync_out|sync_in)$")
+    type: str = Field(..., pattern=r"^(import_delta_block|export_stream|tm_index|qa_run|merge_resolve|sync_out|sync_in)$")
     payload_json: Dict[str, Any] = Field(...)
     priority: int = Field(0, ge=0, le=100)
     not_before: Optional[str] = Field(None)
@@ -28,7 +28,7 @@ class TaskLeaseRequest(BaseModel):
 
 
 class TaskCompleteRequest(BaseModel):
-    result: str = Field(..., regex=r"^(success|fail)$")
+    result: str = Field(..., pattern=r"^(success|fail)$")
     output: Dict[str, Any] = Field({})
     error_message: Optional[str] = Field(None, max_length=1000)
 
@@ -39,7 +39,7 @@ def get_work_queue_manager(db_manager: McL10nDatabaseManager = Depends(get_datab
 
 @router.get("/tasks")
 async def list_queue_tasks(
-    state: Optional[str] = Query(None, regex=r"^(pending|leased|done|err|dead)$"),
+    state: Optional[str] = Query(None, pattern=r"^(pending|leased|done|err|dead)$"),
     type: Optional[str] = Query(None),
     lease_owner: Optional[str] = Query(None),
     limit: int = Query(20, ge=1, le=100),
@@ -321,7 +321,7 @@ async def get_queue_status(
 @router.post("/cleanup")
 async def cleanup_queue(
     older_than_days: int = Query(7, ge=1, le=30),
-    states: str = Query("done,err", regex=r"^(done|err|dead)(,(done|err|dead))*$"),
+    states: str = Query("done,err", pattern=r"^(done|err|dead)(,(done|err|dead))*$"),
     queue_manager: WorkQueueManager = Depends(get_work_queue_manager)
 ) -> Dict[str, Any]:
     """清理队列中的旧任务"""

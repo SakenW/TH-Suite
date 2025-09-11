@@ -11,11 +11,11 @@ from apps.mc_l10n.backend.database.repositories.pack_repository import PackRepos
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/packs", tags=["整合包管理"])
+router = APIRouter(prefix="/packs", tags=["整合包管理"])
 
 
 class PackCreateRequest(BaseModel):
-    platform: str = Field(..., regex=r"^(modrinth|curseforge|custom)$")
+    platform: str = Field(..., pattern=r"^(modrinth|curseforge|custom)$")
     slug: str = Field(..., min_length=1, max_length=100)
     title: str = Field(..., min_length=1, max_length=200)
     author: Optional[str] = Field(None, max_length=100)
@@ -25,14 +25,14 @@ class PackCreateRequest(BaseModel):
 class PackVersionCreateRequest(BaseModel):
     pack_uid: str = Field(..., min_length=1)
     mc_version: str = Field(..., min_length=1, max_length=20)
-    loader: str = Field(..., regex=r"^(forge|neoforge|fabric|quilt|multi|unknown)$")
+    loader: str = Field(..., pattern=r"^(forge|neoforge|fabric|quilt|multi|unknown)$")
     manifest_json: Dict[str, Any] = Field(...)
 
 
 class PackInstallationCreateRequest(BaseModel):
     pack_version_uid: str = Field(..., min_length=1)
     root_path: Optional[str] = Field(None, max_length=500)
-    launcher: Optional[str] = Field(None, regex=r"^(curseforge|modrinth|vanilla|custom)$")
+    launcher: Optional[str] = Field(None, pattern=r"^(curseforge|modrinth|vanilla|custom)$")
     enabled: bool = Field(True)
 
 
@@ -42,7 +42,7 @@ def get_pack_repository(db_manager: McL10nDatabaseManager = Depends(get_database
 
 @router.get("")
 async def list_packs(
-    platform: Optional[str] = Query(None, regex=r"^(modrinth|curseforge|custom)$"),
+    platform: Optional[str] = Query(None, pattern=r"^(modrinth|curseforge|custom)$"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     pack_repo: PackRepository = Depends(get_pack_repository)
@@ -114,7 +114,7 @@ async def get_pack(
 async def list_pack_versions(
     pack_uid: str,
     mc_version: Optional[str] = Query(None),
-    loader: Optional[str] = Query(None, regex=r"^(forge|neoforge|fabric|quilt|multi|unknown)$"),
+    loader: Optional[str] = Query(None, pattern=r"^(forge|neoforge|fabric|quilt|multi|unknown)$"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     pack_repo: PackRepository = Depends(get_pack_repository)

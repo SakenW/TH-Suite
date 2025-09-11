@@ -3,7 +3,14 @@
  * 管理所有API相关的服务、类型和工具函数
  */
 
-// ==================== V6 API ====================
+// ==================== 基础 API 客户端 ====================
+export { BaseApiClient, apiClient } from './BaseApiClient'
+export { ScanApiService, scanApi } from './ScanApiService'
+export { PackApiService, packApi } from './PackApiService'
+export { ModApiService, modApi } from './ModApiService'
+export * from './types'
+
+// ==================== V6 API （兼容现有代码）====================
 export { V6ApiClient, v6ApiClient } from './V6ApiClient'
 export type * from './v6Types'
 

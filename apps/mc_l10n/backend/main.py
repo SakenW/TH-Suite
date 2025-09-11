@@ -125,13 +125,14 @@ def create_app() -> FastAPI:
     # 设置全局错误处理
     setup_error_handlers(app)
 
-    # 添加V6中间件 (在日志中间件之前)
+    # 添加V6中间件 (在日志中间件之前) - 暂时全部禁用以解决Content-Length问题
     v6_middleware_config = V6MiddlewareConfig(
-        enable_idempotency=True,
-        enable_ndjson=True,
-        enable_etag=True,
-        idempotency_ttl=3600,  # 1小时幂等窗口
-        enable_weak_etag=True
+        enable_idempotency=False,  # 暂时禁用
+        enable_ndjson=False,       # 暂时禁用
+        enable_etag=False,         # 暂时禁用
+        enable_compression=False,  # 暂时禁用
+        idempotency_ttl=3600,
+        enable_weak_etag=False
     )
     setup_v6_middlewares(app, v6_middleware_config)
 
@@ -315,7 +316,7 @@ def create_app() -> FastAPI:
     async def get_scan_history():
         """获取历史扫描记录"""
         try:
-            conn = sqlite3.connect("mc_l10n.db")
+            conn = sqlite3.connect("data/mc_l10n_v6.db")
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
@@ -354,7 +355,7 @@ def create_app() -> FastAPI:
     async def get_latest_scan():
         """获取最新的扫描结果"""
         try:
-            conn = sqlite3.connect("mc_l10n.db")
+            conn = sqlite3.connect("data/mc_l10n_v6.db")
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
@@ -373,37 +374,47 @@ def create_app() -> FastAPI:
 
             scan_id = session["id"]
 
-            # 获取该扫描的模组数据
+            # 获取V6架构的模组数据
             cursor.execute(
                 """
-                SELECT * FROM mods
-                WHERE scan_id = ?
-                ORDER BY display_name
-            """,
-                (scan_id,),
+                SELECT uid, modid, name, created_at, updated_at FROM core_mods
+                ORDER BY name
+            """
             )
             mods = cursor.fetchall()
 
             mod_list = []
             for mod in mods:
-                # 获取该模组的语言文件统计
+                # 获取该模组的语言文件统计 - V6架构
                 cursor.execute(
                     """
-                    SELECT COUNT(*) as lang_count, SUM(entry_count) as total_keys
-                    FROM language_files
-                    WHERE mod_id = ?
+                    SELECT COUNT(lf.uid) as lang_count, COUNT(te.uid) as total_keys
+                    FROM core_language_files lf
+                    LEFT JOIN core_translation_entries te ON lf.uid = te.language_file_uid
+                    WHERE lf.carrier_uid = ?
                 """,
-                    (mod["id"],),
+                    (mod["uid"],),
                 )
                 stats = cursor.fetchone()
+                
+                # 获取该模组的版本信息
+                cursor.execute(
+                    """
+                    SELECT version, loader, mc_version FROM core_mod_versions
+                    WHERE mod_uid = ?
+                    ORDER BY discovered_at DESC LIMIT 1
+                """,
+                    (mod["uid"],),
+                )
+                version_info = cursor.fetchone()
 
                 mod_list.append(
                     {
-                        "id": mod["mod_id"],
-                        "name": mod["display_name"],
-                        "version": mod["version"] or "",
-                        "file_path": mod["file_path"],
-                        "mod_loader": mod["mod_loader"] or "",
+                        "id": mod["modid"],
+                        "name": mod["name"],
+                        "version": version_info["version"] if version_info else "",
+                        "file_path": "",  # V6架构不存储文件路径
+                        "mod_loader": version_info["loader"] if version_info else "",
                         "language_files": stats["lang_count"] if stats else 0,
                         "total_keys": stats["total_keys"] if stats else 0,
                     }

@@ -17,13 +17,9 @@ from domain.services import (
 from facade import MCL10nFacade
 from infrastructure.cache.memory_cache import MemoryCacheRepository
 from infrastructure.minecraft.mod_scanner import MinecraftModScanner
-from infrastructure.persistence.sqlite_repositories import (
-    SqliteEventRepository,
-    SqliteModRepository,
-    SqliteScanResultRepository,
-    SqliteTranslationProjectRepository,
-    SqliteTranslationRepository,
-)
+# 已归档: 旧的Repository模式已迁移至V6架构
+# 新的Repository访问请使用: database.repositories.*
+# 此容器已废弃，新版使用: core.di_container
 from infrastructure.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger(__name__)
@@ -41,7 +37,7 @@ class ServiceContainer:
     def _load_default_config(self) -> dict[str, Any]:
         """加载默认配置"""
         return {
-            "database_path": os.getenv("DATABASE_PATH", "mc_l10n_local.db"),
+            "database_path": os.getenv("DATABASE_PATH", "data/mc_l10n_v6.db"),
             "cache_max_size": int(os.getenv("CACHE_MAX_SIZE", "10000")),
             "scan_workers": int(os.getenv("SCAN_WORKERS", "4")),
             "api_port": int(os.getenv("API_PORT", "8000")),

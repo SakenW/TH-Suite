@@ -11,6 +11,12 @@ backend/
 ├── utils/              # 工具函数
 │   └── simple_logging.py # 结构化日志工厂
 │
+├── tools/              # 开发和维护工具
+│   ├── README.md       # 工具使用文档
+│   ├── test_parsing_fix.py      # MOD解析逻辑测试
+│   ├── cleanup_mod_data.py      # 数据库MOD数据清理工具
+│   └── check_mod_parsing_fixed.py  # MOD解析状态检查
+│
 ├── scripts/            # 独立脚本和工具
 │   ├── cleanup_duplicates.py # 重复数据清理工具
 │   └── verify_full_data.py   # 数据验证工具
@@ -46,11 +52,13 @@ FastAPI应用主入口，提供以下功能：
 - 10个核心表 + 20个索引 + 4个视图
 
 ### core/ddd_scanner.py
-扫描服务实现：
-- JAR文件解析
-- 语言文件提取
-- 异步扫描支持
-- 进度报告
+现代化MOD扫描服务实现：
+- **智能MOD解析**: 支持META-INF/mods.toml (Forge)、fabric.mod.json (Fabric)、mcmod.info (Legacy)
+- **智能文件名解析**: 自动分离模组名称和版本号，支持多种命名模式
+- **模板变量支持**: 处理${version}、${mc_version}等动态变量
+- **语言文件提取**: JSON/Properties格式支持
+- **异步扫描支持**: 高性能并发处理
+- **进度报告**: 实时扫描状态反馈
 
 ## 导入示例
 
@@ -81,8 +89,17 @@ from ..utils.simple_logging import StructLogFactory
 
 ## 注意事项
 
-1. 所有新代码应放入相应的目录（core/、utils/、scripts/）
+1. 所有新代码应放入相应的目录（core/、utils/、scripts/、tools/）
 2. 避免在根目录创建新的Python文件
 3. 数据文件应放在data/目录
 4. 废弃代码移至archive/目录
-5. 使用相对导入处理模块间依赖
+5. 开发和维护工具放在tools/目录，包含完整的使用文档
+6. 使用相对导入处理模块间依赖
+
+## MOD解析质量
+
+当前版本已修复MOD解析问题：
+- 支持现代Forge模组的META-INF/mods.toml格式
+- 智能文件名解析，正确分离模组名称和版本号
+- 处理模板变量（${version}、${mc_version}等）
+- 使用tools/目录工具验证和修复解析质量

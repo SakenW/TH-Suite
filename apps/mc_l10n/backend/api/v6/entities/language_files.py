@@ -11,15 +11,15 @@ from apps.mc_l10n.backend.database.repositories.language_file_repository import 
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/language-files", tags=["语言文件管理"])
+router = APIRouter(prefix="/language-files", tags=["语言文件管理"])
 
 
 class LanguageFileCreateRequest(BaseModel):
-    carrier_type: str = Field(..., regex=r"^(mod|resource_pack|data_pack|override)$")
+    carrier_type: str = Field(..., pattern=r"^(mod|resource_pack|data_pack|override)$")
     carrier_uid: str = Field(..., min_length=1)
     locale: str = Field(..., min_length=2, max_length=10)
     rel_path: str = Field(..., min_length=1, max_length=500)
-    format: str = Field(..., regex=r"^(json|lang|properties)$")
+    format: str = Field(..., pattern=r"^(json|lang|properties)$")
     size: int = Field(0, ge=0)
 
 
@@ -33,10 +33,10 @@ def get_language_file_repository(db_manager: McL10nDatabaseManager = Depends(get
 
 @router.get("")
 async def list_language_files(
-    carrier_type: Optional[str] = Query(None, regex=r"^(mod|resource_pack|data_pack|override)$"),
+    carrier_type: Optional[str] = Query(None, pattern=r"^(mod|resource_pack|data_pack|override)$"),
     carrier_uid: Optional[str] = Query(None),
     locale: Optional[str] = Query(None),
-    format: Optional[str] = Query(None, regex=r"^(json|lang|properties)$"),
+    format: Optional[str] = Query(None, pattern=r"^(json|lang|properties)$"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     lang_file_repo: LanguageFileRepository = Depends(get_language_file_repository)
@@ -161,7 +161,7 @@ async def delete_language_file(
 @router.get("/carriers/{carrier_uid}/coverage")
 async def get_coverage_stats(
     carrier_uid: str,
-    carrier_type: str = Query(..., regex=r"^(mod|resource_pack|data_pack|override)$"),
+    carrier_type: str = Query(..., pattern=r"^(mod|resource_pack|data_pack|override)$"),
     lang_file_repo: LanguageFileRepository = Depends(get_language_file_repository)
 ) -> Dict[str, Any]:
     """获取语言覆盖率统计"""
@@ -179,7 +179,7 @@ async def get_coverage_stats(
 @router.get("/batch")
 async def batch_get_language_files(
     carrier_uids: str = Query(..., description="逗号分隔的carrier_uid列表"),
-    carrier_type: str = Query(..., regex=r"^(mod|resource_pack|data_pack|override)$"),
+    carrier_type: str = Query(..., pattern=r"^(mod|resource_pack|data_pack|override)$"),
     locale: Optional[str] = Query(None),
     lang_file_repo: LanguageFileRepository = Depends(get_language_file_repository)
 ) -> Dict[str, Any]:
@@ -207,7 +207,7 @@ async def batch_get_language_files(
 
 @router.get("/locales")
 async def list_available_locales(
-    carrier_type: Optional[str] = Query(None, regex=r"^(mod|resource_pack|data_pack|override)$"),
+    carrier_type: Optional[str] = Query(None, pattern=r"^(mod|resource_pack|data_pack|override)$"),
     carrier_uid: Optional[str] = Query(None),
     lang_file_repo: LanguageFileRepository = Depends(get_language_file_repository)
 ) -> Dict[str, Any]:

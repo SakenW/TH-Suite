@@ -10,7 +10,7 @@ from apps.mc_l10n.backend.database.core.manager import McL10nDatabaseManager
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/cache", tags=["缓存管理"])
+router = APIRouter(prefix="/cache", tags=["缓存管理"])
 
 
 class CacheWarmupRequest(BaseModel):
@@ -99,7 +99,7 @@ async def get_cache_status(
 
 @router.post("/cleanup")
 async def cleanup_cache(
-    type: str = Query("all", regex=r"^(scan|cas|all)$"),
+    type: str = Query("all", pattern=r"^(scan|cas|all)$"),
     expired_only: bool = Query(True),
     older_than_hours: int = Query(24, ge=1, le=720),
     db_manager: McL10nDatabaseManager = Depends(get_db_manager)
@@ -318,7 +318,7 @@ async def invalidate_cache_entry(
 
 @router.post("/rebuild")
 async def rebuild_cache(
-    type: str = Query("scan", regex=r"^(scan|cas|all)$"),
+    type: str = Query("scan", pattern=r"^(scan|cas|all)$"),
     force: bool = Query(False),
     db_manager: McL10nDatabaseManager = Depends(get_db_manager)
 ) -> Dict[str, Any]:

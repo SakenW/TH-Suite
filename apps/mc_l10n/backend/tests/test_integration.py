@@ -7,7 +7,7 @@ import os
 import tempfile
 
 import pytest
-from container import ServiceContainer
+from core.di_container import get_container, initialize_container
 from domain.value_objects import LanguageCode
 from facade.mc_l10n_facade import MCL10nFacade
 

@@ -13,7 +13,7 @@ from apps.mc_l10n.backend.database.repositories.translation_entry_repository imp
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/translations", tags=["翻译条目管理"])
+router = APIRouter(prefix="/translations", tags=["翻译条目管理"])
 
 
 class TranslationEntryCreateRequest(BaseModel):
@@ -21,20 +21,20 @@ class TranslationEntryCreateRequest(BaseModel):
     key: str = Field(..., min_length=1, max_length=500)
     src_text: str = Field(..., max_length=10000)
     dst_text: str = Field("", max_length=10000)
-    status: str = Field("new", regex=r"^(new|mt|reviewed|locked|rejected|conflict)$")
+    status: str = Field("new", pattern=r"^(new|mt|reviewed|locked|rejected|conflict)$")
     qa_flags: Optional[Dict[str, Any]] = Field(None)
 
 
 class TranslationEntryUpdateRequest(BaseModel):
     dst_text: Optional[str] = Field(None, max_length=10000)
-    status: Optional[str] = Field(None, regex=r"^(new|mt|reviewed|locked|rejected|conflict)$")
+    status: Optional[str] = Field(None, pattern=r"^(new|mt|reviewed|locked|rejected|conflict)$")
     qa_flags: Optional[Dict[str, Any]] = Field(None)
 
 
 class BatchTranslationUpdate(BaseModel):
     entry_uid: str = Field(..., min_length=1)
     dst_text: Optional[str] = Field(None, max_length=10000)
-    status: Optional[str] = Field(None, regex=r"^(new|mt|reviewed|locked|rejected|conflict)$")
+    status: Optional[str] = Field(None, pattern=r"^(new|mt|reviewed|locked|rejected|conflict)$")
     qa_flags: Optional[Dict[str, Any]] = Field(None)
 
 
@@ -45,7 +45,7 @@ def get_translation_entry_repository(db_manager: McL10nDatabaseManager = Depends
 @router.get("")
 async def list_translation_entries(
     language_file_uid: Optional[str] = Query(None),
-    status: Optional[str] = Query(None, regex=r"^(new|mt|reviewed|locked|rejected|conflict)$"),
+    status: Optional[str] = Query(None, pattern=r"^(new|mt|reviewed|locked|rejected|conflict)$"),
     key: Optional[str] = Query(None),
     search: Optional[str] = Query(None, min_length=1),
     limit: int = Query(100, ge=1, le=1000),

@@ -148,8 +148,9 @@ curl http://localhost:8000/api/scan/progress/550e8400-e29b-41d4-a716-44665544000
    - JSON 格式语言文件
 
 2. **Forge MOD**
-   - 包含 `mcmod.info` 或 `META-INF/mods.toml`
-   - `.lang` 格式语言文件
+   - 包含 `mcmod.info` (传统) 或 `META-INF/mods.toml` (现代)
+   - 支持智能文件名解析，自动分离模组名称和版本号
+   - `.lang` 和 `.json` 格式语言文件
 
 3. **Quilt MOD**
    - 包含 `quilt.mod.json`
@@ -308,15 +309,51 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
+## MOD解析质量测试
+
+### 新增测试工具
+
+MC L10n 提供了专门的工具来测试和验证MOD解析质量：
+
+```bash
+# 测试MOD解析逻辑
+poetry run python tools/test_parsing_fix.py
+
+# 检查当前数据库中的MOD解析状态
+poetry run python tools/check_mod_parsing_fixed.py
+
+# 清理错误的MOD数据（可选）
+poetry run python tools/cleanup_mod_data.py
+```
+
+### 解析质量验证
+
+MOD解析修复后应该能正确处理：
+
+1. **智能文件名解析**
+   - `AI-Improvements-1.18.2-0.5.2.jar` → 名称:`AI-Improvements`, 版本:`1.18.2-0.5.2`
+   - `jei-1.19.2-11.5.0.297.jar` → 名称:`jei`, 版本:`1.19.2-11.5.0.297`
+
+2. **现代Forge模组**
+   - 支持 `META-INF/mods.toml` 格式
+   - TOML变量解析 (`${version}`, `${mc_version}`)
+
+3. **多种命名模式**
+   - 连字符分隔: `mod-name-1.18.2-0.5.2`
+   - 下划线分隔: `mod_name_1.18.2`
+   - 版本前缀: `mod-name-v2.0`
+
 ## 总结
 
 这个测试指南涵盖了 MC L10n 扫描功能的完整测试流程。通过这些测试，你可以验证：
 
 - MOD 文件的正确识别和解析
+- **智能名称解析**: 模组名称和版本号正确分离
+- **现代格式支持**: META-INF/mods.toml、fabric.mod.json 等
 - 语言文件的提取和分析
 - 项目类型的准确检测
 - API 端点的正常工作
 - 异步任务的状态管理
 - 错误处理的完整性
 
-如果遇到问题，请检查控制台输出和日志，大多数问题都会有详细的错误信息。
+如果遇到问题，请检查控制台输出和日志，大多数问题都会有详细的错误信息。详细的工具使用说明可参考 `tools/README.md`。

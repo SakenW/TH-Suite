@@ -3,5 +3,4 @@
  * 现代化 Minecraft 风格主题
  */
 
-export { minecraftTheme, minecraftColors } from './minecraftTheme'
-export { default } from './minecraftTheme'
+export { getMinecraftTheme, MC_COLORS, mcDecorationStyles } from './minecraft'

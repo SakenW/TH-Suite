@@ -1,6 +1,6 @@
 import React, { Component, ReactNode } from 'react'
-import { Box, Typography, Button, Paper } from '@mui/material'
-import { ErrorOutline, Refresh, Home, BugReport } from '@mui/icons-material'
+import { Card, Typography, Button, Space } from 'antd'
+import { ExclamationCircleOutlined, ReloadOutlined, HomeOutlined, BugOutlined } from '@ant-design/icons'
 
 export interface ErrorBoundaryProps {
   children: ReactNode
@@ -56,71 +56,70 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       } = this.props
 
       return (
-        <Box
-          sx={{
+        <div
+          style={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '100vh',
             backgroundColor: '#f5f5f5',
-            padding: 2,
+            padding: 16,
           }}
         >
-          <Paper
-            elevation={3}
-            sx={{
-              padding: 4,
+          <Card
+            style={{
+              padding: 32,
               maxWidth: 500,
               textAlign: 'center',
             }}
           >
-            <ErrorOutline
-              sx={{
+            <ExclamationCircleOutlined
+              style={{
                 fontSize: 64,
-                color: 'error.main',
-                marginBottom: 2,
+                color: '#ff4d4f',
+                marginBottom: 16,
               }}
             />
-            <Typography variant='h4' gutterBottom>
+            <Typography.Title level={2} style={{ marginBottom: 16 }}>
               {errorTitle}
-            </Typography>
-            <Typography variant='body1' color='text.secondary' paragraph>
+            </Typography.Title>
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
               {errorDescription}
-            </Typography>
+            </Typography.Text>
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button variant='contained' startIcon={<Refresh />} onClick={this.handleReload}>
+            <Space wrap style={{ justifyContent: 'center' }}>
+              <Button type="primary" icon={<ReloadOutlined />} onClick={this.handleReload}>
                 {reloadButtonText}
               </Button>
-              <Button variant='outlined' startIcon={<Home />} onClick={this.handleGoHome}>
+              <Button icon={<HomeOutlined />} onClick={this.handleGoHome}>
                 {homeButtonText}
               </Button>
-              <Button variant='text' startIcon={<BugReport />} onClick={this.handleReport}>
+              <Button type="text" icon={<BugOutlined />} onClick={this.handleReport}>
                 {reportButtonText}
               </Button>
-            </Box>
+            </Space>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <Box sx={{ marginTop: 3, textAlign: 'left' }}>
-                <Typography variant='h6' gutterBottom>
+              <div style={{ marginTop: 24, textAlign: 'left' }}>
+                <Typography.Title level={4} style={{ marginBottom: 16 }}>
                   错误详情 (开发模式):
-                </Typography>
-                <Paper
-                  sx={{
-                    padding: 2,
+                </Typography.Title>
+                <Card
+                  style={{
+                    padding: 16,
                     backgroundColor: '#f5f5f5',
                     fontFamily: 'monospace',
-                    fontSize: '0.875rem',
+                    fontSize: 14,
                     overflow: 'auto',
                     maxHeight: 200,
                   }}
                 >
                   <pre>{this.state.error.stack}</pre>
-                </Paper>
-              </Box>
+                </Card>
+              </div>
             )}
-          </Paper>
-        </Box>
+          </Card>
+        </div>
       )
     }
 

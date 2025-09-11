@@ -100,6 +100,211 @@ class ModRepository(JsonFieldRepository[Mod, int]):
         with self.db_manager.get_connection() as conn:
             results = conn.execute(sql, (mc_version,)).fetchall()
             return [self._dict_to_entity(dict(row)) for row in results]
+    
+    async def find_mods(self, conditions: Dict[str, Any] = None, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """分页查找MOD列表"""
+        if not conditions:
+            conditions = {}
+        
+        # 构建WHERE条件
+        where_clauses = []
+        values = []
+        
+        for key, value in conditions.items():
+            if value is None:
+                where_clauses.append(f"{key} IS NULL")
+            else:
+                where_clauses.append(f"{key} = ?")
+                values.append(value)
+        
+        where_clause = " AND ".join(where_clauses) if where_clauses else "1=1"
+        sql = f"""
+        SELECT * FROM core_mods 
+        WHERE {where_clause}
+        ORDER BY name ASC 
+        LIMIT ? OFFSET ?
+        """
+        values.extend([limit, offset])
+        
+        with self.db_manager.get_connection() as conn:
+            results = conn.execute(sql, values).fetchall()
+            return [dict(row) for row in results]
+    
+    async def count_mods(self, conditions: Dict[str, Any] = None) -> int:
+        """统计符合条件的MOD数量"""
+        if not conditions:
+            conditions = {}
+        
+        # 构建WHERE条件
+        where_clauses = []
+        values = []
+        
+        for key, value in conditions.items():
+            if value is None:
+                where_clauses.append(f"{key} IS NULL")
+            else:
+                where_clauses.append(f"{key} = ?")
+                values.append(value)
+        
+        where_clause = " AND ".join(where_clauses) if where_clauses else "1=1"
+        sql = f"SELECT COUNT(*) as count FROM core_mods WHERE {where_clause}"
+        
+        with self.db_manager.get_connection() as conn:
+            result = conn.execute(sql, values).fetchone()
+            return result['count']
+    
+    async def search_mods(self, search: str, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """根据关键词搜索MOD"""
+        pattern = f"%{search}%"
+        sql = """
+        SELECT * FROM core_mods 
+        WHERE name LIKE ? OR modid LIKE ? OR slug LIKE ?
+        ORDER BY name ASC
+        LIMIT ? OFFSET ?
+        """
+        
+        with self.db_manager.get_connection() as conn:
+            results = conn.execute(sql, (pattern, pattern, pattern, limit, offset)).fetchall()
+            return [dict(row) for row in results]
+    
+    async def count_search_results(self, search: str) -> int:
+        """统计搜索结果数量"""
+        pattern = f"%{search}%"
+        sql = """
+        SELECT COUNT(*) as count FROM core_mods 
+        WHERE name LIKE ? OR modid LIKE ? OR slug LIKE ?
+        """
+        
+        with self.db_manager.get_connection() as conn:
+            result = conn.execute(sql, (pattern, pattern, pattern)).fetchone()
+            return result['count']
+    
+    async def get_mod_by_uid(self, uid: str) -> Optional[Dict[str, Any]]:
+        """根据UID获取MOD"""
+        mod = await self.get_by_uid(uid)
+        if mod:
+            return self._entity_to_dict(mod)
+        return None
+    
+    async def create_mod(self, modid: str = None, slug: str = None, name: str = None, homepage: str = None) -> Dict[str, Any]:
+        """创建MOD"""
+        mod = Mod(
+            uid=self._generate_uid(),
+            modid=modid,
+            slug=slug,
+            name=name,
+            homepage=homepage,
+            created_at=self._get_timestamp(),
+            updated_at=self._get_timestamp()
+        )
+        
+        await self.create(mod)
+        return self._entity_to_dict(mod)
+    
+    async def find_mod_versions(self, conditions: Dict[str, Any] = None, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """查找MOD版本"""
+        if not conditions:
+            return []
+        
+        version_repo = ModVersionRepository(self.db_manager)
+        
+        # 构建WHERE条件
+        where_clauses = []
+        values = []
+        
+        for key, value in conditions.items():
+            if value is None:
+                where_clauses.append(f"{key} IS NULL")
+            else:
+                where_clauses.append(f"{key} = ?")
+                values.append(value)
+        
+        where_clause = " AND ".join(where_clauses)
+        sql = f"""
+        SELECT * FROM core_mod_versions 
+        WHERE {where_clause}
+        ORDER BY discovered_at DESC 
+        LIMIT ? OFFSET ?
+        """
+        values.extend([limit, offset])
+        
+        with version_repo.db_manager.get_connection() as conn:
+            results = conn.execute(sql, values).fetchall()
+            return [dict(row) for row in results]
+    
+    async def count_mod_versions(self, conditions: Dict[str, Any] = None) -> int:
+        """统计MOD版本数量"""
+        if not conditions:
+            return 0
+        
+        version_repo = ModVersionRepository(self.db_manager)
+        
+        # 构建WHERE条件
+        where_clauses = []
+        values = []
+        
+        for key, value in conditions.items():
+            if value is None:
+                where_clauses.append(f"{key} IS NULL")
+            else:
+                where_clauses.append(f"{key} = ?")
+                values.append(value)
+        
+        where_clause = " AND ".join(where_clauses)
+        sql = f"SELECT COUNT(*) as count FROM core_mod_versions WHERE {where_clause}"
+        
+        with version_repo.db_manager.get_connection() as conn:
+            result = conn.execute(sql, values).fetchone()
+            return result['count']
+    
+    async def create_mod_version(self, mod_uid: str, loader: str, mc_version: str, version: str, 
+                               meta_json: Dict[str, Any] = None, source: str = None) -> Dict[str, Any]:
+        """创建MOD版本"""
+        version_repo = ModVersionRepository(self.db_manager)
+        mod_version = ModVersion(
+            uid=self._generate_uid(),
+            mod_uid=mod_uid,
+            loader=loader,
+            mc_version=mc_version,
+            version=version,
+            meta_json=meta_json,
+            source=source,
+            discovered_at=self._get_timestamp()
+        )
+        
+        await version_repo.create(mod_version)
+        return version_repo._entity_to_dict(mod_version)
+    
+    async def get_compatibility_matrix(self, mod_uid: str, target_mc_version: str = None, 
+                                     target_loader: str = None) -> Dict[str, Any]:
+        """获取MOD兼容性矩阵"""
+        version_repo = ModVersionRepository(self.db_manager)
+        return await version_repo.get_version_compatibility(mod_uid)
+    
+    async def find_similar_mods(self, name: str, threshold: float = 0.8, limit: int = 10) -> List[Dict[str, Any]]:
+        """查找相似MOD"""
+        # 简单实现：使用LIKE查询，实际可以使用更复杂的相似度算法
+        sql = """
+        SELECT *, 
+               CASE 
+                   WHEN name = ? THEN 1.0
+                   WHEN name LIKE ? THEN 0.9
+                   WHEN name LIKE ? THEN 0.8
+                   ELSE 0.7
+               END as similarity
+        FROM core_mods 
+        WHERE name LIKE ? AND name != ?
+        ORDER BY similarity DESC, name ASC
+        LIMIT ?
+        """
+        
+        exact_match = name
+        starts_with = f"{name}%"
+        contains = f"%{name}%"
+        
+        with self.db_manager.get_connection() as conn:
+            results = conn.execute(sql, (exact_match, starts_with, contains, contains, exact_match, limit)).fetchall()
+            return [dict(row) for row in results]
 
 
 class ModVersionRepository(JsonFieldRepository[ModVersion, int]):

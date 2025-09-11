@@ -1,607 +1,423 @@
 /**
- * 通用数据表格组件
+ * 通用数据表格组件 - Ant Design版本
  * 功能完整的数据表格，支持排序、过滤、分页、选择等功能
  */
 
 import React, { useState, useMemo, useCallback } from 'react'
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TablePagination,
-  Paper,
-  Checkbox,
-  IconButton,
-  Menu,
-  MenuItem,
+  Input,
+  Button,
+  Space,
+  Dropdown,
   Typography,
-  Box,
-  Chip,
-  TextField,
-  InputAdornment,
-  Toolbar,
+  Card,
   Tooltip,
-  LinearProgress,
+  Checkbox,
+  Row,
+  Col,
   Collapse,
-} from '@mui/material'
-import { useTheme, alpha } from '@mui/material/styles'
+  Menu,
+  Empty,
+  Spin,
+  Alert,
+} from 'antd'
+import type { TableColumnsType, TableProps } from 'antd'
 import {
-  MoreVertical,
-  Search,
-  Filter,
-  Download,
-  RefreshCw as Refresh,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  EyeOff,
-} from 'lucide-react'
+  SearchOutlined,
+  FilterOutlined,
+  DownloadOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  MoreOutlined,
+  DownOutlined,
+  RightOutlined,
+} from '@ant-design/icons'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export interface TableColumn<T = any> {
-  id: keyof T | string
-  label: string
+const { Text, Title } = Typography
+const { Panel } = Collapse
+
+export interface AntTableColumn<T = any> {
+  key: keyof T | string
+  title: string
+  dataIndex?: keyof T | string
   sortable?: boolean
   filterable?: boolean
   width?: number | string
   minWidth?: number
   maxWidth?: number
   align?: 'left' | 'center' | 'right'
-  sticky?: boolean
+  fixed?: 'left' | 'right'
   hidden?: boolean
-  render?: (value: any, row: T, column: TableColumn<T>) => React.ReactNode
-  format?: (value: any) => string
+  render?: (value: any, record: T, index: number) => React.ReactNode
   filterType?: 'text' | 'select' | 'date' | 'range'
   filterOptions?: Array<{ label: string; value: any }>
+  sorter?: boolean | ((a: T, b: T) => number)
 }
 
-export interface TableAction<T = any> {
-  id: string
+export interface AntTableAction<T = any> {
+  key: string
   label: string
   icon?: React.ReactNode
-  onClick: (row: T) => void
-  disabled?: (row: T) => boolean
-  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'
-  variant?: 'text' | 'outlined' | 'contained'
+  onClick: (record: T, index: number) => void
+  disabled?: (record: T, index: number) => boolean
+  type?: 'primary' | 'default' | 'dashed' | 'link' | 'text'
+  danger?: boolean
 }
 
-interface DataTableProps<T = any> {
+interface AntDataTableProps<T = any> {
   // 数据
   data: T[]
-  columns: TableColumn<T>[]
+  columns: AntTableColumn<T>[]
   loading?: boolean
   error?: string
 
   // 选择功能
-  selectable?: boolean
+  rowSelection?: boolean
   selectedRows?: T[]
-  onSelectionChange?: (selected: T[]) => void
-  getRowId?: (row: T) => string
-
-  // 排序
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  onSort?: (column: string, order: 'asc' | 'desc') => void
+  onSelectionChange?: (selectedKeys: React.Key[], selectedRows: T[]) => void
+  rowKey?: string | ((record: T) => string)
 
   // 分页
-  page?: number
-  pageSize?: number
-  total?: number
-  onPageChange?: (page: number) => void
-  onPageSizeChange?: (pageSize: number) => void
-  pageSizeOptions?: number[]
+  pagination?: {
+    current?: number
+    pageSize?: number
+    total?: number
+    showSizeChanger?: boolean
+    showQuickJumper?: boolean
+    showTotal?: (total: number, range: [number, number]) => string
+    onChange?: (page: number, pageSize: number) => void
+  }
 
-  // 过滤
-  filters?: Record<string, any>
-  onFilterChange?: (filters: Record<string, any>) => void
-  globalFilter?: string
-  onGlobalFilterChange?: (filter: string) => void
+  // 过滤和搜索
+  globalSearch?: boolean
+  globalSearchValue?: string
+  onGlobalSearchChange?: (value: string) => void
 
   // 行操作
-  actions?: TableAction<T>[]
-  rowActions?: TableAction<T>[]
+  actions?: AntTableAction<T>[]
+  rowActions?: AntTableAction<T>[]
 
   // 展开行
-  expandableRows?: boolean
-  expandedRows?: Set<string>
-  onRowExpand?: (rowId: string) => void
-  renderExpandedRow?: (row: T) => React.ReactNode
+  expandable?: {
+    expandedRowKeys?: React.Key[]
+    onExpand?: (expanded: boolean, record: T) => void
+    expandedRowRender?: (record: T, index: number) => React.ReactNode
+  }
 
   // 样式配置
-  dense?: boolean
-  stickyHeader?: boolean
+  size?: 'small' | 'middle' | 'large'
+  bordered?: boolean
   showHeader?: boolean
-  showToolbar?: boolean
-  showPagination?: boolean
   title?: string
   subtitle?: string
 
   // 事件
-  onRowClick?: (row: T) => void
-  onRowDoubleClick?: (row: T) => void
+  onRow?: (record: T, index?: number) => React.HTMLAttributes<any>
   onRefresh?: () => void
   onExport?: () => void
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const AntDataTable = <T extends Record<string, any>>({
   data,
   columns: initialColumns,
   loading = false,
   error,
-  selectable = false,
+  rowSelection = false,
   selectedRows = [],
   onSelectionChange,
-  getRowId = row => row.id,
-  sortBy,
-  sortOrder = 'asc',
-  onSort,
-  page = 0,
-  pageSize = 10,
-  total,
-  onPageChange,
-  onPageSizeChange,
-  pageSizeOptions = [5, 10, 25, 50, 100],
-  filters = {},
-  onFilterChange,
-  globalFilter = '',
-  onGlobalFilterChange,
+  rowKey = 'id',
+  pagination,
+  globalSearch = true,
+  globalSearchValue = '',
+  onGlobalSearchChange,
   actions = [],
   rowActions = [],
-  expandableRows = false,
-  expandedRows = new Set(),
-  onRowExpand,
-  renderExpandedRow,
-  dense = false,
-  stickyHeader = false,
+  expandable,
+  size = 'middle',
+  bordered = false,
   showHeader = true,
-  showToolbar = true,
-  showPagination = true,
   title,
   subtitle,
-  onRowClick,
-  onRowDoubleClick,
+  onRow,
   onRefresh,
   onExport,
-}: DataTableProps<T>) => {
-  const theme = useTheme()
-  const [columnMenuAnchor, setColumnMenuAnchor] = useState<HTMLElement | null>(null)
-  const [actionMenuAnchor, setActionMenuAnchor] = useState<{ [key: string]: HTMLElement | null }>(
-    {},
-  )
+}: AntDataTableProps<T>) => {
+  const [searchValue, setSearchValue] = useState(globalSearchValue)
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
-    new Set(initialColumns.filter(col => !col.hidden).map(col => col.id as string)),
+    new Set(initialColumns.filter(col => !col.hidden).map(col => col.key as string)),
   )
 
   // 计算可见列
-  const columns = useMemo(
-    () => initialColumns.filter(col => visibleColumns.has(col.id as string)),
-    [initialColumns, visibleColumns],
-  )
-
-  // 选择相关逻辑
-  const selectedRowIds = useMemo(
-    () => new Set(selectedRows.map(getRowId)),
-    [selectedRows, getRowId],
-  )
-
-  const isAllSelected = data.length > 0 && selectedRowIds.size === data.length
-  const isPartiallySelected = selectedRowIds.size > 0 && selectedRowIds.size < data.length
-
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (onSelectionChange) {
-        onSelectionChange(checked ? [...data] : [])
-      }
-    },
-    [data, onSelectionChange],
-  )
-
-  const handleSelectRow = useCallback(
-    (row: T, checked: boolean) => {
-      if (onSelectionChange) {
-        const rowId = getRowId(row)
-        if (checked) {
-          onSelectionChange([...selectedRows, row])
-        } else {
-          onSelectionChange(selectedRows.filter(r => getRowId(r) !== rowId))
+  const columns = useMemo(() => {
+    const visibleCols = initialColumns
+      .filter(col => visibleColumns.has(col.key as string))
+      .map(col => {
+        const antCol: any = {
+          key: col.key,
+          title: col.title,
+          dataIndex: col.dataIndex || col.key,
+          width: col.width,
+          align: col.align,
+          fixed: col.fixed,
+          render: col.render,
+          sorter: col.sortable ? col.sorter || true : false,
         }
-      }
-    },
-    [selectedRows, onSelectionChange, getRowId],
-  )
 
-  // 排序处理
-  const handleSort = useCallback(
-    (column: string) => {
-      if (onSort) {
-        const newOrder = sortBy === column && sortOrder === 'asc' ? 'desc' : 'asc'
-        onSort(column, newOrder)
-      }
-    },
-    [sortBy, sortOrder, onSort],
-  )
+        if (col.filterable) {
+          antCol.filterDropdown = ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+            <div style={{ padding: 8 }}>
+              <Input
+                placeholder={`搜索 ${col.title}`}
+                value={selectedKeys[0]}
+                onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                onPressEnter={() => confirm()}
+                style={{ width: 188, marginBottom: 8, display: 'block' }}
+              />
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={() => confirm()}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{ width: 90 }}
+                >
+                  搜索
+                </Button>
+                <Button
+                  onClick={() => clearFilters?.()}
+                  size="small"
+                  style={{ width: 90 }}
+                >
+                  重置
+                </Button>
+              </Space>
+            </div>
+          )
+          antCol.filterIcon = (filtered: boolean) => (
+            <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+          )
+          antCol.onFilter = (value: any, record: T) =>
+            record[col.dataIndex || col.key]
+              ?.toString()
+              .toLowerCase()
+              .includes(value.toLowerCase())
+        }
 
-  // 列显示/隐藏切换
-  const toggleColumnVisibility = useCallback((columnId: string) => {
+        return antCol
+      })
+
+    // 添加行操作列
+    if (rowActions.length > 0) {
+      visibleCols.push({
+        key: 'actions',
+        title: '操作',
+        width: 100,
+        fixed: 'right',
+        render: (_: any, record: T, index: number) => (
+          <Dropdown
+            menu={{
+              items: rowActions.map(action => ({
+                key: action.key,
+                label: action.label,
+                icon: action.icon,
+                disabled: action.disabled?.(record, index),
+                danger: action.danger,
+                onClick: () => action.onClick(record, index),
+              })),
+            }}
+            trigger={['click']}
+          >
+            <Button size="small" icon={<MoreOutlined />} />
+          </Dropdown>
+        ),
+      })
+    }
+
+    return visibleCols
+  }, [initialColumns, visibleColumns, rowActions])
+
+  // 行选择配置
+  const rowSelectionConfig = useMemo(() => {
+    if (!rowSelection) return undefined
+
+    return {
+      selectedRowKeys: selectedRows.map(row => 
+        typeof rowKey === 'function' ? rowKey(row) : row[rowKey]
+      ),
+      onChange: (selectedRowKeys: React.Key[], selectedRecords: T[]) => {
+        onSelectionChange?.(selectedRowKeys, selectedRecords)
+      },
+      getCheckboxProps: (record: T) => ({
+        name: typeof rowKey === 'function' ? rowKey(record) : record[rowKey],
+      }),
+    }
+  }, [rowSelection, selectedRows, rowKey, onSelectionChange])
+
+  // 搜索处理
+  const handleSearch = useCallback((value: string) => {
+    setSearchValue(value)
+    onGlobalSearchChange?.(value)
+  }, [onGlobalSearchChange])
+
+  // 列显示切换
+  const toggleColumnVisibility = useCallback((columnKey: string) => {
     setVisibleColumns(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(columnId)) {
-        newSet.delete(columnId)
+      if (newSet.has(columnKey)) {
+        newSet.delete(columnKey)
       } else {
-        newSet.add(columnId)
+        newSet.add(columnKey)
       }
       return newSet
     })
   }, [])
 
-  // 行展开切换
-  const toggleRowExpansion = useCallback(
-    (rowId: string) => {
-      if (onRowExpand) {
-        onRowExpand(rowId)
-      }
-    },
-    [onRowExpand],
-  )
-
-  // 菜单处理
-  const handleActionMenuClick = useCallback(
-    (rowId: string, event: React.MouseEvent<HTMLElement>) => {
-      event.stopPropagation()
-      setActionMenuAnchor(prev => ({ ...prev, [rowId]: event.currentTarget }))
-    },
-    [],
-  )
-
-  const handleActionMenuClose = useCallback((rowId: string) => {
-    setActionMenuAnchor(prev => ({ ...prev, [rowId]: null }))
-  }, [])
-
   // 渲染工具栏
   const renderToolbar = () => {
-    if (!showToolbar) return null
+    const hasSelection = selectedRows.length > 0
 
     return (
-      <Toolbar
-        sx={{
-          pl: { sm: 2 },
-          pr: { xs: 1, sm: 1 },
-          ...(selectedRows.length > 0 && {
-            bgcolor: alpha(theme.palette.primary.main, 0.08),
-          }),
-        }}
-      >
-        {selectedRows.length > 0 ? (
-          <Typography sx={{ flex: '1 1 100%' }} color='inherit' variant='subtitle1' component='div'>
-            已选择 {selectedRows.length} 项
-          </Typography>
-        ) : (
-          <Box sx={{ flex: '1 1 100%' }}>
-            {title && (
-              <Typography variant='h6' component='div' sx={{ fontWeight: 600 }}>
-                {title}
-              </Typography>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Space direction="vertical" size={0}>
+            {title && <Title level={4} style={{ margin: 0 }}>{title}</Title>}
+            {subtitle && <Text type="secondary">{subtitle}</Text>}
+            {hasSelection && (
+              <Text>已选择 {selectedRows.length} 项</Text>
             )}
-            {subtitle && (
-              <Typography variant='body2' color='text.secondary'>
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-        )}
+          </Space>
+        </Col>
 
-        {/* 搜索框 */}
-        {onGlobalFilterChange && (
-          <TextField
-            size='small'
-            placeholder='搜索...'
-            value={globalFilter}
-            onChange={e => onGlobalFilterChange(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position='start'>
-                  <Search size={16} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ mr: 1, width: 200 }}
-          />
-        )}
-
-        {/* 工具按钮 */}
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {selectedRows.length > 0 &&
-            actions.map(action => (
-              <Tooltip key={action.id} title={action.label}>
-                <IconButton
-                  color={action.color}
-                  onClick={() => selectedRows.forEach(action.onClick)}
-                  size='small'
+        <Col>
+          <Space>
+            {/* 批量操作按钮 */}
+            {hasSelection &&
+              actions.map(action => (
+                <Button
+                  key={action.key}
+                  type={action.type}
+                  danger={action.danger}
+                  icon={action.icon}
+                  onClick={() => selectedRows.forEach((row, index) => action.onClick(row, index))}
+                  disabled={selectedRows.some((row, index) => action.disabled?.(row, index))}
                 >
-                  {action.icon}
-                </IconButton>
-              </Tooltip>
-            ))}
+                  {action.label}
+                </Button>
+              ))}
 
-          {onExport && (
-            <Tooltip title='导出'>
-              <IconButton onClick={onExport} size='small'>
-                <Download size={16} />
-              </IconButton>
-            </Tooltip>
-          )}
-
-          {onRefresh && (
-            <Tooltip title='刷新'>
-              <IconButton onClick={onRefresh} size='small'>
-                <Refresh size={16} />
-              </IconButton>
-            </Tooltip>
-          )}
-
-          <Tooltip title='列设置'>
-            <IconButton onClick={e => setColumnMenuAnchor(e.currentTarget)} size='small'>
-              <Settings size={16} />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Toolbar>
-    )
-  }
-
-  // 渲染表格头部
-  const renderTableHead = () => {
-    if (!showHeader) return null
-
-    return (
-      <TableHead>
-        <TableRow>
-          {selectable && (
-            <TableCell padding='checkbox'>
-              <Checkbox
-                color='primary'
-                indeterminate={isPartiallySelected}
-                checked={isAllSelected}
-                onChange={e => handleSelectAll(e.target.checked)}
+            {/* 搜索框 */}
+            {globalSearch && (
+              <Input
+                placeholder="搜索..."
+                value={searchValue}
+                onChange={(e) => handleSearch(e.target.value)}
+                prefix={<SearchOutlined />}
+                style={{ width: 200 }}
+                allowClear
               />
-            </TableCell>
-          )}
+            )}
 
-          {expandableRows && <TableCell width={48} />}
+            {/* 工具按钮 */}
+            {onExport && (
+              <Tooltip title="导出">
+                <Button icon={<DownloadOutlined />} onClick={onExport} />
+              </Tooltip>
+            )}
 
-          {columns.map(column => (
-            <TableCell
-              key={column.id as string}
-              align={column.align}
-              style={{
-                width: column.width,
-                minWidth: column.minWidth,
-                maxWidth: column.maxWidth,
+            {onRefresh && (
+              <Tooltip title="刷新">
+                <Button icon={<ReloadOutlined />} onClick={onRefresh} />
+              </Tooltip>
+            )}
+
+            {/* 列设置 */}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'columns',
+                    label: '显示列',
+                    children: initialColumns.map(col => ({
+                      key: col.key as string,
+                      label: (
+                        <Checkbox
+                          checked={visibleColumns.has(col.key as string)}
+                          onChange={() => toggleColumnVisibility(col.key as string)}
+                        >
+                          {col.title}
+                        </Checkbox>
+                      ),
+                    })),
+                  },
+                ],
               }}
-              sortDirection={sortBy === column.id ? sortOrder : false}
+              trigger={['click']}
             >
-              {column.sortable ? (
-                <TableSortLabel
-                  active={sortBy === column.id}
-                  direction={sortBy === column.id ? sortOrder : 'asc'}
-                  onClick={() => handleSort(column.id as string)}
-                >
-                  {column.label}
-                </TableSortLabel>
-              ) : (
-                column.label
-              )}
-            </TableCell>
-          ))}
-
-          {rowActions.length > 0 && (
-            <TableCell width={48} align='center'>
-              操作
-            </TableCell>
-          )}
-        </TableRow>
-      </TableHead>
+              <Tooltip title="列设置">
+                <Button icon={<SettingOutlined />} />
+              </Tooltip>
+            </Dropdown>
+          </Space>
+        </Col>
+      </Row>
     )
   }
 
-  // 渲染表格行
-  const renderTableRows = () => {
-    if (data.length === 0 && !loading) {
-      return (
-        <TableRow>
-          <TableCell
-            colSpan={
-              columns.length +
-              (selectable ? 1 : 0) +
-              (expandableRows ? 1 : 0) +
-              (rowActions.length > 0 ? 1 : 0)
-            }
-          >
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant='body1' color='text.secondary'>
-                {error || '暂无数据'}
-              </Typography>
-            </Box>
-          </TableCell>
-        </TableRow>
-      )
-    }
+  // 错误状态
+  if (error) {
+    return (
+      <Card>
+        {renderToolbar()}
+        <Alert
+          message="加载失败"
+          description={error}
+          type="error"
+          showIcon
+          action={
+            onRefresh && (
+              <Button size="small" danger onClick={onRefresh}>
+                重试
+              </Button>
+            )
+          }
+        />
+      </Card>
+    )
+  }
 
-    return data.map(row => {
-      const rowId = getRowId(row)
-      const isSelected = selectedRowIds.has(rowId)
-      const isExpanded = expandedRows.has(rowId)
-
-      return (
-        <React.Fragment key={rowId}>
-          <TableRow
-            hover
-            selected={isSelected}
-            onClick={() => onRowClick?.(row)}
-            onDoubleClick={() => onRowDoubleClick?.(row)}
-            sx={{
-              cursor: onRowClick ? 'pointer' : 'default',
-            }}
-          >
-            {selectable && (
-              <TableCell padding='checkbox'>
-                <Checkbox
-                  color='primary'
-                  checked={isSelected}
-                  onChange={e => handleSelectRow(row, e.target.checked)}
-                  onClick={e => e.stopPropagation()}
-                />
-              </TableCell>
-            )}
-
-            {expandableRows && (
-              <TableCell>
-                <IconButton
-                  size='small'
-                  onClick={e => {
-                    e.stopPropagation()
-                    toggleRowExpansion(rowId)
-                  }}
-                >
-                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </IconButton>
-              </TableCell>
-            )}
-
-            {columns.map(column => {
-              const value = row[column.id]
-              const displayValue = column.render
-                ? column.render(value, row, column)
-                : column.format
-                  ? column.format(value)
-                  : value
-
-              return (
-                <TableCell key={column.id as string} align={column.align}>
-                  {displayValue}
-                </TableCell>
-              )
-            })}
-
-            {rowActions.length > 0 && (
-              <TableCell align='center'>
-                <IconButton size='small' onClick={e => handleActionMenuClick(rowId, e)}>
-                  <MoreVertical size={16} />
-                </IconButton>
-              </TableCell>
-            )}
-          </TableRow>
-
-          {/* 展开行 */}
-          {expandableRows && renderExpandedRow && (
-            <TableRow>
-              <TableCell
-                colSpan={
-                  columns.length + (selectable ? 1 : 0) + 1 + (rowActions.length > 0 ? 1 : 0)
-                }
-                sx={{ py: 0, border: 0 }}
-              >
-                <Collapse in={isExpanded} timeout='auto' unmountOnExit>
-                  <Box sx={{ p: 2 }}>{renderExpandedRow(row)}</Box>
-                </Collapse>
-              </TableCell>
-            </TableRow>
-          )}
-
-          {/* 行操作菜单 */}
-          <Menu
-            anchorEl={actionMenuAnchor[rowId]}
-            open={Boolean(actionMenuAnchor[rowId])}
-            onClose={() => handleActionMenuClose(rowId)}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            {rowActions.map(action => (
-              <MenuItem
-                key={action.id}
-                onClick={() => {
-                  action.onClick(row)
-                  handleActionMenuClose(rowId)
-                }}
-                disabled={action.disabled?.(row)}
-              >
-                {action.icon && <Box sx={{ mr: 1, display: 'flex' }}>{action.icon}</Box>}
-                {action.label}
-              </MenuItem>
-            ))}
-          </Menu>
-        </React.Fragment>
-      )
-    })
+  // 空数据状态
+  if (!loading && data.length === 0) {
+    return (
+      <Card>
+        {renderToolbar()}
+        <Empty description="暂无数据" />
+      </Card>
+    )
   }
 
   return (
-    <Paper sx={{ width: '100%', borderRadius: 2 }}>
+    <Card>
       {renderToolbar()}
-
-      {loading && <LinearProgress />}
-
-      <TableContainer sx={{ maxHeight: 600 }}>
+      
+      <Spin spinning={loading}>
         <Table
-          stickyHeader={stickyHeader}
-          size={dense ? 'small' : 'medium'}
-          aria-labelledby='tableTitle'
-        >
-          {renderTableHead()}
-          <TableBody>
-            <AnimatePresence>{renderTableRows()}</AnimatePresence>
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* 分页 */}
-      {showPagination && (
-        <TablePagination
-          rowsPerPageOptions={pageSizeOptions}
-          component='div'
-          count={total || data.length}
-          rowsPerPage={pageSize}
-          page={page}
-          onPageChange={(e, newPage) => onPageChange?.(newPage)}
-          onRowsPerPageChange={e => onPageSizeChange?.(parseInt(e.target.value, 10))}
-          labelRowsPerPage='每页显示:'
-          labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} 共 ${count !== -1 ? count : `超过 ${to}`} 条`
-          }
+          columns={columns}
+          dataSource={data}
+          rowKey={rowKey}
+          rowSelection={rowSelectionConfig}
+          pagination={pagination}
+          expandable={expandable}
+          size={size}
+          bordered={bordered}
+          showHeader={showHeader}
+          onRow={onRow}
+          scroll={{ x: 'max-content' }}
         />
-      )}
-
-      {/* 列设置菜单 */}
-      <Menu
-        anchorEl={columnMenuAnchor}
-        open={Boolean(columnMenuAnchor)}
-        onClose={() => setColumnMenuAnchor(null)}
-        PaperProps={{
-          sx: { width: 200, maxHeight: 300 },
-        }}
-      >
-        <Typography variant='subtitle2' sx={{ px: 2, py: 1, fontWeight: 600 }}>
-          显示列
-        </Typography>
-        {initialColumns.map(column => (
-          <MenuItem
-            key={column.id as string}
-            onClick={() => toggleColumnVisibility(column.id as string)}
-          >
-            <Checkbox
-              checked={visibleColumns.has(column.id as string)}
-              size='small'
-              sx={{ mr: 1 }}
-            />
-            {column.label}
-          </MenuItem>
-        ))}
-      </Menu>
-    </Paper>
+      </Spin>
+    </Card>
   )
 }

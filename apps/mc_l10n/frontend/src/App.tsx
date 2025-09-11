@@ -1,45 +1,60 @@
-import React, { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Box } from '@mui/material'
+/**
+ * 新版 App 组件
+ * 完全基于 Ant Design + Minecraft 轻装饰主题
+ */
 
-import LayoutMinecraft from '@components/Layout/LayoutMinecraft'
-import ScanPageMinecraft from '@pages/ScanPageMinecraft'
-import DebugScanPage from '@pages/DebugScanPage'
-import HomePageMinecraft from '@pages/HomePageMinecraft'
-import ProjectPageMinecraft from '@pages/ProjectPageMinecraft'
-import SettingsPageMinecraft from '@pages/SettingsPageMinecraft'
-import ExtractPageMinecraft from '@pages/ExtractPageMinecraft'
-import ExportPageMinecraft from '@pages/ExportPageMinecraft'
-import PlaceholderPage from '@pages/PlaceholderPage'
-import ProgressTestPage from '@pages/ProgressTestPage'
-import TransferPageMinecraft from '@pages/TransferPageMinecraft'
-import BuildPageMinecraft from '@pages/BuildPageMinecraft'
-import LocalDataPageMinecraft from '@pages/LocalDataPageMinecraft'
-import SecurityPageMinecraft from '@pages/SecurityPageMinecraft'
-import ServerPageMinecraft from '@pages/ServerPageMinecraft'
-import DesignPreviewHub from './design-previews/DesignPreviewHub'
-import { useAppStore } from '@stores/appStore'
-import { initializeTauri, storageService } from '@services'
-import { useGlobalShortcuts } from '@hooks/useKeyboardShortcuts'
-import { ShortcutHelp } from '@components/ShortcutHelp'
+import React, { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Spin, Result, Button } from 'antd'
+import toast, { Toaster } from 'react-hot-toast'
+
+import { ThemeProvider } from './contexts/ThemeProvider'
+import MainLayout from './layouts/MainLayout'
+
+// 页面组件 - 新版本
+import WelcomePage from './pages/WelcomePage'
+import ScanPageWeb from './pages/ScanPageWeb'
+import RealDataTestPage from './pages/RealDataTestPage'
+// import MinecraftShowcase from './pages/MinecraftShowcase' // 暂时禁用
+// import ProjectsPacksPage from './pages/ProjectsPacksPage' 
+// import ProjectsModsPage from './pages/ProjectsModsPage'
+// import ScanPage from './pages/ScanPageNew' // 暂时禁用 - Tauri依赖问题
+// import DataViewPage from './pages/DataViewPage' // 暂时禁用 - 可能有依赖问题
+// import SyncPage from './pages/SyncPage'
+// import BuildPage from './pages/BuildPageNew'
+// import ServerPage from './pages/ServerPageNew'
+// import SettingsPage from './pages/SettingsPageNew'
+
+// 临时占位符组件
+const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
+  <div className="flex items-center justify-center h-full">
+    <div className="text-center">
+      <h2 className="text-2xl font-bold text-gray-600 mb-4">{title}</h2>
+      <p className="text-gray-500">页面正在开发中...</p>
+    </div>
+  </div>
+)
+
+// 服务和存储
+import { useAppStore } from './stores/appStore'
+import { initializeTauri, storageService } from './services'
 
 interface AppProps {
   onReady?: () => void
 }
 
-function App({ onReady }: AppProps) {
+const App: React.FC<AppProps> = ({ onReady }) => {
+  const [initError, setInitError] = useState<string | null>(null)
+  
+  // Store 状态
   const isInitialized = useAppStore(state => state.isInitialized)
   const isLoading = useAppStore(state => state.isLoading)
   const loadingMessage = useAppStore(state => state.loadingMessage)
   const initialize = useAppStore(state => state.initialize)
 
-  // 启用全局快捷键
-  useGlobalShortcuts()
-
-  console.log('🔄 App render - isInitialized:', isInitialized, 'isLoading:', isLoading)
-
+  // 初始化应用
   useEffect(() => {
-    // 防止重复初始化的标识
+    // 防止重复初始化
     if (isInitialized) {
       console.log('🔄 App already initialized, skipping...')
       onReady?.()
@@ -52,42 +67,43 @@ function App({ onReady }: AppProps) {
       if (isCancelled || isInitialized) return
 
       try {
-        console.log('🚀 Starting app initialization sequence...')
+        console.log('🚀 Starting new app initialization...')
 
-        // Initialize Tauri APIs
+        // 1. 初始化 Tauri APIs
         console.log('📱 Initializing Tauri APIs...')
         await initializeTauri()
-
         if (isCancelled || isInitialized) return
-        console.log('✅ Tauri APIs initialized successfully')
 
-        // Initialize storage service
+        // 2. 初始化存储服务
         console.log('💾 Initializing storage service...')
         await storageService.init()
-
         if (isCancelled || isInitialized) return
-        console.log('✅ Storage service initialized successfully')
 
-        // Initialize app store
+        // 3. 初始化应用状态
         console.log('🏪 Initializing app store...')
-        const result = await initialize()
-
+        await initialize()
         if (isCancelled || isInitialized) return
-        console.log('✅ App store initialization result:', result)
 
-        // Notify that app is ready
-        console.log('🎉 App initialization sequence complete')
+        console.log('✅ App initialization complete')
         onReady?.()
+
+        // 显示欢迎消息
+        setTimeout(() => {
+          toast.success('🎮 MC L10n 工具已就绪！', {
+            duration: 3000,
+            position: 'top-center',
+          })
+        }, 500)
+
       } catch (error) {
         if (!isCancelled) {
-          console.error('❌ Failed to initialize app:', error)
-          // Still call onReady to remove HTML loading spinner
-          onReady?.()
+          console.error('❌ App initialization failed:', error)
+          setInitError(error instanceof Error ? error.message : '未知错误')
+          onReady?.() // 仍然调用以移除 HTML 加载器
         }
       }
     }
 
-    console.log('🔧 Setting up initialization effect...')
     initApp()
 
     return () => {
@@ -95,95 +111,179 @@ function App({ onReady }: AppProps) {
     }
   }, [isInitialized, initialize, onReady])
 
-  if (!isInitialized) {
+  // 错误状态
+  if (initError) {
     return (
-      <Box
-        display='flex'
-        flexDirection='column'
-        justifyContent='center'
-        alignItems='center'
-        height='100vh'
-        bgcolor='background.default'
-        sx={{ color: 'text.primary' }}
-      >
-        {/* 显示详细的加载状态 */}
-        <Box textAlign='center' mb={2}>
-          <h2>🎮 TH Suite MC L10n</h2>
-          <p>Minecraft 本地化工具</p>
-        </Box>
-
-        {isLoading ? (
-          <Box textAlign='center'>
-            <div
-              className='loading-spinner'
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '4px solid rgba(255, 255, 255, 0.3)',
-                borderTop: '4px solid white',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                margin: '0 auto 20px',
-              }}
-            />
-            <p>{loadingMessage || '正在初始化应用...'}</p>
-          </Box>
-        ) : (
-          <Box textAlign='center'>
-            <p>⚠️ 应用初始化可能失败</p>
-            <p>请检查控制台日志或刷新页面重试</p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '8px 16px',
-                background: '#1976d2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginTop: '10px',
-              }}
-            >
-              刷新页面
-            </button>
-          </Box>
-        )}
-
-        {/* 调试信息 */}
-        <Box mt={4} p={2} bgcolor='rgba(0,0,0,0.1)' borderRadius={1} fontSize='12px'>
-          <div>调试信息:</div>
-          <div>isInitialized: {isInitialized.toString()}</div>
-          <div>isLoading: {isLoading.toString()}</div>
-          <div>loadingMessage: {loadingMessage || 'null'}</div>
-        </Box>
-      </Box>
+      <ThemeProvider>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '100vh',
+          padding: 24,
+        }}>
+          <Result
+            status="error"
+            title="应用初始化失败"
+            subTitle={`初始化过程中发生错误: ${initError}`}
+            extra={[
+              <Button type="primary" key="retry" onClick={() => {
+                setInitError(null)
+                window.location.reload()
+              }}>
+                重新尝试
+              </Button>,
+              <Button key="details" onClick={() => {
+                console.error('App initialization error:', initError)
+                toast.error('错误详情已输出到控制台')
+              }}>
+                查看详情
+              </Button>,
+            ]}
+          />
+        </div>
+      </ThemeProvider>
     )
   }
 
+  // 加载状态
+  if (!isInitialized) {
+    return (
+      <ThemeProvider>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: 'linear-gradient(145deg, #f5f5f5, #e8f5e8)',
+        }}>
+          {/* Logo 区域 */}
+          <div style={{
+            textAlign: 'center',
+            marginBottom: 32,
+            padding: 24,
+            borderRadius: 8,
+            background: 'rgba(76, 175, 80, 0.1)',
+            border: '2px solid #4CAF50',
+            boxShadow: '2px 2px 0 rgba(0,0,0,0.1)',
+          }}>
+            <h1 style={{
+              fontSize: 32,
+              margin: '0 0 8px 0',
+              color: '#4CAF50',
+              textShadow: '2px 2px 0 rgba(0,0,0,0.1)',
+            }}>
+              🎮 TH Suite MC L10n
+            </h1>
+            <p style={{
+              fontSize: 16,
+              margin: 0,
+              color: '#666',
+            }}>
+              Minecraft 本地化工具
+            </p>
+          </div>
+
+          {/* 加载指示器 */}
+          <div style={{ textAlign: 'center' }}>
+            <Spin size="large" />
+            <div style={{ 
+              marginTop: 16, 
+              textAlign: 'center',
+              color: '#666',
+            }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>
+                {loadingMessage || '正在初始化应用...'}
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>
+                首次启动可能需要几秒钟
+              </div>
+            </div>
+          </div>
+
+          {/* 调试信息 */}
+          {true && (
+            <div style={{
+              position: 'fixed',
+              bottom: 16,
+              left: 16,
+              padding: 12,
+              background: 'rgba(0,0,0,0.8)',
+              color: 'white',
+              borderRadius: 4,
+              fontSize: 12,
+              fontFamily: 'monospace',
+            }}>
+              <div>initialized: {isInitialized.toString()}</div>
+              <div>loading: {isLoading.toString()}</div>
+              <div>message: {loadingMessage || 'null'}</div>
+            </div>
+          )}
+        </div>
+      </ThemeProvider>
+    )
+  }
+
+  // 主应用界面
   return (
-    <>
-      <LayoutMinecraft>
-        <Routes>
-          <Route path='/' element={<HomePageMinecraft />} />
-          <Route path='/home' element={<HomePageMinecraft />} />
-          <Route path='/project' element={<ProjectPageMinecraft />} />
-          <Route path='/scan' element={<ScanPageMinecraft />} />
-          <Route path='/debug-scan' element={<DebugScanPage />} />
-          <Route path='/progress-test' element={<ProgressTestPage />} />
-          <Route path='/design-preview' element={<DesignPreviewHub />} />
-          <Route path='/extract' element={<ExtractPageMinecraft />} />
-          <Route path='/export' element={<ExportPageMinecraft />} />
-          <Route path='/transfer' element={<TransferPageMinecraft />} />
-          <Route path='/build' element={<BuildPageMinecraft />} />
-          <Route path='/security' element={<SecurityPageMinecraft />} />
-          <Route path='/server' element={<ServerPageMinecraft />} />
-          <Route path='/settings' element={<SettingsPageMinecraft />} />
-          <Route path='/local-data' element={<LocalDataPageMinecraft />} />
-          <Route path='*' element={<Navigate to='/' replace />} />
-        </Routes>
-      </LayoutMinecraft>
-      <ShortcutHelp />
-    </>
+    <ThemeProvider>
+      <BrowserRouter>
+        <MainLayout>
+          <Routes>
+            {/* 主要路由 */}
+            <Route path="/" element={<WelcomePage />} />
+            {/* <Route path="/showcase" element={<MinecraftShowcase />} /> */}
+            
+            {/* 项目路由 */}
+            <Route path="/projects/packs" element={<PlaceholderPage title="整合包项目" />} />
+            <Route path="/projects/mods" element={<PlaceholderPage title="MOD 项目" />} />
+            
+            {/* 功能路由 */}
+            <Route path="/scan" element={<ScanPageWeb />} />
+            <Route path="/test" element={<RealDataTestPage />} />
+            <Route path="/data" element={<PlaceholderPage title="数据查看" />} />
+            <Route path="/sync" element={<PlaceholderPage title="同步中心" />} />
+            <Route path="/build" element={<PlaceholderPage title="构建中心" />} />
+            
+            {/* 管理路由 */}
+            <Route path="/server" element={<PlaceholderPage title="服务器状态" />} />
+            <Route path="/settings" element={<PlaceholderPage title="设置" />} />
+            
+            {/* 重定向和 404 */}
+            <Route path="/projects" element={<Navigate to="/projects/packs" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </MainLayout>
+
+        {/* 全局通知系统 */}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#333',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            success: {
+              iconTheme: {
+                primary: '#52C41A',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#FF4D4F',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

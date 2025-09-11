@@ -99,7 +99,10 @@
       "Read(//mnt/d/Games/Curseforge/Minecraft/Instances/DeceasedCraft - Modern Zombie Apocalypse/mods/**)",
       "Read(//mnt/d/Games/Curseforge/Minecraft/Instances/DeceasedCraft - Modern Zombie Apocalypse/**)",
       "Bash(unzip:*)",
-      "Read(//tmp/xptome_test/assets/xpbook/lang/**)"
+      "Read(//tmp/xptome_test/assets/xpbook/lang/**)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Read(//mnt/d/Games/Curseforge/Minecraft/Instances/**)"
     ],
     "deny": [],
     "ask": []

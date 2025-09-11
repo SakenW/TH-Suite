@@ -147,6 +147,12 @@ src/
 ├── facade/               # 门面层
 │   └── mc_l10n_facade.py # 统一接口
 │
+├── tools/                # 开发工具
+│   ├── README.md        # 工具使用文档
+│   ├── test_parsing_fix.py      # MOD解析测试
+│   ├── cleanup_mod_data.py      # 数据清理工具
+│   └── check_mod_parsing_fixed.py  # 解析状态检查
+│
 ├── container.py          # 依赖注入容器
 └── main.py              # 应用入口
 ```
@@ -178,10 +184,12 @@ LOG_FILE=./logs/mc_l10n.log
 ## 🎯 核心功能
 
 ### 1. MOD扫描
-- 自动识别MOD文件（JAR/ZIP）
-- 提取语言文件
-- 增量扫描支持
-- 批处理优化
+- **智能MOD识别**: 自动识别MOD文件（JAR/ZIP）
+- **现代格式支持**: META-INF/mods.toml (Forge) + fabric.mod.json (Fabric) + mcmod.info (Legacy)
+- **智能名称解析**: 自动分离模组名称和版本号，支持多种命名模式
+- **语言文件提取**: JSON/Properties格式支持
+- **增量扫描**: 基于文件哈希的智能缓存
+- **批处理优化**: 多线程并发处理
 
 ### 2. 翻译管理
 - 多语言支持
@@ -264,6 +272,15 @@ poetry run pytest --cov=src
 
 # 性能测试
 poetry run pytest -m benchmark
+
+# MOD解析功能测试
+poetry run python tools/test_parsing_fix.py
+
+# 检查MOD解析状态
+poetry run python tools/check_mod_parsing_fixed.py
+
+# 清理错误的MOD数据（可选）
+poetry run python tools/cleanup_mod_data.py
 ```
 
 ## 📝 开发指南

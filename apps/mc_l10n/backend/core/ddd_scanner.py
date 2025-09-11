@@ -13,7 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from .mc_database import Database, LanguageFile, ModInfo, TranslationEntry
+# 已归档: from .mc_database import Database, LanguageFile, ModInfo, TranslationEntry
+# 使用V6架构数据库
+from database.core.manager import get_database_manager
 
 logger = logging.getLogger(__name__)
 
@@ -96,12 +98,11 @@ class DDDScanner:
             if not os.path.exists(target_path):
                 raise ValueError(f"路径不存在: {target_path}")
 
-            # 创建扫描会话
-            db = Database(self.database_path)
-            scan_id = db.create_scan_session(
-                project_path=target_path,
-                scan_type="incremental" if incremental else "full",
-            )
+            # 创建扫描会话 - 使用V6数据库管理器
+            db_manager = get_database_manager()
+            # V6架构没有scan_sessions表，使用简单的UUID作为scan_id
+            import uuid
+            scan_id = str(uuid.uuid4())[:16]
 
             # 初始化扫描状态
             self.active_scans[scan_id] = {
@@ -146,8 +147,8 @@ class DDDScanner:
             scan_data["status"] = "scanning"
             target_path = Path(scan_data["target_path"])
 
-            # 打开数据库连接
-            db = Database(self.database_path)
+            # 使用V6数据库管理器
+            db_manager = get_database_manager()
 
             # 收集所有JAR文件
             jar_files = []
@@ -219,7 +220,7 @@ class DDDScanner:
 
                 # 处理JAR文件
                 try:
-                    stats = await self._process_jar_file(jar_path, scan_id, db)
+                    stats = await self._process_jar_file(jar_path, scan_id)
 
                     if stats:
                         total_mods += stats["mods"]
@@ -268,7 +269,7 @@ class DDDScanner:
             pass
 
     async def _process_jar_file(
-        self, jar_path: Path, scan_id: str, db: Database
+        self, jar_path: Path, scan_id: str
     ) -> dict | None:
         """
         处理单个JAR文件
@@ -487,23 +488,8 @@ class DDDScanner:
             扫描状态信息
         """
         if scan_id not in self.active_scans:
-            # 尝试从数据库获取历史扫描信息
-            with Database(self.database_path) as db:
-                stats = db.get_statistics()
-                for scan in stats.get("recent_scans", []):
-                    if scan["scan_id"] == scan_id:
-                        return {
-                            "scan_id": scan_id,
-                            "status": scan["status"],
-                            "progress": 100.0 if scan["status"] == "completed" else 0.0,
-                            "statistics": {
-                                "total_mods": scan.get("total_mods", 0),
-                                "total_language_files": scan.get(
-                                    "total_language_files", 0
-                                ),
-                                "total_keys": scan.get("total_keys", 0),
-                            },
-                        }
+            # V6架构中，扫描状态只存在于内存中
+            # 历史扫描信息不查询，直接返回未找到状态
 
             raise ValueError(f"扫描任务不存在: {scan_id}")
 
@@ -523,9 +509,7 @@ class DDDScanner:
             scan_data = self.active_scans[scan_id]
             scan_data["status"] = "cancelled"
 
-            # 更新数据库
-            with Database(self.database_path) as db:
-                db.complete_scan_session(scan_id, error="User cancelled")
+            # V6架构中，扫描状态只存在于内存中，无需数据库更新
 
             # 从活动列表中移除
             del self.active_scans[scan_id]
@@ -555,9 +539,10 @@ def get_scanner_instance(database_path: str = None) -> DDDScanner:
     global _scanner_instance
 
     if database_path is None:
-        database_path = str(Path(__file__).parent / "mc_l10n.db")
+        database_path = str(Path(__file__).parent.parent / "data" / "mc_l10n_v6.db")
 
-    if _scanner_instance is None:
+    # 如果路径改变，需要重新创建实例
+    if _scanner_instance is None or _scanner_instance.database_path != database_path:
         _scanner_instance = DDDScanner(database_path)
 
     return _scanner_instance

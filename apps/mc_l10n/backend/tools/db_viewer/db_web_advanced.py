@@ -25,8 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 全局数据库路径
-DB_PATH = "../../mc_l10n.db"
+# 全局数据库路径 - 使用V6统一数据库
+DB_PATH = "../../data/mc_l10n_v6.db"
 
 
 def get_db_connection():
@@ -1211,7 +1211,7 @@ async def export_data_v2(format: str = Query("json", pattern="^(json|csv)$")):
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(description="MC L10n 高级Web数据库管理器")
-    parser.add_argument("--db", default="mc_l10n_unified.db", help="数据库文件路径")
+    parser.add_argument("--db", default="../../data/mc_l10n_v6.db", help="数据库文件路径")
     parser.add_argument("--port", type=int, default=18080, help="Web服务端口")
     parser.add_argument("--host", default="127.0.0.1", help="监听地址")
 

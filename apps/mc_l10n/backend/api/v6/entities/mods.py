@@ -11,7 +11,7 @@ from apps.mc_l10n.backend.database.repositories.mod_repository import ModReposit
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/mods", tags=["MOD管理"])
+router = APIRouter(prefix="/mods", tags=["MOD管理"])
 
 
 class ModCreateRequest(BaseModel):

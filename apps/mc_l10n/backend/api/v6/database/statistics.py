@@ -10,7 +10,7 @@ from apps.mc_l10n.backend.database.core.manager import McL10nDatabaseManager
 from apps.mc_l10n.backend.core.di_container import get_database_manager
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/v6/database", tags=["数据库统计"])
+router = APIRouter(prefix="/database", tags=["数据库统计"])
 
 
 @router.get("/statistics")

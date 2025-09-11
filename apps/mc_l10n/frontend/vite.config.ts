@@ -8,8 +8,8 @@ export default defineConfig(async () => ({
     react({
       // 启用React Fast Refresh
       fastRefresh: true,
-      // 启用React DevTools
-      jsxImportSource: '@emotion/react',
+      // 使用标准React JSX，不再使用Emotion
+      jsxRuntime: 'automatic',
     }),
   ],
 
@@ -78,10 +78,9 @@ export default defineConfig(async () => ({
         manualChunks: {
           // React核心
           'react-vendor': ['react', 'react-dom'],
-          // UI框架
-          'mui-core': ['@mui/material'],
-          'mui-icons': ['@mui/icons-material'],
-          emotion: ['@emotion/react', '@emotion/styled'],
+          // UI框架 - 改为Ant Design
+          'antd-core': ['antd'],
+          'antd-icons': ['@ant-design/icons'],
           // 路由和状态管理
           router: ['react-router-dom'],
           'state-management': ['@tanstack/react-query', 'zustand'],
@@ -101,9 +100,8 @@ export default defineConfig(async () => ({
     include: [
       'react',
       'react-dom',
-      '@mui/material',
-      '@emotion/react',
-      '@emotion/styled',
+      'antd',
+      '@ant-design/icons',
       'framer-motion',
     ],
   },
