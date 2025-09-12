@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any
 
 from core.di_container import get_database_service, get_scanner_service, get_database_manager
-from infrastructure.cache_service import get_cache_service
+from infrastructure.services.cache_service import get_cache_service
 
 logger = logging.getLogger(__name__)
 

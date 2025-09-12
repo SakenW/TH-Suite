@@ -1,0 +1,372 @@
+# TH-Suite 统一内容映射配置文件
+# 基于 docs/optimization/04-data-mapping.md 的映射规则
+
+# 版本信息
+version: "2.1"
+last_updated: "2025-09-12"
+description: "TH-Suite v2.1 统一内容映射规则配置"
+
+# ============================================================
+# 全局映射策略
+# ============================================================
+global:
+  strategy: "single_project"          # single_project | multi_project | hybrid
+  target_project_id: "minecraft"     # Trans-Hub中的目标项目ID
+  uida_version: "v1"                 # UIDA版本
+  hash_algorithm: "sha256"           # 哈希算法
+  hash_length: 16                    # 哈希长度
+
+# ============================================================
+# 内容源映射配置
+# ============================================================
+content_sources:
+  # MOD JAR文件内容
+  mod_jar:
+    enabled: true
+    priority: 100
+    namespace_prefix: "mod"
+    metadata_fields:
+      - mod_id
+      - mod_name
+      - mod_version
+      - mod_authors
+      - mod_description
+      - mod_homepage
+      - mod_dependencies
+    
+  # 整合包资源包
+  pack_resource:
+    enabled: true
+    priority: 90
+    namespace_prefix: "pack"
+    metadata_fields:
+      - resource_type
+      - is_pack_specific
+      - override_priority
+    
+  # 任务包内容
+  quest_pack:
+    enabled: true
+    priority: 80
+    namespace_prefix: "quest"
+    special_handling:
+      ftb_quests: "ftbquests"
+      hardcore_questing_mode: "hardcorequest"
+      better_questing: "betterquesting"
+    metadata_fields:
+      - quest_type
+      - chapter_id
+      - quest_id
+      - reward_type
+    
+  # 配置文件本地化
+  config_file:
+    enabled: true
+    priority: 70
+    namespace_prefix: "config"
+    metadata_fields:
+      - config_category
+      - config_key
+      - config_type
+    
+  # 整合包文档
+  pack_docs:
+    enabled: true
+    priority: 60
+    namespace_prefix: "docs"
+    metadata_fields:
+      - doc_type
+      - doc_category
+      - doc_language
+    
+  # 覆盖性内容
+  override:
+    enabled: true
+    priority: 50
+    namespace_prefix: "override"
+    metadata_fields:
+      - override_target
+      - override_reason
+      - override_priority
+
+# ============================================================
+# 语言映射配置
+# ============================================================
+languages:
+  # 支持的语言列表
+  supported:
+    - en_us    # 英语（美国）- 源语言
+    - zh_cn    # 简体中文
+    - zh_tw    # 繁体中文
+    - ja_jp    # 日语
+    - ko_kr    # 韩语
+    - de_de    # 德语
+    - fr_fr    # 法语
+    - es_es    # 西班牙语
+    - ru_ru    # 俄语
+    - pt_br    # 葡萄牙语（巴西）
+  
+  # 语言别名映射
+  aliases:
+    zh: zh_cn
+    ja: ja_jp
+    ko: ko_kr
+    de: de_de
+    fr: fr_fr
+    es: es_es
+    ru: ru_ru
+    pt: pt_br
+  
+  # 默认语言
+  default_source: en_us
+  default_target: zh_cn
+
+# ============================================================
+# Minecraft版本映射配置
+# ============================================================
+minecraft_versions:
+  # 支持的版本范围
+  supported_range:
+    min: "1.16.5"
+    max: "1.21.1"
+  
+  # 版本别名
+  aliases:
+    "latest": "1.21.1"
+    "lts": "1.20.1"
+    "stable": "1.20.1"
+  
+  # 版本兼容性映射
+  compatibility:
+    "1.21.1": ["1.21.0", "1.21"]
+    "1.20.1": ["1.20.0", "1.20"]
+    "1.19.2": ["1.19.1", "1.19.0", "1.19"]
+    "1.18.2": ["1.18.1", "1.18.0", "1.18"]
+    "1.16.5": ["1.16.4", "1.16.3", "1.16.2", "1.16.1", "1.16"]
+
+# ============================================================
+# MOD加载器映射配置
+# ============================================================
+loaders:
+  forge:
+    enabled: true
+    priority: 100
+    version_pattern: "\\d+\\.\\d+\\.\\d+"
+    metadata_fields:
+      - forge_version
+      - mcp_version
+      - mod_loader
+  
+  fabric:
+    enabled: true
+    priority: 90
+    version_pattern: "\\d+\\.\\d+\\.\\d+"
+    metadata_fields:
+      - fabric_version
+      - fabric_api_version
+      - loader_version
+  
+  quilt:
+    enabled: true
+    priority: 85
+    version_pattern: "\\d+\\.\\d+\\.\\d+"
+    metadata_fields:
+      - quilt_version
+      - quilt_loader_version
+      - qsl_version
+  
+  neoforge:
+    enabled: true
+    priority: 95
+    version_pattern: "\\d+\\.\\d+\\.\\d+"
+    metadata_fields:
+      - neoforge_version
+      - neoforge_api_version
+
+# ============================================================
+# UIDA生成规则
+# ============================================================
+uida:
+  # 内容UIDA格式模板
+  content_template: "minecraft://{namespace}/{content_key}#{language}@{version}"
+  
+  # 命名空间规则
+  namespace_rules:
+    mod_jar: "{mod_id}"
+    pack_resource: "pack.{pack_name}"
+    quest_pack: "quest.{quest_mod}"
+    config_file: "config.{config_mod}"
+    pack_docs: "docs.{pack_name}"
+    override: "override.{target_mod}"
+  
+  # 哈希生成规则
+  hash_components:
+    - source_identifier
+    - content_key
+    - language_code
+    - source_text
+  
+  # 版本标识规则
+  version_components:
+    - pack_version
+    - minecraft_version
+    - loader_type
+    - loader_version
+
+# ============================================================
+# 元数据映射规则
+# ============================================================
+metadata:
+  # 全局元数据字段
+  global_fields:
+    - mapping_timestamp
+    - mapping_version
+    - mapping_strategy
+    - source_system
+    - content_hash
+  
+  # 整合包级别元数据
+  pack_fields:
+    sync:
+      - pack_name
+      - pack_type
+      - pack_description
+      - pack_author
+      - pack_version
+      - minecraft_version
+      - loader_type
+      - is_default_version
+      - is_stable_version
+    local_only:
+      - pack_path
+      - build_config
+      - sync_config
+      - last_scan_time
+  
+  # MOD级别元数据
+  mod_fields:
+    sync:
+      - mod_id
+      - mod_name
+      - mod_version
+      - mod_description
+      - mod_authors
+      - mod_homepage
+      - mod_dependencies
+      - minecraft_versions
+    local_only:
+      - jar_file_path
+      - jar_file_size
+      - jar_file_hash
+      - extraction_path
+  
+  # 内容级别元数据
+  content_fields:
+    sync:
+      - content_type
+      - content_category
+      - priority
+      - is_override
+      - comment
+      - change_type
+      - first_appeared_version
+      - last_modified_version
+    local_only:
+      - file_path
+      - file_format
+      - line_number
+      - raw_content
+      - detection_method
+
+# ============================================================
+# 过滤和验证规则
+# ============================================================
+filters:
+  # 内容过滤规则
+  content:
+    min_text_length: 1
+    max_text_length: 10000
+    exclude_patterns:
+      - "^\\s*$"           # 空白内容
+      - "^#.*"             # 注释行
+      - "^//.*"            # 注释行
+      - "DEBUG"            # 调试信息
+      - "TODO"             # 待办事项
+    include_patterns:
+      - ".*"               # 默认包含所有
+  
+  # 语言过滤规则
+  language:
+    exclude_auto_generated: true
+    exclude_test_languages: true
+    require_valid_locale: true
+  
+  # MOD过滤规则
+  mod:
+    min_content_count: 1
+    exclude_system_mods:
+      - "minecraft"
+      - "forge"
+      - "fabric"
+      - "quilt"
+    exclude_library_mods: false
+
+# ============================================================
+# 同步策略配置
+# ============================================================
+sync:
+  # 同步频率
+  frequency:
+    immediate: ["content_key", "source_text", "language_code"]
+    batch: ["metadata", "version_info", "mod_info"]
+    manual: ["large_files", "binary_content"]
+  
+  # 批量操作配置
+  batch:
+    size: 100
+    timeout: 300
+    retry_count: 3
+    retry_delay: 5
+  
+  # 冲突解决策略
+  conflict_resolution:
+    strategy: "latest_wins"      # latest_wins | manual | merge
+    merge_fields: ["metadata"]
+    preserve_fields: ["created_at", "uida_hash"]
+
+# ============================================================
+# 性能优化配置
+# ============================================================
+performance:
+  # 缓存配置
+  cache:
+    enabled: true
+    ttl: 3600              # 1小时
+    max_size: 10000        # 最大缓存项数
+  
+  # 并发配置
+  concurrency:
+    max_workers: 4
+    chunk_size: 50
+    timeout_per_item: 10
+  
+  # 内存管理
+  memory:
+    max_heap_size: "512MB"
+    gc_threshold: 0.8
+    batch_processing: true
+
+# ============================================================
+# 调试和日志配置
+# ============================================================
+debug:
+  enabled: false
+  log_level: "INFO"
+  log_mapping_details: false
+  log_performance_stats: true
+  export_debug_data: false
+  
+  # 详细日志记录的内容源
+  detailed_logging:
+    - quest_pack
+    - override

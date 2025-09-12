@@ -18,13 +18,13 @@ from typing import Any, Dict, List, Optional, AsyncGenerator, Tuple
 
 import structlog
 
-from ..models.v2_1_models import (
+from models.v2_1_models import (
     Pack, PackVersion, ModVersionInstance, PackModRelation,
     ContentInstance, PackContentRelation, PackVersionStats,
     CrossVersionTrackingResult, ModDistributionResult, ContentChangeResult,
     ModelFactory
 )
-from ..models.data_layer_config import DataLayerQueryHelper
+from models.data_layer_config import DataLayerQueryHelper
 
 logger = structlog.get_logger(__name__)
 

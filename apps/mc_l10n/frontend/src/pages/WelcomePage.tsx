@@ -104,7 +104,7 @@ export const WelcomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 mc-grid-bg">
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* 主欢迎区 */}
         <div className="mb-8">
           <Card
@@ -128,7 +128,7 @@ export const WelcomePage: React.FC = () => {
               >
                 Trans-Hub MC 本地化工具
               </Title>
-              <div className="max-w-4xl mx-auto mb-8">
+              <div className="mb-8">
                 <Paragraph className="text-lg leading-relaxed text-gray-700">
                   这是一把"找翻译→对齐服务器→拉回结果→生成本地化文件"的顺手小工具。
                   <br />
@@ -137,7 +137,7 @@ export const WelcomePage: React.FC = () => {
               </div>
 
               {/* 快速统计 - 使用响应式网格 */}
-              <div className="responsive-grid max-w-2xl mx-auto gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 justify-center">
                 <div className="glass-effect p-4 rounded-block text-center animate-pixel-fade">
                   <div className="text-3xl text-mc-emerald mb-2">
                     <FolderOpenOutlined />
@@ -178,8 +178,8 @@ export const WelcomePage: React.FC = () => {
           </Card>
         </div>
 
-        {/* 主要内容区域 - 使用响应式布局 */}
-        <div className="responsive-grid gap-8">
+        {/* 主要内容区域 - 使用响应式网格 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* 快速入口 */}
           <div className="lg:col-span-2">
             <Card 
@@ -191,7 +191,7 @@ export const WelcomePage: React.FC = () => {
               }
               className="minecraft-card mb-6 shadow-depth"
             >
-              <div className="responsive-grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {quickActions.map((action, index) => (
                   <div
                     key={action.key}

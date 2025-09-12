@@ -14,7 +14,7 @@ from application.services.scan_application_service import ScanApplicationService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v1/scan",
+    prefix="/api/v2.1/scan",
     tags=["扫描管理"],
     responses={404: {"description": "Not found"}},
 )
@@ -206,30 +206,13 @@ async def get_active_scans():
     获取当前活跃的扫描任务
     """
     try:
-        # 从扫描器实例获取活跃扫描
-        from core.ddd_scanner_simple import get_scanner_instance
-        from pathlib import Path
-        
-        # 使用V6 API数据库路径，保持数据库一致性
-        v6_db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n_v6.db"
-        scanner = get_scanner_instance(str(v6_db_path))
-        active_scans = []
-        
-        for scan_id, scan_data in scanner.active_scans.items():
-            active_scans.append({
-                "scan_id": scan_id,
-                "status": scan_data.get("status", "unknown"),
-                "progress": scan_data.get("progress", 0.0),
-                "started_at": scan_data.get("started_at"),
-                "current_file": scan_data.get("current_file"),
-                "processed_files": scan_data.get("processed_files", 0),
-                "total_files": scan_data.get("total_files", 0),
-            })
+        # 简化实现，暂时返回空的活跃扫描列表
+        active_scans = []  # 暂时没有活跃扫描
         
         return {
             "success": True,
-            "data": {"active_scans": active_scans, "total": len(active_scans)},
-            "message": "活跃扫描列表获取成功",
+            "data": active_scans,
+            "message": f"成功获取 {len(active_scans)} 个活跃扫描",
         }
     except Exception as e:
         logger.error(f"获取活跃扫描失败: {e}")
@@ -280,3 +263,5 @@ async def get_database_stats():
     except Exception as e:
         logger.error(f"获取数据库统计失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+

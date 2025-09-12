@@ -3,23 +3,22 @@
  * 管理所有API相关的服务、类型和工具函数
  */
 
-// ==================== 基础 API 客户端 ====================
-export { BaseApiClient, apiClient } from './BaseApiClient'
-export { ScanApiService, scanApi } from './ScanApiService'
-export { PackApiService, packApi } from './PackApiService'
-export { ModApiService, modApi } from './ModApiService'
+// ==================== API 客户端和服务 ====================
+export { BaseApiClient } from './BaseApiClient'
+export { ProjectApiService } from './ProjectApiService'
+export { ScanApiService } from './ScanApiService'
+export { SyncApiService } from './SyncApiService'
+export { TransHubSdkService } from './TransHubSdkService'
+export { PackApiService } from './PackApiService'
+export { ModApiService } from './ModApiService'
 export * from './types'
-
-// ==================== V6 API （兼容现有代码）====================
-export { V6ApiClient, v6ApiClient } from './V6ApiClient'
-export type * from './v6Types'
 
 // ==================== 工具函数 ====================
 
 /**
- * 创建V6查询参数
+ * 创建查询参数
  */
-export function createV6QueryParams(
+export function createQueryParams(
   page: number = 1,
   limit: number = 20,
   options: {
@@ -40,26 +39,26 @@ export function createV6QueryParams(
 }
 
 /**
- * 检查V6响应是否成功
+ * 检查API响应是否成功
  */
-export function isV6ResponseSuccess<T>(response: any): response is { success: true, data: T } {
+export function isApiResponseSuccess<T>(response: any): response is { success: true, data: T } {
   return response && response.success === true && response.data !== undefined
 }
 
 /**
- * 从V6响应中提取数据
+ * 从API响应中提取数据
  */
-export function extractV6ResponseData<T>(response: any): T | null {
-  if (isV6ResponseSuccess(response)) {
+export function extractApiResponseData<T>(response: any): T | null {
+  if (isApiResponseSuccess(response)) {
     return response.data
   }
   return null
 }
 
 /**
- * 格式化V6错误信息
+ * 格式化API错误信息
  */
-export function formatV6Error(error: any): string {
+export function formatApiError(error: any): string {
   if (error?.error?.message) {
     return error.error.message
   }
@@ -78,147 +77,39 @@ export function generateIdempotencyKey(): string {
   return `${timestamp}-${random}`
 }
 
-/**
- * V6实体状态检查工具
- */
-export const V6EntityUtils = {
-  isActive: (status: string) => status === 'active',
-  isInactive: (status: string) => status === 'inactive',
-  isArchived: (status: string) => status === 'archived',
-  
-  canEdit: (status: string) => status === 'active',
-  canDelete: (status: string) => ['active', 'inactive'].includes(status),
-  canArchive: (status: string) => ['active', 'inactive'].includes(status),
-}
-
-/**
- * V6翻译状态检查工具
- */
-export const V6TranslationUtils = {
-  isNew: (status: string) => status === 'new',
-  isReviewing: (status: string) => status === 'reviewing',
-  isReviewed: (status: string) => status === 'reviewed',
-  isApproved: (status: string) => status === 'approved',
-  isRejected: (status: string) => status === 'rejected',
-  
-  canReview: (status: string) => ['new', 'reviewing'].includes(status),
-  canApprove: (status: string) => status === 'reviewed',
-  canReject: (status: string) => ['new', 'reviewing', 'reviewed'].includes(status),
-  
-  isCompleted: (status: string) => ['approved', 'rejected'].includes(status),
-  needsAttention: (status: string) => ['new', 'reviewing'].includes(status),
-}
-
-/**
- * V6任务状态检查工具
- */
-export const V6TaskUtils = {
-  isPending: (status: string) => status === 'pending',
-  isLeased: (status: string) => status === 'leased',
-  isCompleted: (status: string) => status === 'completed',
-  isFailed: (status: string) => status === 'failed',
-  
-  isRunning: (status: string) => status === 'leased',
-  isFinished: (status: string) => ['completed', 'failed'].includes(status),
-  isActive: (status: string) => ['pending', 'leased'].includes(status),
-  
-  canRetry: (status: string) => status === 'failed',
-  canCancel: (status: string) => ['pending', 'leased'].includes(status),
-}
-
-/**
- * V6健康状态检查工具
- */
-export const V6HealthUtils = {
-  isHealthy: (status: string) => status === 'healthy',
-  isDegraded: (status: string) => status === 'degraded',
-  isUnhealthy: (status: string) => status === 'unhealthy',
-  
-  needsAttention: (status: string) => ['degraded', 'unhealthy'].includes(status),
-  isCritical: (status: string) => status === 'unhealthy',
-}
-
-/**
- * V6缓存统计工具
- */
-export const V6CacheUtils = {
-  calculateOverallHitRate: (stats: any) => {
-    if (!stats) return 0
-    const total = Object.values(stats).reduce((sum: number, layer: any) => {
-      return sum + (layer.hit_rate || 0)
-    }, 0)
-    return total / Object.keys(stats).length
-  },
-  
-  isPerformanceGood: (hitRate: number) => hitRate >= 0.8,
-  isPerformanceFair: (hitRate: number) => hitRate >= 0.6,
-  isPerformancePoor: (hitRate: number) => hitRate < 0.6,
-}
-
 // ==================== 常量 ====================
 
-export const V6_ENDPOINTS = {
-  // 实体管理
-  PACKS: '/api/v6/packs',
-  MODS: '/api/v6/mods',
-  LANGUAGE_FILES: '/api/v6/language-files',
-  TRANSLATIONS: '/api/v6/translations',
+export const API_ENDPOINTS = {
+  // 项目管理
+  PROJECTS: '/api/projects',
   
-  // 统计和监控
-  DATABASE_STATISTICS: '/api/v6/database/statistics',
-  DATABASE_HEALTH: '/api/v6/database/health',
-  CACHE_STATUS: '/api/v6/cache/status',
-  QUEUE_STATUS: '/api/v6/queue/status',
+  // 扫描
+  SCAN: '/api/scan',
   
-  // 队列管理
-  QUEUE_TASKS: '/api/v6/queue/tasks',
+  // 同步
+  SYNC: '/api/sync',
   
-  // 缓存管理
-  CACHE_CLEANUP: '/api/v6/cache/cleanup',
-  CACHE_WARMUP: '/api/v6/cache/warmup',
+  // Trans-Hub SDK
+  SDK: '/api/sdk',
   
-  // 配置管理
-  SETTINGS: '/api/v6/settings',
+  // 包管理
+  PACKS: '/api/packs',
   
-  // 同步协议
-  SYNC_HANDSHAKE: '/api/v6/sync/handshake',
-  SYNC_CHUNK_UPLOAD: '/api/v6/sync/chunk',
-  SYNC_COMMIT: '/api/v6/sync/commit',
-  
-  // V6信息
-  V6_INFO: '/api/v6/',
-  V6_HEALTH: '/api/v6/health',
+  // MOD管理
+  MODS: '/api/mods',
 } as const
 
-export const V6_LIMITS = {
+export const API_LIMITS = {
   MAX_PAGE_SIZE: 100,
   DEFAULT_PAGE_SIZE: 20,
   MAX_BATCH_SIZE: 1000,
-  IDEMPOTENCY_TTL: 3600, // 1 hour
-  CACHE_WARMUP_BATCH_SIZE: 50,
+  REQUEST_TIMEOUT: 30000, // 30 seconds
 } as const
 
-export const V6_STATUS_COLORS = {
-  // 实体状态
-  active: '#10b981',    // green-500
-  inactive: '#f59e0b',  // amber-500
-  archived: '#6b7280',  // gray-500
-  
-  // 翻译状态
-  new: '#3b82f6',       // blue-500
-  reviewing: '#f59e0b', // amber-500
-  reviewed: '#8b5cf6',  // violet-500
-  approved: '#10b981',  // green-500
-  rejected: '#ef4444',  // red-500
-  
-  // 任务状态
-  pending: '#6b7280',   // gray-500
-  leased: '#f59e0b',    // amber-500
-  completed: '#10b981', // green-500
-  failed: '#ef4444',    // red-500
-  
-  // 健康状态
-  healthy: '#10b981',   // green-500
-  degraded: '#f59e0b',  // amber-500
-  unhealthy: '#ef4444', // red-500
+export const STATUS_COLORS = {
+  success: '#52c41a',    // green
+  warning: '#fadb14',    // yellow
+  error: '#ff4d4f',      // red
+  info: '#1890ff',       // blue
+  processing: '#722ed1', // purple
 } as const

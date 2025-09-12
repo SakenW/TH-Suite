@@ -273,17 +273,15 @@ class DatabaseServiceAdapter(IDatabaseService):
     async def initialize(self) -> bool:
         """初始化数据库 - 使用V6架构"""
         try:
-            # 已归档旧数据库代码: from core.mc_database import Database
-            # 使用V6数据库管理器
-            from database.core.manager import get_database_manager
+            # 使用v2.1数据库架构
+            from repositories.v2_1_repositories import PackRepository
             
-            # V6数据库管理器在创建时自动初始化，无需额外调用initialize
-            db_manager = get_database_manager()
+            # v2.1数据库使用Repository模式，无需额外初始化
             self._initialized = True
-            logger.info("V6数据库初始化成功")
+            logger.info("v2.1数据库初始化成功")
             return True
         except Exception as e:
-            logger.error(f"V6数据库初始化失败: {e}")
+            logger.error(f"v2.1数据库初始化失败: {e}")
             return False
 
 
@@ -338,12 +336,11 @@ async def initialize_container() -> DIContainer:
 
     # 延迟注册扫描服务（需要在基础设施初始化后）
     def scanner_factory() -> IScannerService:
-        from core.ddd_scanner_simple import get_scanner_instance
+        from application.services.scan_application_service import ScanApplicationService
         from pathlib import Path
         
-        # 使用V6 API数据库路径，保持数据库一致性
-        v6_db_path = Path(__file__).parent.parent / "data" / "mc_l10n_v6.db"
-        scanner_instance = get_scanner_instance(str(v6_db_path))
+        # 使用v2.1数据库架构
+        scanner_instance = ScanApplicationService()
         return ScannerServiceAdapter(scanner_instance)
 
     container.register_factory(IScannerService, scanner_factory)
@@ -370,5 +367,5 @@ def get_infrastructure_service() -> IInfrastructureService | None:
 
 def get_database_manager():
     """获取数据库管理器（兼容旧代码）"""
-    from database.core.manager import get_database_manager as create_db_manager
-    return create_db_manager()
+    from repositories.v2_1_repositories import PackRepository
+    return PackRepository()

@@ -14,7 +14,7 @@ import {
   DatabaseOutlined,
   ApiOutlined
 } from '@ant-design/icons'
-import { scanApi, v6ApiClient } from '../services/api'
+import { ScanApiService, ProjectApiService, TransHubSdkService } from '../services/api'
 
 const { Title, Text, Paragraph } = Typography
 

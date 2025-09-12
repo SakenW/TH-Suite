@@ -42,26 +42,30 @@ export const TopStatusBar: React.FC = () => {
   React.useEffect(() => {
     const checkStatus = async () => {
       try {
-        const { scanApi, modApi } = await import('../services/api')
+        const { ScanApiService, ModApiService } = await import('../services/api')
+        const scanApi = new ScanApiService()
+        const modApi = new ModApiService()
         
-        // 测试连接
-        const isConnected = await scanApi.testConnection()
+        // 测试连接 - 使用简单的测试端点
+        const isConnected = await fetch('http://localhost:18000/api/v2.1/scan/test').then(r => r.ok).catch(() => false)
         setIsOnline(isConnected)
         
         if (isConnected) {
-          // 获取快速统计
+          // 获取快速统计 - 使用实际的API方法
           const [modsResponse, activeScans] = await Promise.allSettled([
             modApi.getModList({ page: 1, limit: 1 }),
             scanApi.getActiveScans()
           ])
           
-          const totalMods = modsResponse.status === 'fulfilled' ? modsResponse.value.total : 0
+          // 注意：ModApiService.getModList 直接返回 PaginatedResponse<ModInfo>，结构是 { items: ModInfo[], total, page, limit }
+          const totalMods = modsResponse.status === 'fulfilled' ? (modsResponse.value?.items?.length || 0) : 0
           
           // 检查是否有真正在运行的扫描
           let actuallyScanning = false
-          if (activeScans.status === 'fulfilled') {
-            actuallyScanning = activeScans.value.active_scans.some((scan: any) => 
-              scan.status === 'scanning' || scan.status === 'running' || scan.status === 'started'
+          // 注意：ScanApiService.getActiveScans 返回 ServiceResult<ScanStatus[]>
+          if (activeScans.status === 'fulfilled' && activeScans.value?.success && activeScans.value.data) {
+            actuallyScanning = activeScans.value.data.some((scan: any) => 
+              ['running', 'scanning', 'in_progress', 'queued'].includes(scan.status)
             )
           }
           

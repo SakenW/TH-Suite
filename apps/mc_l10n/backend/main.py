@@ -21,8 +21,8 @@ from api.routes.mod_routes import router as mod_router
 from api.routes.project_routes import router as project_router
 from api.routes.scan_routes import router as scan_router
 from api.routes.translation_routes import router as translation_router
-from api.v6.router import v6_router  # V6 API路由
-from api.v6.middleware.middleware import setup_v6_middlewares, V6MiddlewareConfig  # V6中间件
+# from api.v6.router import v6_router  # V6 API路由 - 暂时禁用
+# from api.v6.middleware.middleware import setup_v6_middlewares, V6MiddlewareConfig  # V6中间件 - 暂时禁用
 from core.di_container import (
     get_database_service,
     get_infrastructure_service,
@@ -125,16 +125,16 @@ def create_app() -> FastAPI:
     # 设置全局错误处理
     setup_error_handlers(app)
 
-    # 添加V6中间件 (在日志中间件之前) - 暂时全部禁用以解决Content-Length问题
-    v6_middleware_config = V6MiddlewareConfig(
-        enable_idempotency=False,  # 暂时禁用
-        enable_ndjson=False,       # 暂时禁用
-        enable_etag=False,         # 暂时禁用
-        enable_compression=False,  # 暂时禁用
-        idempotency_ttl=3600,
-        enable_weak_etag=False
-    )
-    setup_v6_middlewares(app, v6_middleware_config)
+    # 添加V6中间件 - 暂时禁用，V6模块不存在
+    # v6_middleware_config = V6MiddlewareConfig(
+    #     enable_idempotency=False,  # 暂时禁用
+    #     enable_ndjson=False,       # 暂时禁用
+    #     enable_etag=False,         # 暂时禁用
+    #     enable_compression=False,  # 暂时禁用
+    #     idempotency_ttl=3600,
+    #     enable_weak_etag=False
+    # )
+    # setup_v6_middlewares(app, v6_middleware_config)
 
     # 添加日志中间件
     app.add_middleware(
@@ -153,8 +153,8 @@ def create_app() -> FastAPI:
     )
 
     # 注册路由
-    # V6 API路由 (优先注册)
-    app.include_router(v6_router)
+    # V6 API路由 - 暂时禁用，模块不存在
+    # app.include_router(v6_router)
     
     # 现有路由 (兼容性保留)
     app.include_router(project_router)
