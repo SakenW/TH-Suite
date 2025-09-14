@@ -60,45 +60,49 @@ export const WelcomePage: React.FC = () => {
   // 最近任务数据 (真实数据)
   const [recentTasks] = useState([])
 
-  // 快速入口操作
+  // 快速入口操作 - 优化后的工作流程
   const quickActions = [
     {
       key: 'new-project',
-      title: '① 新建项目并扫描',
-      description: '选择整合包或 MOD 开始扫描',
+      title: '📂 新建项目',
+      description: '选择整合包或 MOD 文件夹开始',
       icon: <ScanOutlined />,
       color: colors.primary,
       action: () => navigate('/scan'),
       primary: true,
+      badge: '推荐',
+      steps: ['选择文件夹', '自动扫描', '查看结果']
     },
     {
-      key: 'rescan',
-      title: '② 重扫最近项目',
-      description: '重新扫描最近打开的项目',
+      key: 'continue-project',
+      title: '📋 管理项目',
+      description: '查看和管理已扫描的项目',
       icon: <FolderOpenOutlined />,
       color: colors.info,
-      action: () => {
-        // TODO: 实现重扫逻辑
-        navigate('/projects/packs')
-      },
-      disabled: recentProjects.length === 0,
+      action: () => navigate('/projects/packs'),
+      disabled: false, // 总是可用，即使没有项目也能查看空状态
+      badge: recentProjects.length > 0 ? `${recentProjects.length}个项目` : '暂无项目'
     },
     {
       key: 'sync',
-      title: '③ 去同步',
-      description: '与服务器同步翻译内容',
+      title: '🔄 同步翻译',
+      description: '与服务器同步获取最新翻译',
       icon: <SyncOutlined />,
       color: colors.warning,
       action: () => navigate('/sync'),
       disabled: !isOnline,
+      badge: isOnline ? (syncStats?.pullable > 0 ? `${syncStats.pullable}条待拉取` : '已同步') : '离线',
+      steps: ['检查更新', '拉取翻译', '应用修改']
     },
     {
       key: 'build',
-      title: '④ 去构建',
-      description: '生成本地化产物文件',
+      title: '🔨 构建文件',
+      description: '生成最终的本地化文件',
       icon: <BuildOutlined />,
       color: colors.success,
       action: () => navigate('/build'),
+      badge: '最后一步',
+      steps: ['选择语言', '配置选项', '生成文件']
     },
   ]
 
@@ -196,7 +200,7 @@ export const WelcomePage: React.FC = () => {
                   <div
                     key={action.key}
                     className={`
-                      p-4 rounded-block border-2 transition-all duration-300 cursor-pointer
+                      relative p-5 rounded-block border-2 transition-all duration-300 cursor-pointer
                       ${action.disabled ? 'opacity-60 cursor-not-allowed' : 'hover:-translate-y-1 hover:shadow-block'}
                       ${action.primary 
                         ? 'border-mc-emerald bg-mc-emerald/10 mc-block-shadow' 
@@ -205,10 +209,19 @@ export const WelcomePage: React.FC = () => {
                     `}
                     onClick={action.disabled ? undefined : action.action}
                   >
-                    <div className="space-y-3">
+                    {/* 角标徽章 */}
+                    {action.badge && (
+                      <div className={`absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-medium
+                        ${action.primary ? 'bg-mc-emerald text-white' : 'bg-blue-500 text-white'}
+                      `}>
+                        {action.badge}
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
                       <div className="flex items-center gap-3">
                         <div 
-                          className={`text-2xl ${action.primary ? 'animate-glow' : ''}`}
+                          className={`text-3xl ${action.primary ? 'animate-glow' : ''}`}
                           style={{ color: action.color }}
                         >
                           {action.icon}
@@ -216,60 +229,133 @@ export const WelcomePage: React.FC = () => {
                         <div className="flex-1">
                           <Text 
                             strong 
-                            className={`block ${action.primary ? 'text-mc-emerald text-lg' : 'text-base'}`}
+                            className={`block ${action.primary ? 'text-mc-emerald text-xl' : 'text-lg'}`}
                           >
                             {action.title}
                           </Text>
-                          {action.primary && (
-                            <Tag 
-                              color="success" 
-                              size="small" 
-                              className="mt-1 animate-pulse-slow"
-                            >
-                              推荐
-                            </Tag>
-                          )}
                         </div>
                       </div>
                       
-                      <Text type="secondary" className="text-sm block">
+                      <Text type="secondary" className="text-sm block leading-relaxed">
                         {action.description}
                       </Text>
+
+                      {/* 步骤提示 */}
+                      {action.steps && !action.disabled && (
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <ClockCircleOutlined />
+                            <span>步骤:</span>
+                            {action.steps.map((step, i) => (
+                              <span key={i}>
+                                {i > 0 && ' → '}
+                                <span className="px-1.5 py-0.5 bg-gray-100 rounded">{step}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       
                       {action.disabled && (
-                        <Text type="secondary" className="text-xs opacity-60 block">
-                          {action.key === 'rescan' && '暂无最近项目'}
-                          {action.key === 'sync' && '需要网络连接'}
-                        </Text>
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-2 text-xs text-orange-500">
+                            <WarningOutlined />
+                            <span>
+                              {action.key === 'sync' && '需要网络连接'}
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* 三步引导（空态时显示） */}
-              {recentProjects.length === 0 && (
-                <div className="mt-6">
-                  <Divider />
+              {/* 新手引导和工作流程说明 */}
+              <div className="mt-8">
+                <Divider>
+                  <Text className="text-mc-emerald font-medium">🎯 工作流程指引</Text>
+                </Divider>
+                
+                {recentProjects.length === 0 ? (
                   <Alert
-                    message="新用户指引"
+                    message="欢迎使用 Trans-Hub MC 本地化工具！"
                     description={
-                      <div>
-                        <Text>首次使用？跟着这三步开始：</Text>
-                        <ol className="mt-2 mb-0 text-sm">
-                          <li>选一个整合包或 MOD 文件夹</li>
-                          <li>一键扫描识别语言文件</li>
-                          <li>拉取翻译并生成本地化文件</li>
-                        </ol>
+                      <div className="space-y-3">
+                        <Text>这是一个简单易用的本地化工具，只需三个步骤就能完成翻译工作：</Text>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                            <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <div>
+                              <div className="font-medium text-blue-700">选择并扫描</div>
+                              <div className="text-sm text-gray-600">选择整合包或MOD文件夹</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                            <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <div>
+                              <div className="font-medium text-orange-700">同步翻译</div>
+                              <div className="text-sm text-gray-600">从服务器获取最新翻译</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                            <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <div>
+                              <div className="font-medium text-green-700">构建文件</div>
+                              <div className="text-sm text-gray-600">生成本地化资源文件</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-gradient-to-r from-mc-emerald/10 to-mc-grass/10 rounded-lg border border-mc-emerald/20">
+                          <Text className="text-mc-emerald font-medium">💡 小贴士：</Text>
+                          <Text className="text-sm text-gray-600 ml-2">
+                            点击上方的 "📂 新建项目" 开始您的第一个本地化项目
+                          </Text>
+                        </div>
                       </div>
                     }
                     type="info"
                     showIcon
-                    icon={<InfoCircleOutlined />}
-                    className="rounded-block border-mc-lapis/30 bg-mc-lapis/5"
+                    icon={<RocketOutlined />}
+                    className="border-mc-lapis/30 bg-gradient-to-br from-blue-50 to-green-50"
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="text-center">
+                      <div className="text-2xl mb-2">✅</div>
+                      <Text strong>项目已扫描</Text>
+                      <br />
+                      <Text type="secondary" className="text-sm">
+                        {recentProjects.length} 个项目已准备就绪
+                      </Text>
+                    </Card>
+                    
+                    <Card className="text-center">
+                      <div className="text-2xl mb-2">
+                        {syncStats?.pullable > 0 ? '🔄' : '✅'}
+                      </div>
+                      <Text strong>翻译同步</Text>
+                      <br />
+                      <Text type="secondary" className="text-sm">
+                        {syncStats?.pullable > 0 ? `${syncStats.pullable} 条待同步` : '已同步最新'}
+                      </Text>
+                    </Card>
+                    
+                    <Card className="text-center">
+                      <div className="text-2xl mb-2">🔨</div>
+                      <Text strong>准备构建</Text>
+                      <br />
+                      <Text type="secondary" className="text-sm">
+                        可随时生成本地化文件
+                      </Text>
+                    </Card>
+                  </div>
+                )}
+              </div>
             </Card>
           </div>
 
@@ -317,12 +403,12 @@ export const WelcomePage: React.FC = () => {
               </div>
             </Card>
 
-            {/* 最近任务 */}
+            {/* 快速操作和最近任务 */}
             <Card
               title={
                 <Space className="text-lg">
                   <HistoryOutlined className="text-mc-gold" />
-                  <Text strong className="text-mc-gold">最近任务</Text>
+                  <Text strong className="text-mc-gold">快速操作</Text>
                 </Space>
               }
               className="minecraft-card shadow-depth"
@@ -364,11 +450,57 @@ export const WelcomePage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description="暂无最近任务"
-                  className="py-8"
-                />
+                <div className="space-y-3">
+                  <div className="text-center py-4">
+                    <div className="text-4xl mb-2">🚀</div>
+                    <Text type="secondary" className="text-sm">
+                      还没有完成任务
+                    </Text>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Button 
+                      block 
+                      icon={<ScanOutlined />}
+                      onClick={() => navigate('/scan')}
+                      className="text-left"
+                    >
+                      新建扫描项目
+                    </Button>
+                    
+                    <Button 
+                      block 
+                      icon={<FolderOpenOutlined />}
+                      onClick={() => navigate('/projects/packs')}
+                      variant="outline"
+                      className="text-left"
+                    >
+                      查看现有项目
+                    </Button>
+                    
+                    {isOnline && (
+                      <Button 
+                        block 
+                        icon={<SyncOutlined />}
+                        onClick={() => navigate('/sync')}
+                        variant="outline"
+                        disabled={!isOnline}
+                        className="text-left"
+                      >
+                        同步翻译内容
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <Text className="text-blue-700 font-medium text-sm">💡 使用提示</Text>
+                    <div className="mt-2 text-xs text-blue-600 space-y-1">
+                      <div>• 支持整合包和单独MOD文件夹</div>
+                      <div>• 自动识别多种语言文件格式</div>
+                      <div>• 实时同步最新翻译内容</div>
+                    </div>
+                  </div>
+                </div>
               )}
             </Card>
           </div>

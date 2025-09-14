@@ -34,7 +34,7 @@ export class ModApiService {
       params.append('has_language_files', options.has_language_files.toString())
     }
 
-    const url = `/api/v6/mods${params.toString() ? '?' + params.toString() : ''}`
+    const url = `/api/v2.1/projects${params.toString() ? '?' + params.toString() : ''}`
     const response = await this.client.get(url, config)
     
     if (!response.success || !response.data) {
@@ -48,7 +48,7 @@ export class ModApiService {
    * 获取模组详情
    */
   async getModById(modId: string, config?: RequestConfig): Promise<ModInfo> {
-    const response = await this.client.get(`/api/v6/mods/${modId}`, config)
+    const response = await this.client.get(`/api/v2.1/projects/${modId}`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取模组详情失败')
@@ -65,7 +65,7 @@ export class ModApiService {
     version: string
     platform: string
   }>, config?: RequestConfig): Promise<ModInfo> {
-    const response = await this.client.put(`/api/v6/mods/${modId}`, updates, config)
+    const response = await this.client.put(`/api/v2.1/projects/${modId}`, updates, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '更新模组失败')
@@ -78,7 +78,7 @@ export class ModApiService {
    * 删除模组
    */
   async deleteMod(modId: string, config?: RequestConfig): Promise<void> {
-    const response = await this.client.delete(`/api/v6/mods/${modId}`, config)
+    const response = await this.client.delete(`/api/v2.1/projects/${modId}`, config)
     
     if (!response.success) {
       throw new Error(response.message || '删除模组失败')
@@ -97,7 +97,7 @@ export class ModApiService {
     if (options?.locale) params.append('locale', options.locale)
     if (options?.format) params.append('format', options.format)
 
-    const url = `/api/v6/mods/${modId}/language-files${params.toString() ? '?' + params.toString() : ''}`
+    const url = `/api/v2.1/projects/${modId}/language-files${params.toString() ? '?' + params.toString() : ''}`
     const response = await this.client.get(url, config)
     
     if (!response.success || !response.data) {
@@ -111,7 +111,7 @@ export class ModApiService {
    * 获取语言文件详情
    */
   async getLanguageFileById(fileId: string, config?: RequestConfig): Promise<LanguageFileInfo> {
-    const response = await this.client.get(`/api/v6/language-files/${fileId}`, config)
+    const response = await this.client.get(`/api/v2.1/language-files/${fileId}`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取语言文件详情失败')
@@ -128,7 +128,7 @@ export class ModApiService {
     format: string
     encoding: string
   }> {
-    const response = await this.client.get(`/api/v6/language-files/${fileId}/content`, config)
+    const response = await this.client.get(`/api/v2.1/language-files/${fileId}/content`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取语言文件内容失败')
@@ -152,7 +152,7 @@ export class ModApiService {
     if (options?.limit) params.append('limit', options.limit.toString())
     if (options?.include_language_files) params.append('include_language_files', 'true')
 
-    const response = await this.client.get(`/api/v6/mods/search?${params.toString()}`, config)
+    const response = await this.client.get(`/api/v2.1/projects/search?${params.toString()}`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '搜索模组失败')
@@ -171,7 +171,7 @@ export class ModApiService {
     translation_coverage: Record<string, number>
     last_updated: string
   }> {
-    const response = await this.client.get(`/api/v6/mods/${modId}/stats`, config)
+    const response = await this.client.get(`/api/v2.1/projects/${modId}/stats`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取模组统计失败')
@@ -187,7 +187,7 @@ export class ModApiService {
     scan_id: string
     status: string
   }> {
-    const response = await this.client.post(`/api/v6/mods/${modId}/rescan`, {}, config)
+    const response = await this.client.post(`/api/v2.1/projects/${modId}/rescan`, {}, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '重新扫描模组失败')
@@ -212,7 +212,7 @@ export class ModApiService {
       error?: string
     }>
   }> {
-    const response = await this.client.post('/api/v6/mods/batch', { operations }, config)
+    const response = await this.client.post('/api/v2.1/projects/batch', { operations }, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '批量操作失败')
@@ -236,7 +236,7 @@ export class ModApiService {
       name: string
     }>
   }> {
-    const response = await this.client.get(`/api/v6/mods/${modId}/dependencies`, config)
+    const response = await this.client.get(`/api/v2.1/projects/${modId}/dependencies`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取依赖关系失败')
@@ -250,7 +250,7 @@ export class ModApiService {
    */
   async exportModInfo(modId: string, format?: 'json' | 'csv' | 'xml', config?: RequestConfig): Promise<Blob> {
     const params = format ? `?format=${format}` : ''
-    const response = await this.client.get(`/api/v6/mods/${modId}/export${params}`, {
+    const response = await this.client.get(`/api/v2.1/projects/${modId}/export${params}`, {
       ...config,
       // 注意：这里需要特殊处理二进制响应
     })
@@ -270,7 +270,7 @@ export class ModApiService {
     errors: string[]
     warnings: string[]
   }> {
-    const response = await this.client.post(`/api/v6/mods/${modId}/validate`, {}, config)
+    const response = await this.client.post(`/api/v2.1/projects/${modId}/validate`, {}, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '验证模组文件失败')

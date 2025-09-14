@@ -262,7 +262,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Badge status="warning" />
                 )}
                 {item.key === 'projects' && recentProjects.length > 0 && (
-                  <Badge count={recentProjects.length} size="small" />
+                  <Badge count={recentProjects.length} />
                 )}
               </Space>
             ),

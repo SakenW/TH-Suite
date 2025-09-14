@@ -225,7 +225,7 @@ export const ModList: React.FC<ModListProps> = ({
         {/* 过滤器状态和统计 */}
         <Row justify="space-between" align="middle" className="mt-3 pt-3 border-t border-gray-200">
           <Col>
-            <Space size="small">
+            <Space>
               <Text type="secondary">
                 显示 {filteredAndSortedMods.length} / {mods.length} 个MOD
               </Text>
@@ -233,7 +233,7 @@ export const ModList: React.FC<ModListProps> = ({
               {hasActiveFilters && (
                 <Button 
                   type="link" 
-                  size="small"
+                 
                   onClick={resetFilters}
                   icon={<FilterOutlined />}
                 >
@@ -244,12 +244,12 @@ export const ModList: React.FC<ModListProps> = ({
           </Col>
           
           <Col>
-            <Space size="small">
+            <Space>
               <Text type="secondary">紧凑视图</Text>
               <Switch 
                 checked={compactView}
                 onChange={setCompactView}
-                size="small"
+               
               />
             </Space>
           </Col>

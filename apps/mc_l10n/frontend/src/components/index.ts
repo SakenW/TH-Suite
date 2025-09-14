@@ -6,21 +6,15 @@ export * from './ui'
 // 通用组件
 export * from './common'
 
-// 布局组件
-export { default as Layout } from './Layout'
-export { default as Header } from './Layout/Header'
-export { default as Sidebar } from './Layout/Sidebar'
-
-// 功能组件
-export { DirectorySelector } from './DirectorySelector'
-export { default as LanguageDebug } from './LanguageDebug'
-export { default as LanguageTest } from './LanguageTest'
-export { default as McWelcomeSection } from './McWelcomeSection'
-export { default as WelcomeCard } from './WelcomeCard'
+// 功能组件（现有的组件）
 export { default as ProjectScan } from './ProjectScan'
-
-// Minecraft主题组件
-export * from './MinecraftComponents'
 
 // MOD加载器相关组件
 export * from './ModLoader'
+
+// 以下组件已移动到 archived/ 目录：
+// - Layout, Header, Sidebar → archived/legacy-components/
+// - DirectorySelector → archived/legacy-components/
+// - LanguageDebug, LanguageTest → archived/legacy-components/
+// - McWelcomeSection, WelcomeCard → archived/legacy-components/
+// - MinecraftComponents → archived/legacy-components/

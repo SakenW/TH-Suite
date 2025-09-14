@@ -119,14 +119,14 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
       return {
         key: modId,
         title: (
-          <Space size="small">
+          <Space>
             {statusIcon}
             {loaderIcon}
             <Text strong={!isMissing} type={isMissing ? 'danger' : undefined}>
               {mod?.name || modId}
             </Text>
             {mod?.version && (
-              <Tag size="small" color="blue">v{mod.version}</Tag>
+              <Tag color="blue">v{mod.version}</Tag>
             )}
             {dependencies.length > 0 && (
               <Badge count={dependencies.length} color="#87CEEB" />
@@ -159,11 +159,11 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
         treeData.push({
           key: `isolated-${mod.mod_id}`,
           title: (
-            <Space size="small">
+            <Space>
               <InfoCircleOutlined style={{ color: '#1890ff' }} />
               {getModLoaderIcon(mod.loader_type)}
               <Text>{mod.name}</Text>
-              <Tag size="small" color="default">独立</Tag>
+              <Tag color="default">独立</Tag>
             </Space>
           ),
           mod_id: mod.mod_id,
@@ -250,15 +250,15 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
         <div>
           <div className="mb-4 flex justify-between items-center">
             <Space>
-              <Button size="small" onClick={expandAll}>
+              <Button onClick={expandAll}>
                 展开全部
               </Button>
-              <Button size="small" onClick={collapseAll}>
+              <Button onClick={collapseAll}>
                 收起全部
               </Button>
               {onRefresh && (
                 <Button 
-                  size="small" 
+                  
                   icon={<ReloadOutlined />} 
                   onClick={onRefresh}
                   loading={loading}
@@ -299,13 +299,13 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
           dataSource={flatDependencies}
           renderItem={(item) => (
             <List.Item>
-              <Card size="small" className="w-full">
+              <Card className="w-full">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <Space>
                       {getModLoaderIcon(item.mod.loader_type)}
                       <Text strong>{item.mod.name}</Text>
-                      <Tag size="small" color="blue">
+                      <Tag color="blue">
                         v{item.mod.version}
                       </Tag>
                     </Space>
@@ -314,12 +314,12 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
                       <Text className="text-sm text-gray-600">依赖项：</Text>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {item.resolved.map((dep, index) => (
-                          <Tag key={index} color="green" size="small">
+                          <Tag key={index} color="green">
                             ✓ {dep}
                           </Tag>
                         ))}
                         {item.missing.map((dep, index) => (
-                          <Tag key={index} color="red" size="small">
+                          <Tag key={index} color="red">
                             ✗ {dep}
                           </Tag>
                         ))}
@@ -333,7 +333,7 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
                     </Text>
                     {item.missing.length > 0 && (
                       <div>
-                        <Tag color="red" size="small">
+                        <Tag color="red">
                           {item.missing.length} 个缺失
                         </Tag>
                       </div>
@@ -413,7 +413,7 @@ export const ModDependencyGraph: React.FC<ModDependencyGraphProps> = ({
           )}
 
           {/* 统计信息 */}
-          <Card size="small" title="依赖关系统计">
+          <Card title="依赖关系统计">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <Text type="secondary" className="text-sm">总依赖数</Text>

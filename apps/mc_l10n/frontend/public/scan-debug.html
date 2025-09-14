@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫描功能调试工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+        .section h2 {
+            color: #2d3748;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .result {
+            background: #1a202c;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #f56565;
+        }
+        .success {
+            color: #48bb78;
+        }
+        .warning {
+            color: #ed8936;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .status.ok { background: #c6f6d5; color: #22543d; }
+        .status.error { background: #fed7d7; color: #742a2a; }
+        .status.warning { background: #faf089; color: #744210; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 扫描功能调试工具</h1>
+        
+        <div class="section">
+            <h2>📊 系统状态检查</h2>
+            <button onclick="checkSystemStatus()">检查系统状态</button>
+            <div id="systemStatus"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 API 连通性测试</h2>
+            <div class="grid">
+                <div>
+                    <h3>后端连接测试</h3>
+                    <button onclick="testBackendConnection()">测试后端连接</button>
+                    <div id="backendStatus"></div>
+                </div>
+                <div>
+                    <h3>扫描测试接口</h3>
+                    <button onclick="testScanEndpoint()">测试扫描接口</button>
+                    <div id="scanTestStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 直接扫描测试</h2>
+            <div>
+                <label>扫描目录：</label>
+                <input type="text" id="scanDirectory" value="/tmp" placeholder="输入要扫描的目录">
+            </div>
+            <button onclick="testDirectScan()">直接调用扫描API</button>
+            <div id="scanResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 前端状态调试</h2>
+            <button onclick="debugFrontendState()">检查前端状态</button>
+            <button onclick="testScanPageIntegration()">测试扫描页面集成</button>
+            <div id="frontendDebug"></div>
+        </div>
+
+        <div class="section">
+            <h2>📝 实时日志</h2>
+            <button onclick="clearLogs()">清除日志</button>
+            <button onclick="exportLogs()">导出日志</button>
+            <div class="result" id="logs">准备开始调试...</div>
+        </div>
+    </div>
+
+    <script>
+        // 日志记录
+        let logs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            
+            const logsDiv = document.getElementById('logs');
+            logsDiv.textContent = logs.join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('logs').textContent = '日志已清除...';
+        }
+
+        function exportLogs() {
+            const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scan-debug-${new Date().toISOString().slice(0, 19)}.txt`;
+            a.click();
+        }
+
+        // 系统状态检查
+        async function checkSystemStatus() {
+            log('开始检查系统状态...');
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = '';
+
+            const checks = [
+                { name: '浏览器支持', check: () => Promise.resolve(!!window.fetch) },
+                { name: '本地存储', check: () => Promise.resolve(!!window.localStorage) },
+                { name: 'WebSocket支持', check: () => Promise.resolve(!!window.WebSocket) },
+                { name: '前端服务', check: () => fetch('http://localhost:18001').then(r => r.ok) },
+                { name: '后端服务', check: () => fetch('http://localhost:18000/api/v2.1/scan/test').then(r => r.ok) }
+            ];
+
+            for (const check of checks) {
+                try {
+                    const result = await check.check();
+                    const status = result ? 'ok' : 'error';
+                    const statusText = result ? '✅ 正常' : '❌ 异常';
+                    statusDiv.innerHTML += `<div class="status ${status}">${check.name}: ${statusText}</div>`;
+                    log(`${check.name}: ${statusText}`);
+                } catch (error) {
+                    statusDiv.innerHTML += `<div class="status error">${check.name}: ❌ 错误 - ${error.message}</div>`;
+                    log(`${check.name}: 错误 - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // 测试后端连接
+        async function testBackendConnection() {
+            log('测试后端连接...');
+            const statusDiv = document.getElementById('backendStatus');
+            
+            try {
+                const response = await fetch('http://localhost:18000/api/v2.1/scan/test');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status ok">✅ 后端连接正常</div><div class="result">${JSON.stringify(data, null, 2)}</div>`;
+                    log('后端连接测试成功');
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ 后端响应错误: ${response.status}</div>`;
+                    log(`后端连接测试失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ 后端连接失败: ${error.message}</div>`;
+                log(`后端连接测试错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试扫描端点
+        async function testScanEndpoint() {
+            log('测试扫描端点...');
+            const statusDiv = document.getElementById('scanTestStatus');
+            
+            try {
+                // 首先测试活跃扫描端点
+                const activeResponse = await fetch('http://localhost:18000/api/v2.1/scan/active');
+                const activeData = await activeResponse.json();
+                
+                statusDiv.innerHTML = `<div class="status ok">✅ 活跃扫描端点正常</div><div class="result">${JSON.stringify(activeData, null, 2)}</div>`;
+                log('扫描端点测试成功');
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ 扫描端点测试失败: ${error.message}</div>`;
+                log(`扫描端点测试错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 直接扫描测试
+        async function testDirectScan() {
+            log('开始直接扫描测试...');
+            const directory = document.getElementById('scanDirectory').value;
+            const resultDiv = document.getElementById('scanResult');
+            
+            if (!directory) {
+                resultDiv.innerHTML = `<div class="status error">❌ 请输入扫描目录</div>`;
+                log('扫描测试失败: 目录为空', 'error');
+                return;
+            }
+
+            try {
+                log(`发送扫描请求: ${directory}`);
+                
+                const scanRequest = {
+                    directory: directory,
+                    incremental: true,
+                    options: {
+                        include_subdirectories: true,
+                        validate_after_scan: true,
+                        generate_statistics: true,
+                        file_extensions: [".jar", ".zip"],
+                        max_depth: 10,
+                        max_file_size_mb: 500
+                    }
+                };
+
+                log(`请求参数: ${JSON.stringify(scanRequest, null, 2)}`);
+
+                const response = await fetch('http://localhost:18000/api/v2.1/scan/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scanRequest)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="status ok">✅ 扫描请求成功发送</div><div class="result">${JSON.stringify(data, null, 2)}</div>`;
+                    log(`扫描请求成功: ${data.message || '成功'}`);
+                    
+                    // 如果有scan_id，尝试获取状态
+                    if (data.data && data.data.scan_id) {
+                        setTimeout(() => checkScanStatus(data.data.scan_id), 2000);
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ 扫描请求失败: ${response.status}</div><div class="result">${JSON.stringify(data, null, 2)}</div>`;
+                    log(`扫描请求失败: ${response.status} - ${data.message || '未知错误'}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ 扫描请求错误: ${error.message}</div>`;
+                log(`扫描请求错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 检查扫描状态
+        async function checkScanStatus(scanId) {
+            try {
+                log(`检查扫描状态: ${scanId}`);
+                const response = await fetch(`http://localhost:18000/api/v2.1/scan/status/${scanId}`);
+                const data = await response.json();
+                
+                log(`扫描状态: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`检查扫描状态错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 前端状态调试
+        function debugFrontendState() {
+            log('检查前端状态...');
+            const debugDiv = document.getElementById('frontendDebug');
+            
+            const frontendState = {
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                referrer: document.referrer,
+                cookies: document.cookie || '无Cookie',
+                localStorage: Object.keys(localStorage).length,
+                sessionStorage: Object.keys(sessionStorage).length,
+                screenSize: `${screen.width}x${screen.height}`,
+                viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+                connection: navigator.connection ? navigator.connection.effectiveType : '未知',
+                onLine: navigator.onLine,
+                language: navigator.language,
+                platform: navigator.platform,
+                errors: window.onerror ? '已设置错误处理' : '未设置错误处理'
+            };
+
+            debugDiv.innerHTML = `<div class="result">${JSON.stringify(frontendState, null, 2)}</div>`;
+            log('前端状态检查完成');
+        }
+
+        // 测试扫描页面集成
+        function testScanPageIntegration() {
+            log('测试扫描页面集成...');
+            const debugDiv = document.getElementById('frontendDebug');
+            
+            // 检查是否可以访问扫描页面的JavaScript模块
+            try {
+                // 尝试模拟扫描API服务调用
+                const testApiCall = async () => {
+                    const BaseApiClient = window.BaseApiClient || class MockClient {
+                        async post(url, data) {
+                            return await fetch(`http://localhost:18000${url}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data)
+                            }).then(r => r.json());
+                        }
+                    };
+
+                    const client = new BaseApiClient();
+                    const result = await client.post('/api/v2.1/scan/start', {
+                        directory: '/tmp',
+                        incremental: true,
+                        options: { include_subdirectories: true }
+                    });
+
+                    return result;
+                };
+
+                testApiCall().then(result => {
+                    debugDiv.innerHTML += `<div class="status ok">✅ API集成测试成功</div><div class="result">${JSON.stringify(result, null, 2)}</div>`;
+                    log('扫描页面集成测试成功');
+                }).catch(error => {
+                    debugDiv.innerHTML += `<div class="status error">❌ API集成测试失败: ${error.message}</div>`;
+                    log(`扫描页面集成测试失败: ${error.message}`, 'error');
+                });
+
+            } catch (error) {
+                debugDiv.innerHTML += `<div class="status error">❌ 前端集成检查失败: ${error.message}</div>`;
+                log(`前端集成检查失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 错误捕获
+        window.onerror = function(msg, url, line, col, error) {
+            log(`JavaScript错误: ${msg} at ${url}:${line}:${col}`, 'error');
+            return false;
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+            log(`未处理的Promise拒绝: ${event.reason}`, 'error');
+        });
+
+        // 页面加载完成后自动检查系统状态
+        window.addEventListener('load', function() {
+            log('调试工具加载完成');
+            checkSystemStatus();
+        });
+    </script>
+</body>
+</html>

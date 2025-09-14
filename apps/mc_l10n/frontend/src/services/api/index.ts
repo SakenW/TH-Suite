@@ -13,6 +13,18 @@ export { PackApiService } from './PackApiService'
 export { ModApiService } from './ModApiService'
 export * from './types'
 
+// ==================== 全局API服务实例 ====================
+import { BaseApiClient } from './BaseApiClient'
+import { PackApiService } from './PackApiService'
+import { ModApiService } from './ModApiService'
+
+// 创建全局API客户端实例
+const globalApiClient = new BaseApiClient()
+
+// 创建全局服务实例
+export const packApi = new PackApiService(globalApiClient)
+export const modApi = new ModApiService(globalApiClient)
+
 // ==================== 工具函数 ====================
 
 /**

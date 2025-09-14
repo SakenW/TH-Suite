@@ -330,7 +330,7 @@ const RealDataTestPage: React.FC = () => {
             dataSource={testResults}
             rowKey="name"
             pagination={false}
-            size="small"
+           
           />
         ) : (
           <div className="text-center py-8">
@@ -340,7 +340,7 @@ const RealDataTestPage: React.FC = () => {
       </Card>
 
       {/* 技术说明 */}
-      <Card title="💡 技术说明" size="small">
+      <Card title="💡 技术说明">
         <Paragraph>
           <strong>这个测试页面演示了以下功能：</strong>
         </Paragraph>

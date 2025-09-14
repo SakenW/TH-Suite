@@ -336,12 +336,30 @@ async def initialize_container() -> DIContainer:
 
     # 延迟注册扫描服务（需要在基础设施初始化后）
     def scanner_factory() -> IScannerService:
+        # 不包装ScanApplicationService，因为它本身不是扫描服务
+        # 直接返回一个简化的扫描服务适配器
         from application.services.scan_application_service import ScanApplicationService
-        from pathlib import Path
         
-        # 使用v2.1数据库架构
-        scanner_instance = ScanApplicationService()
-        return ScannerServiceAdapter(scanner_instance)
+        class SimpleScannerAdapter(IScannerService):
+            def __init__(self):
+                self.scan_service = ScanApplicationService()
+                
+            async def start_scan(self, target_path: str, incremental: bool = True, options: dict = None) -> dict:
+                return await self.scan_service.start_project_scan(target_path, incremental, scan_options=options)
+                
+            async def get_scan_status(self, scan_id: str) -> dict | None:
+                result = await self.scan_service.get_scan_status(scan_id)
+                return result.get("data") if result and result.get("success") else None
+                
+            async def cancel_scan(self, scan_id: str) -> bool:
+                result = await self.scan_service.cancel_scan(scan_id)
+                return result.get("success", False)
+                
+            async def get_content_items(self, content_type: str, limit: int = 100) -> list:
+                # 临时实现，返回空列表
+                return []
+        
+        return SimpleScannerAdapter()
 
     container.register_factory(IScannerService, scanner_factory)
 
@@ -368,4 +386,8 @@ def get_infrastructure_service() -> IInfrastructureService | None:
 def get_database_manager():
     """获取数据库管理器（兼容旧代码）"""
     from repositories.v2_1_repositories import PackRepository
-    return PackRepository()
+    from pathlib import Path
+    
+    # 使用与其他服务一致的v2.1数据库路径
+    db_path = str(Path(__file__).parent.parent / "data" / "mc_l10n_v2_1.db")
+    return PackRepository(db_path)

@@ -178,9 +178,63 @@ export interface PackVersionStatistics {
   }>
 }
 
+// 页面组件使用的简化类型
+export interface PackInfo {
+  id: string
+  name: string
+  platform: string
+  version_count?: number
+  mod_count?: number
+  latest_mc_version?: string
+  root_path?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface PackCreateRequest {
+  name: string
+  platform: string
+  root_path: string
+  description?: string
+}
+
+export interface PackInstallation {
+  id: string
+  pack_id: string
+  version: string
+  install_path: string
+  status: 'installing' | 'installed' | 'failed'
+  progress?: number
+}
+
 // ============================================================
 // MOD相关类型
 // ============================================================
+
+// 页面组件使用的简化类型
+export interface ModInfo {
+  id: string
+  name: string
+  version: string
+  platform: string
+  language_file_count: number
+  supported_locales?: string[]
+  file_path?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface LanguageFileInfo {
+  id: string
+  mod_id: string
+  file_path: string
+  locale: string
+  format: string
+  key_count: number
+  file_size: number
+  created_at: string
+  updated_at?: string
+}
 
 export interface ModVersionInstance {
   mod_version_instance_id: string
@@ -507,6 +561,19 @@ export interface ErrorReport {
   context: Record<string, any>
   occurred_at: string
   resolved: boolean
+}
+
+// ============================================================
+// API服务方法相关类型
+// ============================================================
+
+export interface ServiceResult<T> {
+  success: boolean
+  data?: T
+  error?: {
+    code: string
+    message: string
+  }
 }
 
 // ============================================================

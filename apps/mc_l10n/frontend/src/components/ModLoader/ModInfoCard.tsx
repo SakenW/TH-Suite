@@ -153,7 +153,7 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
   )
 
   const cardExtra = (
-    <Space size="small">
+    <Space>
       {mod.homepage && (
         <Tooltip title="主页">
           <Link href={mod.homepage} target="_blank">
@@ -171,7 +171,7 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
     return (
       <Card 
         className={`mod-info-card-compact ${className}`}
-        size="small"
+       
         hoverable
         style={{ marginBottom: 8 }}
       >
@@ -187,11 +187,11 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Tag color={loaderConfig.color} size="small">
+            <Tag color={loaderConfig.color}>
               {loaderConfig.displayName}
             </Tag>
             {mod.minecraft_version && (
-              <Tag color="blue" size="small">
+              <Tag color="blue">
                 MC {mod.minecraft_version}
               </Tag>
             )}
@@ -214,7 +214,7 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
     >
       <div className="space-y-4">
         {/* 基本信息 */}
-        <Descriptions size="small" column={2} bordered>
+        <Descriptions column={2} bordered>
           <Descriptions.Item label="版本" span={1}>
             <Badge count={mod.version} color="blue" />
           </Descriptions.Item>
@@ -315,7 +315,7 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
                 <br />
                 <div className="flex flex-wrap gap-1">
                   {mod.loader_info.capabilities?.slice(0, 3).map((cap, index) => (
-                    <Tag key={index} size="small" color="cyan">
+                    <Tag key={index} color="cyan">
                       {cap}
                     </Tag>
                   ))}

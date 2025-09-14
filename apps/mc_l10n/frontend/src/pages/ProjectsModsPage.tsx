@@ -24,7 +24,8 @@ import {
   Empty,
   Tooltip,
   Badge,
-  Divider
+  Divider,
+  App
 } from 'antd'
 import { 
   BugOutlined, 
@@ -66,11 +67,16 @@ interface ModsPageState {
     totalLanguageFiles: number
     supportedLocales: string[]
   }
+  // 新增批量操作相关状态
+  selectedRowKeys: string[]
+  platformFilter?: string
+  hasLanguageFilesFilter?: boolean
 }
 
 export const ProjectsModsPage: React.FC = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
+  const { notification } = App.useApp()
   
   const [state, setState] = useState<ModsPageState>({
     mods: [],
@@ -90,7 +96,11 @@ export const ProjectsModsPage: React.FC = () => {
       modsWithLanguageFiles: 0,
       totalLanguageFiles: 0,
       supportedLocales: []
-    }
+    },
+    // 新增批量操作状态初始值
+    selectedRowKeys: [],
+    platformFilter: undefined,
+    hasLanguageFilesFilter: undefined
   })
 
   // 加载模组列表
@@ -113,17 +123,17 @@ export const ProjectsModsPage: React.FC = () => {
 
       setState(prev => ({
         ...prev,
-        mods: response.items,
+        mods: response.items || [],
         pagination: {
           ...prev.pagination,
           current: page,
-          total: response.total
+          total: response.total || 0
         },
         statistics: {
-          totalMods: response.total,
-          modsWithLanguageFiles: response.items.filter(mod => mod.language_file_count > 0).length,
-          totalLanguageFiles: response.items.reduce((sum, mod) => sum + mod.language_file_count, 0),
-          supportedLocales: [...new Set(response.items.flatMap(mod => mod.supported_locales || []))]
+          totalMods: response.total || 0,
+          modsWithLanguageFiles: (response.items || []).filter(mod => mod.language_file_count > 0).length,
+          totalLanguageFiles: (response.items || []).reduce((sum, mod) => sum + (mod.language_file_count || 0), 0),
+          supportedLocales: [...new Set((response.items || []).flatMap(mod => mod.supported_locales || []))]
         }
       }))
     } catch (error) {
@@ -190,6 +200,61 @@ export const ProjectsModsPage: React.FC = () => {
     loadMods(pagination.current, state.searchText)
   }, [state.searchText, loadMods])
 
+  // 批量操作处理
+  const handleBatchDelete = useCallback(async () => {
+    if (state.selectedRowKeys.length === 0) return
+    
+    Modal.confirm({
+      title: '确认批量删除',
+      content: `确定要删除选中的 ${state.selectedRowKeys.length} 个模组吗？此操作不可撤销。`,
+      okText: '确定删除',
+      cancelText: '取消',
+      danger: true,
+      onOk: async () => {
+        try {
+          for (const modId of state.selectedRowKeys) {
+            await modApi.deleteMod(modId)
+          }
+          notification.success({ message: `成功删除 ${state.selectedRowKeys.length} 个模组` })
+          setState(prev => ({ ...prev, selectedRowKeys: [] }))
+          loadMods(state.pagination.current, state.searchText, state.platformFilter, state.hasLanguageFilesFilter)
+        } catch (error) {
+          notification.error({ message: '批量删除失败', description: String(error) })
+        }
+      }
+    })
+  }, [state.selectedRowKeys, state.pagination.current, state.searchText, state.platformFilter, state.hasLanguageFilesFilter, loadMods])
+
+  const handleBatchRescan = useCallback(async () => {
+    if (state.selectedRowKeys.length === 0) return
+    
+    try {
+      const rescanPromises = state.selectedRowKeys.map(modId => modApi.rescanMod(modId))
+      const results = await Promise.allSettled(rescanPromises)
+      
+      const successCount = results.filter(r => r.status === 'fulfilled').length
+      const failCount = results.length - successCount
+      
+      if (successCount > 0) {
+        notification.success({ 
+          message: `批量重扫完成`, 
+          description: `成功: ${successCount}个，失败: ${failCount}个` 
+        })
+      }
+      setState(prev => ({ ...prev, selectedRowKeys: [] }))
+    } catch (error) {
+      notification.error({ message: '批量重扫失败', description: String(error) })
+    }
+  }, [state.selectedRowKeys])
+
+  // 行选择配置
+  const rowSelection = {
+    selectedRowKeys: state.selectedRowKeys,
+    onChange: (selectedRowKeys: React.Key[]) => {
+      setState(prev => ({ ...prev, selectedRowKeys: selectedRowKeys as string[] }))
+    }
+  }
+
   // 初始加载
   useEffect(() => {
     loadMods()
@@ -242,7 +307,7 @@ export const ProjectsModsPage: React.FC = () => {
       render: (locales: string[]) => (
         <div>
           {locales?.slice(0, 3).map(locale => (
-            <Tag key={locale} size="small">{locale}</Tag>
+            <Tag key={locale}>{locale}</Tag>
           ))}
           {locales?.length > 3 && <Text type="secondary">+{locales.length - 3}</Text>}
         </div>
@@ -265,7 +330,7 @@ export const ProjectsModsPage: React.FC = () => {
             <Button 
               type="text" 
               icon={<EyeOutlined />} 
-              size="small"
+             
               onClick={() => viewModDetail(record)}
             />
           </Tooltip>
@@ -273,7 +338,7 @@ export const ProjectsModsPage: React.FC = () => {
             <Button 
               type="text" 
               icon={<ReloadOutlined />} 
-              size="small"
+             
               onClick={() => rescanMod(record.id)}
             />
           </Tooltip>
@@ -287,7 +352,7 @@ export const ProjectsModsPage: React.FC = () => {
               <Button 
                 type="text" 
                 icon={<DeleteOutlined />} 
-                size="small"
+               
                 danger
               />
             </Tooltip>
@@ -351,7 +416,7 @@ export const ProjectsModsPage: React.FC = () => {
       {/* 统计信息 */}
       <Row gutter={16} className="mb-6">
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="总模组数" 
               value={state.statistics.totalMods} 
@@ -360,7 +425,7 @@ export const ProjectsModsPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="包含语言文件" 
               value={state.statistics.modsWithLanguageFiles}
@@ -370,7 +435,7 @@ export const ProjectsModsPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="语言文件总数" 
               value={state.statistics.totalLanguageFiles} 
@@ -379,7 +444,7 @@ export const ProjectsModsPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="支持语言数" 
               value={state.statistics.supportedLocales.length} 
@@ -389,7 +454,7 @@ export const ProjectsModsPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 搜索和过滤 */}
+      {/* 搜索、过滤和批量操作 */}
       <Card className="mb-4">
         <Row gutter={16} align="middle">
           <Col flex={1}>
@@ -401,6 +466,59 @@ export const ProjectsModsPage: React.FC = () => {
               allowClear
             />
           </Col>
+          <Col>
+            <Select
+              placeholder="平台筛选"
+              allowClear
+              style={{ width: 120 }}
+              value={state.platformFilter}
+              onChange={(value) => {
+                setState(prev => ({ ...prev, platformFilter: value }))
+                loadMods(1, state.searchText, value, state.hasLanguageFilesFilter)
+              }}
+              options={[
+                { label: 'CurseForge', value: 'curseforge' },
+                { label: 'Modrinth', value: 'modrinth' },
+                { label: 'Fabric', value: 'fabric' },
+                { label: 'Forge', value: 'forge' }
+              ]}
+            />
+          </Col>
+          <Col>
+            <Select
+              placeholder="语言文件筛选"
+              allowClear
+              style={{ width: 140 }}
+              value={state.hasLanguageFilesFilter}
+              onChange={(value) => {
+                setState(prev => ({ ...prev, hasLanguageFilesFilter: value }))
+                loadMods(1, state.searchText, state.platformFilter, value)
+              }}
+              options={[
+                { label: '包含语言文件', value: true },
+                { label: '无语言文件', value: false }
+              ]}
+            />
+          </Col>
+          <Col>
+            <Space.Compact>
+              <Button 
+                icon={<ReloadOutlined />}
+                disabled={state.selectedRowKeys.length === 0}
+                onClick={handleBatchRescan}
+              >
+                批量重扫
+              </Button>
+              <Button 
+                icon={<DeleteOutlined />}
+                danger
+                disabled={state.selectedRowKeys.length === 0}
+                onClick={handleBatchDelete}
+              >
+                批量删除
+              </Button>
+            </Space.Compact>
+          </Col>
         </Row>
       </Card>
 
@@ -411,13 +529,19 @@ export const ProjectsModsPage: React.FC = () => {
           dataSource={state.mods}
           rowKey="id"
           loading={state.loading}
+          rowSelection={rowSelection}
           pagination={{
             current: state.pagination.current,
             pageSize: state.pagination.pageSize,
             total: state.pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} 共 ${total} 条`,
+            showTotal: (total, range) => {
+              const selectedInfo = state.selectedRowKeys.length > 0 
+                ? `，已选择 ${state.selectedRowKeys.length} 条` 
+                : ''
+              return `${range[0]}-${range[1]} 共 ${total} 条${selectedInfo}`
+            },
           }}
           onChange={handleTableChange}
           locale={{
@@ -455,7 +579,7 @@ export const ProjectsModsPage: React.FC = () => {
           <div>
             <Row gutter={16} className="mb-4">
               <Col span={12}>
-                <Card size="small" title="基本信息">
+                <Card title="基本信息">
                   <p><strong>ID:</strong> {state.selectedMod.id}</p>
                   <p><strong>版本:</strong> {state.selectedMod.version}</p>
                   <p><strong>平台:</strong> <Tag>{state.selectedMod.platform}</Tag></p>
@@ -463,7 +587,7 @@ export const ProjectsModsPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={12}>
-                <Card size="small" title="翻译统计">
+                <Card title="翻译统计">
                   <p><strong>语言文件:</strong> {state.selectedMod.language_file_count}</p>
                   <p><strong>支持语言:</strong></p>
                   <div>
@@ -481,7 +605,7 @@ export const ProjectsModsPage: React.FC = () => {
               dataSource={state.languageFiles}
               rowKey="id"
               loading={state.languageFilesLoading}
-              size="small"
+             
               pagination={{ pageSize: 5 }}
               locale={{
                 emptyText: state.languageFilesLoading ? '加载中...' : '暂无语言文件'

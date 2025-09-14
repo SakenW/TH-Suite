@@ -241,7 +241,7 @@ export const ScanPage: React.FC = () => {
       <Card title="扫描结果" className="mt-4">
         <Row gutter={16} className="mb-4">
           <Col span={6}>
-            <Card size="small">
+            <Card>
               <div className="text-center">
                 <FileTextOutlined className="text-2xl text-blue-500 mb-2" />
                 <div className="text-2xl font-bold">{statistics.total_files}</div>
@@ -250,7 +250,7 @@ export const ScanPage: React.FC = () => {
             </Card>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <Card>
               <div className="text-center">
                 <CheckCircleOutlined className="text-2xl text-green-500 mb-2" />
                 <div className="text-2xl font-bold">{statistics.language_files}</div>
@@ -259,7 +259,7 @@ export const ScanPage: React.FC = () => {
             </Card>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <Card>
               <div className="text-center">
                 <ScanOutlined className="text-2xl text-purple-500 mb-2" />
                 <div className="text-2xl font-bold">{discovered_packs.length}</div>
@@ -268,7 +268,7 @@ export const ScanPage: React.FC = () => {
             </Card>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <Card>
               <div className="text-center">
                 <ExclamationCircleOutlined className="text-2xl text-orange-500 mb-2" />
                 <div className="text-2xl font-bold">{discovered_mods.length}</div>
@@ -284,7 +284,7 @@ export const ScanPage: React.FC = () => {
             <Table 
               columns={columns}
               dataSource={discovered_packs.map(pack => ({ ...pack, key: pack.id }))}
-              size="small"
+             
               pagination={{ pageSize: 5 }}
             />
           </>
@@ -296,7 +296,7 @@ export const ScanPage: React.FC = () => {
             <Table 
               columns={columns}
               dataSource={discovered_mods.map(mod => ({ ...mod, key: mod.id }))}
-              size="small"
+             
               pagination={{ pageSize: 5 }}
             />
           </>
@@ -348,7 +348,7 @@ export const ScanPage: React.FC = () => {
               ].map(example => (
                 <Button 
                   key={example}
-                  size="small" 
+                  
                   type={example.includes('DeceasedCraft') ? 'primary' : 'dashed'}
                   onClick={() => setState(prev => ({ ...prev, directory: example }))}
                   disabled={state.isScanning}
@@ -405,10 +405,10 @@ export const ScanPage: React.FC = () => {
           </div>
 
           {/* 操作按钮 */}
-          <Space size="large" className="pt-2">
+          <Space className="pt-2">
             <Button
               type="primary"
-              size="large"
+             
               icon={<ScanOutlined />}
               onClick={startScan}
               loading={state.isScanning}
@@ -420,7 +420,7 @@ export const ScanPage: React.FC = () => {
             
             {state.isScanning && (
               <Button 
-                size="large"
+               
                 icon={<StopOutlined />} 
                 onClick={stopScan}
                 danger
@@ -431,7 +431,7 @@ export const ScanPage: React.FC = () => {
 
             {state.result && !state.isScanning && (
               <Button 
-                size="large"
+               
                 icon={<ReloadOutlined />} 
                 onClick={restartScan}
               >
@@ -475,7 +475,7 @@ export const ScanPage: React.FC = () => {
           <Card title="🎯 快速入门" className="mb-4">
             <Row gutter={16}>
               <Col span={8}>
-                <Card size="small" className="text-center h-full">
+                <Card className="text-center h-full">
                   <div className="text-4xl mb-2">📁</div>
                   <Text strong>1. 选择目录</Text>
                   <div className="text-xs text-gray-500 mt-1">
@@ -484,7 +484,7 @@ export const ScanPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={8}>
-                <Card size="small" className="text-center h-full">
+                <Card className="text-center h-full">
                   <div className="text-4xl mb-2">🔍</div>
                   <Text strong>2. 开始扫描</Text>
                   <div className="text-xs text-gray-500 mt-1">
@@ -493,7 +493,7 @@ export const ScanPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={8}>
-                <Card size="small" className="text-center h-full">
+                <Card className="text-center h-full">
                   <div className="text-4xl mb-2">📊</div>
                   <Text strong>3. 查看结果</Text>
                   <div className="text-xs text-gray-500 mt-1">
@@ -508,7 +508,7 @@ export const ScanPage: React.FC = () => {
           <Card title="🧪 测试扫描" className="mb-4">
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
               <Text strong className="block mb-2">💡 没有现成的模组目录？试试这些方法：</Text>
-              <Space direction="vertical" size="small" className="w-full">
+              <Space direction="vertical" className="w-full">
                 <div>
                   <Text strong>• 创建测试目录：</Text>
                   <code className="ml-2 bg-gray-100 px-2 py-1 rounded text-xs">
@@ -525,7 +525,7 @@ export const ScanPage: React.FC = () => {
                 <div>
                   <Text strong>• 使用当前目录：</Text>
                   <Button 
-                    size="small" 
+                    
                     type="link" 
                     onClick={() => setState(prev => ({ ...prev, directory: '/tmp' }))}
                     className="p-0 h-auto"

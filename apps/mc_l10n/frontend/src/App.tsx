@@ -14,16 +14,15 @@ import MainLayout from './layouts/MainLayout'
 // 页面组件 - 新版本
 import WelcomePage from './pages/WelcomePage'
 import ScanPageWeb from './pages/ScanPageWeb'
-import RealDataTestPage from './pages/RealDataTestPage'
+import ProjectsPacksPage from './pages/ProjectsPacksPage' 
+import ProjectsModsPage from './pages/ProjectsModsPage'
+import SyncPage from './pages/SyncPage'
+import BuildPage from './pages/BuildPageNew'
+import ServerPage from './pages/ServerPageNew'
+import SettingsPage from './pages/SettingsPageNew'
 // import MinecraftShowcase from './pages/MinecraftShowcase' // 暂时禁用
-// import ProjectsPacksPage from './pages/ProjectsPacksPage' 
-// import ProjectsModsPage from './pages/ProjectsModsPage'
 // import ScanPage from './pages/ScanPageNew' // 暂时禁用 - Tauri依赖问题
 // import DataViewPage from './pages/DataViewPage' // 暂时禁用 - 可能有依赖问题
-// import SyncPage from './pages/SyncPage'
-// import BuildPage from './pages/BuildPageNew'
-// import ServerPage from './pages/ServerPageNew'
-// import SettingsPage from './pages/SettingsPageNew'
 
 // 临时占位符组件
 const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
@@ -187,7 +186,7 @@ const App: React.FC<AppProps> = ({ onReady }) => {
 
           {/* 加载指示器 */}
           <div style={{ textAlign: 'center' }}>
-            <Spin size="large" />
+            <Spin />
             <div style={{ 
               marginTop: 16, 
               textAlign: 'center',
@@ -236,19 +235,19 @@ const App: React.FC<AppProps> = ({ onReady }) => {
             {/* <Route path="/showcase" element={<MinecraftShowcase />} /> */}
             
             {/* 项目路由 */}
-            <Route path="/projects/packs" element={<PlaceholderPage title="整合包项目" />} />
-            <Route path="/projects/mods" element={<PlaceholderPage title="MOD 项目" />} />
+            <Route path="/projects/packs" element={<ProjectsPacksPage />} />
+            <Route path="/projects/mods" element={<ProjectsModsPage />} />
             
             {/* 功能路由 */}
             <Route path="/scan" element={<ScanPageWeb />} />
-            <Route path="/test" element={<RealDataTestPage />} />
+            {/* 测试路由已移除 - 相关页面已归档 */}
             <Route path="/data" element={<PlaceholderPage title="数据查看" />} />
-            <Route path="/sync" element={<PlaceholderPage title="同步中心" />} />
-            <Route path="/build" element={<PlaceholderPage title="构建中心" />} />
+            <Route path="/sync" element={<SyncPage />} />
+            <Route path="/build" element={<BuildPage />} />
             
             {/* 管理路由 */}
-            <Route path="/server" element={<PlaceholderPage title="服务器状态" />} />
-            <Route path="/settings" element={<PlaceholderPage title="设置" />} />
+            <Route path="/server" element={<ServerPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             
             {/* 重定向和 404 */}
             <Route path="/projects" element={<Navigate to="/projects/packs" replace />} />

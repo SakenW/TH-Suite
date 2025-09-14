@@ -145,13 +145,13 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                 return (
                   <div key={loader}>
                     <div className="flex items-center justify-between mb-2">
-                      <Space size="small">
+                      <Space>
                         {getLoaderIcon(loader)}
                         <Text strong>
                           {loader.charAt(0).toUpperCase() + loader.slice(1)}
                         </Text>
                       </Space>
-                      <Space size="small">
+                      <Space>
                         <Text>{count}</Text>
                         <Text type="secondary">({percentage.toFixed(1)}%)</Text>
                       </Space>
@@ -160,7 +160,7 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                       percent={percentage} 
                       strokeColor={color}
                       showInfo={false}
-                      size="small"
+                     
                     />
                   </div>
                 )
@@ -187,11 +187,11 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Space size="small">
+                  <Space>
                     <DesktopOutlined style={{ color: '#1890ff' }} />
                     <Text>仅客户端</Text>
                   </Space>
-                  <Space size="small">
+                  <Space>
                     <Text>{statistics.supported_sides.client}</Text>
                     <Text type="secondary">
                       ({totalSides > 0 ? ((statistics.supported_sides.client / totalSides) * 100).toFixed(1) : 0}%)
@@ -202,17 +202,17 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                   percent={totalSides > 0 ? (statistics.supported_sides.client / totalSides) * 100 : 0} 
                   strokeColor="#1890ff"
                   showInfo={false}
-                  size="small"
+                 
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Space size="small">
+                  <Space>
                     <CloudServerOutlined style={{ color: '#faad14' }} />
                     <Text>仅服务端</Text>
                   </Space>
-                  <Space size="small">
+                  <Space>
                     <Text>{statistics.supported_sides.server}</Text>
                     <Text type="secondary">
                       ({totalSides > 0 ? ((statistics.supported_sides.server / totalSides) * 100).toFixed(1) : 0}%)
@@ -223,17 +223,17 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                   percent={totalSides > 0 ? (statistics.supported_sides.server / totalSides) * 100 : 0} 
                   strokeColor="#faad14"
                   showInfo={false}
-                  size="small"
+                 
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Space size="small">
+                  <Space>
                     <GlobalOutlined style={{ color: '#52c41a' }} />
                     <Text>通用</Text>
                   </Space>
-                  <Space size="small">
+                  <Space>
                     <Text>{statistics.supported_sides.both}</Text>
                     <Text type="secondary">
                       ({totalSides > 0 ? ((statistics.supported_sides.both / totalSides) * 100).toFixed(1) : 0}%)
@@ -244,7 +244,7 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                   percent={totalSides > 0 ? (statistics.supported_sides.both / totalSides) * 100 : 0} 
                   strokeColor="#52c41a"
                   showInfo={false}
-                  size="small"
+                 
                 />
               </div>
             </div>
@@ -322,7 +322,7 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                               color="blue" 
                               style={{ backgroundColor: '#f0f5ff' }}
                             />
-                            <Space size="small">
+                            <Space>
                               <Text>{count}</Text>
                               <Text type="secondary">({percentage.toFixed(1)}%)</Text>
                             </Space>
@@ -331,7 +331,7 @@ export const ModLoaderStats: React.FC<ModLoaderStatsProps> = ({
                             percent={percentage} 
                             strokeColor="#1890ff"
                             showInfo={false}
-                            size="small"
+                           
                           />
                         </div>
                       )

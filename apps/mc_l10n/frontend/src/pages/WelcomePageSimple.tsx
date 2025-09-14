@@ -193,7 +193,7 @@ export const WelcomePageSimple: React.FC = () => {
 
       {/* 底部快速链接 */}
       <div style={{ textAlign: 'center', marginTop: 48, paddingTop: 24, borderTop: '1px solid #f0f0f0' }}>
-        <Space size="large">
+        <Space>
           <Button 
             type="link" 
             icon={<SettingOutlined />} 

@@ -18,7 +18,8 @@ import {
   Input,
   Select,
   Upload,
-  message
+  message,
+  Empty
 } from 'antd'
 import { 
   ReloadOutlined, 
@@ -34,7 +35,7 @@ import { ModList } from './ModList'
 import { ModLoaderStats } from './ModLoaderStats'
 import { ModDependencyGraph } from './ModDependencyGraph'
 import type { ModInfo } from './ModInfoCard'
-import type { ModLoaderStatistics, DependencyAnalysis } from './ModDependencyGraph'
+import type { DependencyAnalysis } from './ModDependencyGraph'
 
 const { Content } = Layout
 const { Title, Text } = Typography
@@ -60,7 +61,7 @@ export const ModLoaderManager: React.FC<ModLoaderManagerProps> = ({
   const [loading, setLoading] = useState(false)
   const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null)
   const [mods, setMods] = useState<ModInfo[]>([])
-  const [statistics, setStatistics] = useState<ModLoaderStatistics | null>(null)
+  const [statistics, setStatistics] = useState<any>(null)
   const [dependencyAnalysis, setDependencyAnalysis] = useState<DependencyAnalysis | null>(null)
   const [selectedPath, setSelectedPath] = useState<string>('')
   const [scanModalVisible, setScanModalVisible] = useState(false)
@@ -183,7 +184,7 @@ export const ModLoaderManager: React.FC<ModLoaderManagerProps> = ({
         }
       ]
 
-      const mockStats: ModLoaderStatistics = {
+      const mockStats: any = {
         total_mods: mockMods.length,
         total_language_files: 45,
         total_translation_entries: 1250,

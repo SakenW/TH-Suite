@@ -20,7 +20,7 @@ import {
   Col,
   Statistic,
   Empty,
-  notification,
+  App,
   Popconfirm,
   Modal,
   Divider
@@ -67,10 +67,16 @@ interface PacksPageState {
     totalMods: number
     platformDistribution: Record<string, number>
   }
+  // 新增批量操作相关状态
+  selectedRowKeys: string[]
+  platformFilter?: string
+  versionFilter?: string
+  showBatchModal: boolean
 }
 
 export const ProjectsPacksPage: React.FC = () => {
   const navigate = useNavigate()
+  const { notification } = App.useApp()
   
   const [state, setState] = useState<PacksPageState>({
     packs: [],
@@ -90,7 +96,12 @@ export const ProjectsPacksPage: React.FC = () => {
       totalVersions: 0,
       totalMods: 0,
       platformDistribution: {}
-    }
+    },
+    // 新增批量操作状态初始值
+    selectedRowKeys: [],
+    platformFilter: undefined,
+    versionFilter: undefined,
+    showBatchModal: false
   })
 
   // 加载整合包列表
@@ -113,22 +124,22 @@ export const ProjectsPacksPage: React.FC = () => {
       const platformDistribution: Record<string, number> = {}
       let totalMods = 0
       
-      response.items.forEach(pack => {
+      ;(response.items || []).forEach(pack => {
         platformDistribution[pack.platform] = (platformDistribution[pack.platform] || 0) + 1
         totalMods += pack.mod_count || 0
       })
 
       setState(prev => ({
         ...prev,
-        packs: response.items,
+        packs: response.items || [],
         pagination: {
           ...prev.pagination,
           current: page,
-          total: response.total
+          total: response.total || 0
         },
         statistics: {
-          totalPacks: response.total,
-          totalVersions: response.items.reduce((sum, pack) => sum + (pack.version_count || 0), 0),
+          totalPacks: response.total || 0,
+          totalVersions: (response.items || []).reduce((sum, pack) => sum + (pack.version_count || 0), 0),
           totalMods,
           platformDistribution
         }
@@ -251,7 +262,7 @@ export const ProjectsPacksPage: React.FC = () => {
             <Button 
               type="text" 
               icon={<EyeOutlined />} 
-              size="small"
+             
               onClick={() => viewPackDetail(record)}
             />
           </Tooltip>
@@ -259,7 +270,7 @@ export const ProjectsPacksPage: React.FC = () => {
             <Button 
               type="text" 
               icon={<FolderOpenOutlined />} 
-              size="small"
+             
               onClick={() => handleOpenFolder(record.root_path || '')}
             />
           </Tooltip>
@@ -273,7 +284,7 @@ export const ProjectsPacksPage: React.FC = () => {
               <Button 
                 type="text" 
                 icon={<DeleteOutlined />} 
-                size="small"
+               
                 danger
               />
             </Tooltip>
@@ -305,13 +316,58 @@ export const ProjectsPacksPage: React.FC = () => {
     },
   ]
 
+  // 批量操作处理
+  const handleBatchDelete = useCallback(async () => {
+    if (state.selectedRowKeys.length === 0) return
+    
+    Modal.confirm({
+      title: '确认批量删除',
+      content: `确定要删除选中的 ${state.selectedRowKeys.length} 个整合包吗？此操作不可撤销。`,
+      okText: '确定删除',
+      cancelText: '取消',
+      danger: true,
+      onOk: async () => {
+        try {
+          // TODO: 实现批量删除API调用
+          for (const packId of state.selectedRowKeys) {
+            await packApi.deletePack(packId)
+          }
+          notification.success({ message: `成功删除 ${state.selectedRowKeys.length} 个整合包` })
+          setState(prev => ({ ...prev, selectedRowKeys: [] }))
+          loadPacks(state.pagination.current, state.searchText, state.platformFilter)
+        } catch (error) {
+          notification.error({ message: '批量删除失败', description: String(error) })
+        }
+      }
+    })
+  }, [state.selectedRowKeys, state.pagination.current, state.searchText, state.platformFilter, loadPacks])
+
+  // 行选择配置
+  const rowSelection = {
+    selectedRowKeys: state.selectedRowKeys,
+    onChange: (selectedRowKeys: React.Key[]) => {
+      setState(prev => ({ ...prev, selectedRowKeys: selectedRowKeys as string[] }))
+    },
+    onSelectAll: (selected: boolean, selectedRows: PackInfo[], changeRows: PackInfo[]) => {
+      console.log('Select all:', selected, selectedRows, changeRows)
+    },
+    onSelect: (record: PackInfo, selected: boolean, selectedRows: PackInfo[]) => {
+      console.log('Select:', record, selected, selectedRows)
+    },
+  }
+
+  // 批量操作弹窗处理
+  const setShowBatchModal = (visible: boolean) => {
+    setState(prev => ({ ...prev, showBatchModal: visible }))
+  }
+
   // 操作处理
   const handleOpenFolder = async (path: string) => {
     try {
-      // @ts-ignore - Tauri API
-      if (typeof window.__TAURI__ !== 'undefined') {
-        const { invoke } = await import('@tauri-apps/api/tauri')
-        await invoke('open_path', { path })
+      // 检查是否在Tauri环境中
+      if (typeof window !== 'undefined' && (window as any).__TAURI__ && (window as any).__TAURI__.tauri) {
+        // 使用Tauri全局API
+        await (window as any).__TAURI__.tauri.invoke('open_path', { path })
       } else {
         notification.info({ message: '文件夹操作仅在桌面应用中可用' })
       }
@@ -337,7 +393,7 @@ export const ProjectsPacksPage: React.FC = () => {
       {/* 统计信息 */}
       <Row gutter={16} className="mb-6">
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="整合包总数" 
               value={state.statistics.totalPacks} 
@@ -346,7 +402,7 @@ export const ProjectsPacksPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="版本总数" 
               value={state.statistics.totalVersions}
@@ -355,7 +411,7 @@ export const ProjectsPacksPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <Statistic 
               title="包含模组总数" 
               value={state.statistics.totalMods} 
@@ -363,7 +419,7 @@ export const ProjectsPacksPage: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small">
+          <Card>
             <div className="text-center">
               <div className="text-sm text-gray-500 mb-2">平台分布</div>
               <div>
@@ -378,16 +434,71 @@ export const ProjectsPacksPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 搜索 */}
+      {/* 搜索和批量操作 */}
       <Card className="mb-4">
-        <Search
-          placeholder="搜索整合包名称..."
-          onSearch={handleSearch}
-          onChange={(e) => setState(prev => ({ ...prev, searchText: e.target.value }))}
-          value={state.searchText}
-          allowClear
-          className="max-w-md"
-        />
+        <Row gutter={16} align="middle">
+          <Col flex={1}>
+            <Search
+              placeholder="搜索整合包名称或ID..."
+              onSearch={handleSearch}
+              onChange={(e) => setState(prev => ({ ...prev, searchText: e.target.value }))}
+              value={state.searchText}
+              allowClear
+            />
+          </Col>
+          <Col>
+            <Select
+              placeholder="平台筛选"
+              allowClear
+              style={{ width: 120 }}
+              onChange={(value) => {
+                setState(prev => ({ ...prev, platformFilter: value }))
+                loadPacks(1, state.searchText, value)
+              }}
+              options={[
+                { label: 'CurseForge', value: 'curseforge' },
+                { label: 'Modrinth', value: 'modrinth' },
+                { label: 'MultiMC', value: 'multimc' }
+              ]}
+            />
+          </Col>
+          <Col>
+            <Select
+              placeholder="版本筛选"
+              allowClear
+              style={{ width: 120 }}
+              onChange={(value) => {
+                setState(prev => ({ ...prev, versionFilter: value }))
+                // TODO: 实现版本筛选逻辑
+              }}
+              options={[
+                { label: '1.20.x', value: '1.20' },
+                { label: '1.19.x', value: '1.19' },
+                { label: '1.18.x', value: '1.18' },
+                { label: '1.16.x', value: '1.16' }
+              ]}
+            />
+          </Col>
+          <Col>
+            <Space.Compact>
+              <Button 
+                icon={<EditOutlined />}
+                disabled={state.selectedRowKeys.length === 0}
+                onClick={() => setShowBatchModal(true)}
+              >
+                批量操作
+              </Button>
+              <Button 
+                icon={<DeleteOutlined />}
+                danger
+                disabled={state.selectedRowKeys.length === 0}
+                onClick={handleBatchDelete}
+              >
+                批量删除
+              </Button>
+            </Space.Compact>
+          </Col>
+        </Row>
       </Card>
 
       {/* 整合包表格 */}
@@ -397,13 +508,19 @@ export const ProjectsPacksPage: React.FC = () => {
           dataSource={state.packs}
           rowKey="id"
           loading={state.loading}
+          rowSelection={rowSelection}
           pagination={{
             current: state.pagination.current,
             pageSize: state.pagination.pageSize,
             total: state.pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} 共 ${total} 条`,
+            showTotal: (total, range) => {
+              const selectedInfo = state.selectedRowKeys.length > 0 
+                ? `，已选择 ${state.selectedRowKeys.length} 条` 
+                : ''
+              return `${range[0]}-${range[1]} 共 ${total} 条${selectedInfo}`
+            },
           }}
           onChange={handleTableChange}
           locale={{
@@ -441,7 +558,7 @@ export const ProjectsPacksPage: React.FC = () => {
           <div>
             <Row gutter={16} className="mb-4">
               <Col span={12}>
-                <Card size="small" title="基本信息">
+                <Card title="基本信息">
                   <p><strong>ID:</strong> {state.selectedPack.id}</p>
                   <p><strong>平台:</strong> <Tag>{state.selectedPack.platform}</Tag></p>
                   <p><strong>根路径:</strong> {state.selectedPack.root_path}</p>
@@ -449,7 +566,7 @@ export const ProjectsPacksPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={12}>
-                <Card size="small" title="统计信息">
+                <Card title="统计信息">
                   <p><strong>版本数:</strong> {state.selectedPack.version_count || 0}</p>
                   <p><strong>包含模组:</strong> {state.selectedPack.mod_count || 0}</p>
                   <p><strong>创建时间:</strong> {state.selectedPack.created_at ? dayjs(state.selectedPack.created_at).format('YYYY-MM-DD HH:mm') : '-'}</p>
@@ -464,7 +581,7 @@ export const ProjectsPacksPage: React.FC = () => {
               dataSource={state.packVersions}
               rowKey="id"
               loading={state.versionsLoading}
-              size="small"
+             
               pagination={{ pageSize: 5 }}
               locale={{
                 emptyText: state.versionsLoading ? '加载中...' : '暂无版本信息'

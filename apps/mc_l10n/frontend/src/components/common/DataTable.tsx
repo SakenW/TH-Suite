@@ -182,14 +182,14 @@ export const AntDataTable = <T extends Record<string, any>>({
                   type="primary"
                   onClick={() => confirm()}
                   icon={<SearchOutlined />}
-                  size="small"
+                 
                   style={{ width: 90 }}
                 >
                   搜索
                 </Button>
                 <Button
                   onClick={() => clearFilters?.()}
-                  size="small"
+                 
                   style={{ width: 90 }}
                 >
                   重置
@@ -231,7 +231,7 @@ export const AntDataTable = <T extends Record<string, any>>({
             }}
             trigger={['click']}
           >
-            <Button size="small" icon={<MoreOutlined />} />
+            <Button icon={<MoreOutlined />} />
           </Dropdown>
         ),
       })
@@ -379,7 +379,7 @@ export const AntDataTable = <T extends Record<string, any>>({
           showIcon
           action={
             onRefresh && (
-              <Button size="small" danger onClick={onRefresh}>
+              <Button danger onClick={onRefresh}>
                 重试
               </Button>
             )

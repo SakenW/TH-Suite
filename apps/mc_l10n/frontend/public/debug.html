@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端调试页面 - TH Suite MC L10n</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 { color: #333; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+        }
+        .test-area {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 TH Suite MC L10n 前端诊断工具</h1>
+        
+        <div class="status success">
+            ✅ 诊断页面已成功加载 - 基础服务正常
+        </div>
+        
+        <h2>📊 系统状态检查</h2>
+        <div id="system-status">
+            <div>🔄 正在检查系统状态...</div>
+        </div>
+        
+        <h2>🧪 API 连接测试</h2>
+        <div class="test-area">
+            <h3>后端连接测试</h3>
+            <button onclick="testBackendConnection()">测试后端连接</button>
+            <div id="backend-result">点击按钮测试后端连接</div>
+        </div>
+        
+        <div class="test-area">
+            <h3>扫描 API 测试</h3>
+            <input type="text" id="scan-path" placeholder="输入测试路径，如: /tmp" value="/tmp" style="width: 300px; padding: 8px; margin: 5px;">
+            <button onclick="testScanAPI()">测试扫描 API</button>
+            <div id="scan-result">输入路径并点击测试</div>
+        </div>
+        
+        <h2>🐛 错误信息</h2>
+        <div id="error-log">
+            <div class="warning">📝 控制台错误日志将显示在这里</div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🔧 调试页面已加载');
+        
+        // 捕获控制台错误
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            const errorLog = document.getElementById('error-log');
+            errorLog.innerHTML = `<div class="error">❌ 控制台错误: ${args.join(' ')}</div>`;
+        };
+        
+        // 系统状态检查
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            let statusHTML = '';
+            
+            // 检查基础功能
+            statusHTML += `<div class="status success">✅ JavaScript 执行正常</div>`;
+            statusHTML += `<div class="status success">✅ DOM 操作正常</div>`;
+            statusHTML += `<div class="status success">✅ 字符编码正常 (UTF-8)</div>`;
+            
+            // 检查网络
+            if (navigator.onLine) {
+                statusHTML += `<div class="status success">✅ 网络连接正常</div>`;
+            } else {
+                statusHTML += `<div class="status error">❌ 网络连接异常</div>`;
+            }
+            
+            statusDiv.innerHTML = statusHTML;
+        }
+        
+        // 测试后端连接
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '🔄 正在测试后端连接...';
+            
+            try {
+                const response = await fetch('http://localhost:18000/api/v2.1/scan/test');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ 后端连接成功！
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ 后端响应异常 (${response.status})
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ 后端连接失败: ${error.message}
+                        <br>请确保后端服务在 http://localhost:18000 上运行
+                    </div>
+                `;
+            }
+        }
+        
+        // 测试扫描API
+        async function testScanAPI() {
+            const path = document.getElementById('scan-path').value;
+            const resultDiv = document.getElementById('scan-result');
+            
+            if (!path.trim()) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ 请输入测试路径</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '🔄 正在测试扫描 API...';
+            
+            try {
+                const response = await fetch('http://localhost:18000/api/v2.1/scan/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        directory: path,
+                        incremental: true,
+                        project_id: null,
+                        options: {
+                            incremental: true,
+                            include_subdirectories: true,
+                            validate_after_scan: true,
+                            generate_statistics: true
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && response.status === 200) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ 扫描 API 测试成功！
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else if (response.status === 400) {
+                    resultDiv.innerHTML = `
+                        <div class="warning">
+                            ⚠️ 路径问题 (${response.status}): ${data.success === false ? data.error?.message : JSON.stringify(data)}
+                            <br>这是正常的，表示API错误处理工作正常
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ 扫描 API 异常 (${response.status})
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ 扫描 API 请求失败: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载完成后执行检查
+        window.addEventListener('load', function() {
+            checkSystemStatus();
+            console.log('✅ 诊断页面初始化完成');
+        });
+    </script>
+</body>
+</html>

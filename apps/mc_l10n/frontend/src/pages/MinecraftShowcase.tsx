@@ -71,7 +71,7 @@ const MinecraftShowcase: React.FC = () => {
           </Paragraph>
           
           {/* 控制开关 */}
-          <Space size="large" className="mb-8">
+          <Space className="mb-8">
             <Tooltip title="切换动画效果">
               <Space>
                 <Text>动画效果</Text>
@@ -289,9 +289,9 @@ const MinecraftShowcase: React.FC = () => {
               <div>
                 <Text strong className="block mb-3">按钮尺寸：</Text>
                 <div className="responsive-flex">
-                  <MCButton size="small" type="primary">小按钮</MCButton>
-                  <MCButton size="medium" type="primary">中按钮</MCButton>
-                  <MCButton size="large" type="primary">大按钮</MCButton>
+                  <MCButton type="primary">小按钮</MCButton>
+                  <MCButton type="primary">中按钮</MCButton>
+                  <MCButton type="primary">大按钮</MCButton>
                 </div>
               </div>
             </div>

@@ -12,7 +12,7 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v6/mods",  # 前端期望v6版本
+    prefix="/api/v2.1/mods",  # 统一使用v2.1版本
     tags=["模组管理"],
     responses={404: {"description": "Not found"}},
 )

@@ -292,9 +292,11 @@ export class TauriService {
       // Fallback: try using shell command only in Tauri
       if (this.isRunningInTauri()) {
         try {
-          const { Command } = await import('@tauri-apps/plugin-shell')
-          const command = new Command('explorer', [path])
-          await command.execute()
+          const shell = await import('@tauri-apps/plugin-shell')
+          if (shell.Command) {
+            const command = new shell.Command('explorer', [path])
+            await command.execute()
+          }
         } catch (fallbackError) {
           console.error('Fallback open path also failed:', fallbackError)
         }

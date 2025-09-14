@@ -180,7 +180,7 @@ const VirtualRow = React.memo<VirtualRowProps>(({ index, style, data }) => {
             align="center"
             sx={{ display: 'flex', alignItems: 'center', width: '48px', minWidth: '48px' }}
           >
-            <IconButton size="small" onClick={e => onActionMenuClick(rowId, e)}>
+            <IconButton onClick={e => onActionMenuClick(rowId, e)}>
               <MoreVertical size={16} />
             </IconButton>
           </TableCell>
@@ -402,7 +402,7 @@ export const VirtualizedDataTable = <T extends Record<string, any>>({
         {/* 搜索框 */}
         {onGlobalFilterChange && (
           <TextField
-            size="small"
+           
             placeholder="搜索..."
             value={globalFilter}
             onChange={e => onGlobalFilterChange(e.target.value)}
@@ -425,7 +425,7 @@ export const VirtualizedDataTable = <T extends Record<string, any>>({
                 <IconButton
                   color={action.color}
                   onClick={() => selectedRows.forEach(action.onClick)}
-                  size="small"
+                 
                 >
                   {action.icon}
                 </IconButton>
@@ -434,7 +434,7 @@ export const VirtualizedDataTable = <T extends Record<string, any>>({
 
           {onExport && (
             <Tooltip title="导出">
-              <IconButton onClick={onExport} size="small">
+              <IconButton onClick={onExport}>
                 <Download size={16} />
               </IconButton>
             </Tooltip>
@@ -442,14 +442,14 @@ export const VirtualizedDataTable = <T extends Record<string, any>>({
 
           {onRefresh && (
             <Tooltip title="刷新">
-              <IconButton onClick={onRefresh} size="small">
+              <IconButton onClick={onRefresh}>
                 <Refresh size={16} />
               </IconButton>
             </Tooltip>
           )}
 
           <Tooltip title="列设置">
-            <IconButton onClick={e => setColumnMenuAnchor(e.currentTarget)} size="small">
+            <IconButton onClick={e => setColumnMenuAnchor(e.currentTarget)}>
               <Settings size={16} />
             </IconButton>
           </Tooltip>
@@ -593,7 +593,7 @@ export const VirtualizedDataTable = <T extends Record<string, any>>({
           >
             <Checkbox
               checked={visibleColumns.has(column.id as string)}
-              size="small"
+             
               sx={{ mr: 1 }}
             />
             {column.label}

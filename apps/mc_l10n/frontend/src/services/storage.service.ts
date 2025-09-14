@@ -313,13 +313,13 @@ class FileStorageManager {
    * 调用 Tauri 后端存储 API
    */
   async saveToBackend(key: string, value: any): Promise<void> {
-    if (!isTauri || !tauriApis.invoke) {
+    if (!isTauri || !(window as any).__TAURI__?.tauri?.invoke) {
       console.warn('Tauri invoke not available')
       return
     }
 
     try {
-      await tauriApis.invoke('save_data', { key, value })
+      await (window as any).__TAURI__.tauri.invoke('save_data', { key, value })
     } catch (error) {
       console.error('Failed to save to backend:', error)
       throw error
@@ -330,13 +330,13 @@ class FileStorageManager {
    * 从 Tauri 后端读取数据
    */
   async loadFromBackend<T>(key: string): Promise<T | null> {
-    if (!isTauri || !tauriApis.invoke) {
+    if (!isTauri || !(window as any).__TAURI__?.tauri?.invoke) {
       console.warn('Tauri invoke not available')
       return null
     }
 
     try {
-      return await tauriApis.invoke('load_data', { key })
+      return await (window as any).__TAURI__.tauri.invoke('load_data', { key })
     } catch (error) {
       console.error('Failed to load from backend:', error)
       return null

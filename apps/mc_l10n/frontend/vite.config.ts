@@ -73,6 +73,10 @@ export default defineConfig(async () => ({
     // 增加chunk大小限制以减少警告
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
+      // 将Tauri API标记为外部依赖
+      external: (id: string) => {
+        return id.includes('@tauri-apps/api')
+      },
       output: {
         // 优化分包策略
         manualChunks: {
@@ -87,15 +91,18 @@ export default defineConfig(async () => ({
           // 动画和工具
           animation: ['framer-motion'],
           utils: ['clsx', 'class-variance-authority', 'tailwind-merge'],
-          // Tauri API
-          tauri: ['@tauri-apps/api'],
+        },
+        // 为外部模块提供全局变量
+        globals: {
+          '@tauri-apps/api/tauri': '__TAURI__.tauri',
+          '@tauri-apps/api/dialog': '__TAURI__.dialog',
         },
       },
     },
   },
 
   optimizeDeps: {
-    exclude: ['@tauri-apps/api'],
+    exclude: ['@tauri-apps/api', '@tauri-apps/api/tauri', '@tauri-apps/api/dialog'],
     // 预构建优化
     include: [
       'react',
