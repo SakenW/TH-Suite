@@ -30,10 +30,10 @@ export const API_ENDPOINTS = {
   HEALTH: '/health',
 
   // 扫描相关
-  SCAN_PROJECT: '/api/v1/scan-project',
-  SCAN_STATUS: (scanId: string) => `/api/v1/scan-status/${scanId}`,
-  SCAN_RESULT: (scanId: string) => `/api/v1/scan-result/${scanId}`,
-  ACTIVE_SCANS: '/api/v1/scans/active',
+  SCAN_PROJECT: '/api/v1/scan/start',
+  SCAN_STATUS: (scanId: string) => `/api/v1/scan/status/${scanId}`,
+  SCAN_RESULT: (scanId: string) => `/api/v1/scan/results/${scanId}`,
+  ACTIVE_SCANS: '/api/v1/scan/active',
 
   // 项目相关
   PROJECTS: '/api/v1/projects',

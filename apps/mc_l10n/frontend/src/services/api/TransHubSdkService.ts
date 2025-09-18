@@ -115,7 +115,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkProjectInfo>> {
     try {
       const response = await this.apiClient.post<SdkProjectInfo>(
-        '/api/v2.1/sdk/projects/ensure-minecraft',
+        '/api/v1/sdk/projects/ensure-minecraft',
         {},
         config
       )
@@ -154,7 +154,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkProjectInfo>> {
     try {
       const response = await this.apiClient.get<SdkProjectInfo>(
-        `/api/v2.1/sdk/projects/${projectId}`,
+        `/api/v1/sdk/projects/${projectId}`,
         config
       )
 
@@ -196,7 +196,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkIngestionResult>> {
     try {
       const response = await this.apiClient.post<SdkIngestionResult>(
-        '/api/v2.1/sdk/content/ingest-minecraft',
+        '/api/v1/sdk/content/ingest-minecraft',
         request,
         config
       )
@@ -258,7 +258,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkTranslationExportResult>> {
     try {
       const response = await this.apiClient.post<SdkTranslationExportResult>(
-        '/api/v2.1/sdk/translations/export',
+        '/api/v1/sdk/translations/export',
         request,
         config
       )
@@ -298,7 +298,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<ReadableStream>> {
     try {
       const stream = await this.apiClient.stream(
-        '/api/v2.1/sdk/translations/export-stream',
+        '/api/v1/sdk/translations/export-stream',
         {
           method: 'POST',
           data: request,
@@ -341,7 +341,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkSyncTask>> {
     try {
       const response = await this.apiClient.post<SdkSyncTask>(
-        '/api/v2.1/sdk/sync/execute',
+        '/api/v1/sdk/sync/execute',
         {
           project_id: projectId,
           ...options
@@ -383,7 +383,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<SdkSyncTask>> {
     try {
       const response = await this.apiClient.get<SdkSyncTask>(
-        `/api/v2.1/sdk/sync/tasks/${taskId}`,
+        `/api/v1/sdk/sync/tasks/${taskId}`,
         config
       )
 
@@ -421,7 +421,7 @@ export class TransHubSdkService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.apiClient.post<{ cancelled: boolean }>(
-        `/api/v2.1/sdk/sync/tasks/${taskId}/cancel`,
+        `/api/v1/sdk/sync/tasks/${taskId}/cancel`,
         {},
         config
       )
@@ -466,7 +466,7 @@ export class TransHubSdkService {
   }>> {
     try {
       const response = await this.apiClient.get(
-        '/api/v2.1/sdk/status',
+        '/api/v1/sdk/status',
         { ...config, timeout: 5000 }
       )
 
@@ -505,7 +505,7 @@ export class TransHubSdkService {
     rate_limits?: Record<string, number>
   }>> {
     try {
-      const response = await this.apiClient.get('/api/v2.1/sdk/config', config)
+      const response = await this.apiClient.get('/api/v1/sdk/config', config)
 
       if (response.success && response.data) {
         return {

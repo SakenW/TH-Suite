@@ -47,7 +47,7 @@ export const TopStatusBar: React.FC = () => {
         const modApi = new ModApiService()
         
         // 测试连接 - 使用简单的测试端点
-        const isConnected = await fetch('http://localhost:18000/api/v2.1/scan/test').then(r => r.ok).catch(() => false)
+        const isConnected = await fetch('http://localhost:18000/api/v1/scan/test').then(r => r.ok).catch(() => false)
         setIsOnline(isConnected)
         
         if (isConnected) {

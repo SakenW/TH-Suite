@@ -36,7 +36,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<{ scan_id: string }>> {
     try {
       const response = await this.client.post<{ scan_id: string }>(
-        '/api/v2.1/scan/start',
+        '/api/v1/scan/start',
         request,
         config
       )
@@ -75,7 +75,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<ScanStatus>> {
     try {
       const response = await this.client.get<ScanStatus>(
-        `/api/v2.1/scan/status/${scanId}`,
+        `/api/v1/scan/status/${scanId}`,
         config
       )
 
@@ -113,7 +113,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<ScanResult>> {
     try {
       const response = await this.client.get<ScanResult>(
-        `/api/v2.1/scan/results/${scanId}`,
+        `/api/v1/scan/results/${scanId}`,
         config
       )
 
@@ -152,7 +152,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.post<{ cancelled: boolean }>(
-        `/api/v2.1/scan/cancel/${scanId}`,
+        `/api/v1/scan/cancel/${scanId}`,
         { reason },
         config
       )
@@ -191,7 +191,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.post<{ paused: boolean }>(
-        `/api/v2.1/scan/pause/${scanId}`,
+        `/api/v1/scan/pause/${scanId}`,
         {},
         config
       )
@@ -230,7 +230,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.post<{ resumed: boolean }>(
-        `/api/v2.1/scan/resume/${scanId}`,
+        `/api/v1/scan/resume/${scanId}`,
         {},
         config
       )
@@ -274,7 +274,7 @@ export class ScanApiService {
     try {
       const params = projectId ? { project_id: projectId } : undefined
       const response = await this.client.get<ScanStatus[]>(
-        '/api/v2.1/scan/active',
+        '/api/v1/scan/active',
         { ...config, params }
       )
 
@@ -320,7 +320,7 @@ export class ScanApiService {
       }
 
       const response = await this.client.get<PaginatedResponse<ScanStatus>>(
-        '/api/v2.1/scan/history',
+        '/api/v1/scan/history',
         { ...config, params }
       )
 
@@ -358,7 +358,7 @@ export class ScanApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.delete<{ deleted: boolean }>(
-        `/api/v2.1/scan/records/${scanId}`,
+        `/api/v1/scan/records/${scanId}`,
         config
       )
 
@@ -405,7 +405,7 @@ export class ScanApiService {
   }>>> {
     try {
       const response = await this.client.get(
-        '/api/v2.1/scan/presets',
+        '/api/v1/scan/presets',
         config
       )
 
@@ -449,7 +449,7 @@ export class ScanApiService {
   }>> {
     try {
       const response = await this.client.post(
-        '/api/v2.1/scan/validate-directory',
+        '/api/v1/scan/validate-directory',
         { directory },
         config
       )
@@ -509,7 +509,7 @@ export class ScanApiService {
     try {
       const params = projectId ? { project_id: projectId } : undefined
       const response = await this.client.get(
-        '/api/v2.1/scan/statistics',
+        '/api/v1/scan/statistics',
         { ...config, params }
       )
 
@@ -562,7 +562,7 @@ export class ScanApiService {
   }>> {
     try {
       const response = await this.client.get(
-        '/api/v2.1/scan/service/status',
+        '/api/v1/scan/service/status',
         { ...config, timeout: 5000 }
       )
 

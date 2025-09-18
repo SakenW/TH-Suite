@@ -10,11 +10,12 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
 from application.services.scan_application_service import ScanApplicationService
+from infrastructure.services.scan_session_manager import ScanSessionManager, ScanMode
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/api/v2.1/scan",
+    prefix="/api/v1/scan",
     tags=["扫描管理"],
     responses={404: {"description": "Not found"}},
 )
@@ -52,15 +53,15 @@ async def scan_test_endpoint():
         "message": "Scan routes are working",
         "service": "scan-management",
         "endpoints_available": [
-            "GET /api/v2.1/scan/test",
-            "POST /api/v2.1/scan/start",
-            "GET /api/v2.1/scan/status/{scan_id}",
-            "GET /api/v2.1/scan/results/{scan_id}",
-            "POST /api/v2.1/scan/cancel/{scan_id}",
-            "GET /api/v2.1/scan/active",
-            "GET /api/v2.1/scan/stats",
-            "GET /api/v2.1/scan/statistics",
-            "GET /api/v2.1/scan/history",
+            "GET /api/v1/scan/test",
+            "POST /api/v1/scan/start",
+            "GET /api/v1/scan/status/{scan_id}",
+            "GET /api/v1/scan/results/{scan_id}",
+            "POST /api/v1/scan/cancel/{scan_id}",
+            "GET /api/v1/scan/active",
+            "GET /api/v1/scan/stats",
+            "GET /api/v1/scan/statistics",
+            "GET /api/v1/scan/history",
         ],
     }
 
@@ -68,58 +69,58 @@ async def scan_test_endpoint():
 @router.post("/start", response_model=dict[str, Any])
 async def start_scan(request: ScanRequest, background_tasks: BackgroundTasks):
     """
-    启动目录扫描
+    启动目录扫描 - 使用新架构的ScanSessionManager
 
     Args:
         request: 扫描请求参数
         background_tasks: 后台任务管理器
     """
     try:
-        # 直接使用简化的Minecraft扫描服务，避免复杂的依赖注入
-        from infrastructure.services.simple_minecraft_scanner import get_simple_minecraft_scanner_service
+        # 使用新架构的扫描会话管理器
+        from pathlib import Path
         
-        scanner_service = get_simple_minecraft_scanner_service()
+        # 初始化扫描会话管理器
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
+        manager = ScanSessionManager(str(db_path))
+        await manager.start()
         
-        # 准备扫描选项
+        # 确定扫描模式
+        if request.incremental:
+            scan_mode = ScanMode.INCREMENTAL
+        else:
+            scan_mode = ScanMode.FULL
+        
+        # 解析扫描选项
         scan_options = request.options or {}
-        scan_options.update({
-            "include_subdirectories": True,
-            "validate_after_scan": True,
-            "generate_statistics": True,
-            "file_extensions": [".jar", ".zip"],
-            "max_depth": 10,
-            "max_file_size_mb": 500
-        })
+        target_languages = scan_options.get("target_languages", ["en_us", "zh_cn"])
         
-        # 启动扫描
-        result = await scanner_service.start_scan(
-            target_path=request.directory,
-            incremental=request.incremental,
-            scan_options=scan_options
+        # 启动扫描会话
+        session_id = await manager.start_scan(
+            root_path=request.directory,
+            mode=scan_mode,
+            target_languages=target_languages,
+            incremental=request.incremental
         )
         
-        if result.get("success"):
+        if session_id:
             return {
                 "success": True,
                 "data": {
-                    "scan_id": result["scan_id"],
+                    "scan_id": session_id,
                     "directory": request.directory,
                     "incremental": request.incremental,
                     "status": "started",
-                    "started_at": result.get("started_at"),
+                    "mode": scan_mode.value,
+                    "target_languages": target_languages,
                 },
-                "message": result.get("message", "扫描任务已启动"),
+                "message": f"新架构扫描会话已启动: {session_id}",
             }
         else:
-            # 检查是否是路径不存在的错误，返回400而不是500
-            error_msg = result.get("error", result.get("message", "启动扫描失败"))
-            if "目标路径不存在" in str(error_msg) or ("路径" in str(error_msg) and "不存在" in str(error_msg)):
-                raise HTTPException(status_code=400, detail=error_msg)
-            else:
-                raise HTTPException(status_code=500, detail=error_msg)
+            raise HTTPException(status_code=500, detail="启动扫描会话失败")
             
-    except HTTPException:
-        raise
+    except FileNotFoundError as e:
+        logger.error(f"扫描目录不存在: {e}")
+        raise HTTPException(status_code=400, detail=f"目标路径不存在: {request.directory}")
     except ValueError as e:
         logger.error(f"启动扫描参数错误: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -131,44 +132,65 @@ async def start_scan(request: ScanRequest, background_tasks: BackgroundTasks):
 @router.get("/status/{scan_id}", response_model=dict[str, Any])
 async def get_scan_status(scan_id: str):
     """
-    获取扫描状态
+    获取扫描状态 - 使用新架构的ScanSessionManager
 
     Args:
-        scan_id: 扫描任务ID
+        scan_id: 扫描会话ID
     """
     try:
-        # 直接使用简化的Minecraft扫描服务
-        from infrastructure.services.simple_minecraft_scanner import get_simple_minecraft_scanner_service
+        # 使用新架构的扫描会话管理器
+        from pathlib import Path
         
-        scanner_service = get_simple_minecraft_scanner_service()
-        result = await scanner_service.get_scan_status(scan_id)
+        # 初始化扫描会话管理器
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
+        manager = ScanSessionManager(str(db_path))
+        await manager.start()
         
-        if result.get("success"):
+        # 获取扫描状态
+        status = await manager.get_scan_status(scan_id)
+        
+        if status:
+            # 安全地处理stage字段，支持枚举类型转换
+            stage_value = status["stage"]
+            if hasattr(stage_value, 'value'):
+                stage_str = stage_value.value
+            else:
+                stage_str = str(stage_value)
+            
+            # 安全地获取任务统计信息
+            tasks_info = status.get("tasks", {})
+            completed_count = tasks_info.get("completed", 0) if isinstance(tasks_info, dict) else 0
+            total_count = tasks_info.get("total", 0) if isinstance(tasks_info, dict) else 0
+            
             return {
                 "success": True,
                 "data": {
                     "scan_id": scan_id,
-                    "status": result["status"],
-                    "progress": result["progress"],
-                    "current_item": result.get("current_item", ""),
-                    "processed_count": result.get("processed_count", 0),
-                    "total_count": result.get("total_count", 0),
-                    "duration_seconds": result.get("duration_seconds", 0),
-                    "error_message": result.get("error_message"),
-                    # 添加统计信息
-                    "statistics": result.get("statistics", {}),
-                    "mods_found": result.get("mods_found", 0),
-                    "total_translation_keys": result.get("total_translation_keys", 0),
-                    "language_files_found": result.get("language_files_found", 0),
-                    "discovered_items": result.get("discovered_items", [])
+                    "status": stage_str,
+                    "progress": status.get("progress", 0),
+                    "current_item": status.get("current_item", ""),
+                    "processed_count": completed_count,
+                    "total_count": total_count,
+                    "duration_seconds": status.get("duration_seconds", 0),
+                    "error_message": status.get("error_message"),
+                    # 新架构统计信息
+                    "statistics": status.get("statistics", {}),
+                    # 前端兼容字段
+                    "total_mods": status.get("statistics", {}).get("mods", 0),
+                    "total_content_instances": status.get("statistics", {}).get("entries", 0),
+                    "total_files": total_count,
+                    "processed_files": completed_count,
+                    "total_keys": status.get("statistics", {}).get("keys", 0),
+                    "language_files_found": status.get("statistics", {}).get("lang_files", 0),
+                    "stage": stage_str,
+                    "mode": status.get("mode", "full"),
+                    "created_at": status.get("created_at"),
+                    "updated_at": status.get("updated_at")
                 },
-                "message": f"扫描状态获取成功: {scan_id}",
+                "message": f"新架构扫描状态获取成功: {scan_id}",
             }
         else:
-            # 如果扫描不存在，返回404而不是500
-            if "不存在" in result.get("error", ""):
-                raise HTTPException(status_code=404, detail=result.get("error"))
-            raise HTTPException(status_code=500, detail=result.get("error"))
+            raise HTTPException(status_code=404, detail=f"扫描会话不存在: {scan_id}")
             
     except HTTPException:
         raise
@@ -180,30 +202,31 @@ async def get_scan_status(scan_id: str):
 @router.get("/results/{scan_id}", response_model=dict[str, Any])
 async def get_scan_results(scan_id: str):
     """
-    获取扫描结果
+    获取扫描结果 - 使用新架构的ScanSessionManager
 
     Args:
-        scan_id: 扫描任务ID
+        scan_id: 扫描会话ID
     """
     try:
-        # 使用扫描应用服务获取结果
-        scan_service = ScanApplicationService()
-        result = await scan_service.get_scan_results(scan_id)
+        # 使用新架构的扫描会话管理器
+        from pathlib import Path
         
-        if result.get("success"):
+        # 初始化扫描会话管理器
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
+        manager = ScanSessionManager(str(db_path))
+        await manager.start()
+        
+        # 获取扫描结果
+        results = await manager.get_scan_results(scan_id)
+        
+        if results:
             return {
                 "success": True,
-                "data": result["data"],
-                "message": f"扫描结果获取成功: {scan_id}",
+                "data": results,
+                "message": f"新架构扫描结果获取成功: {scan_id}",
             }
         else:
-            # 根据错误类型返回相应的HTTP状态码
-            error_msg = result.get("message", "")
-            if "不存在" in error_msg:
-                raise HTTPException(status_code=404, detail=error_msg)
-            elif "未完成" in error_msg:
-                raise HTTPException(status_code=409, detail=error_msg)  # Conflict
-            raise HTTPException(status_code=500, detail=error_msg)
+            raise HTTPException(status_code=404, detail=f"扫描结果不存在或扫描未完成: {scan_id}")
             
     except HTTPException:
         raise
@@ -215,28 +238,31 @@ async def get_scan_results(scan_id: str):
 @router.post("/cancel/{scan_id}", response_model=dict[str, Any])
 async def cancel_scan(scan_id: str):
     """
-    取消扫描任务
+    取消扫描任务 - 使用新架构的ScanSessionManager
 
     Args:
-        scan_id: 扫描任务ID
+        scan_id: 扫描会话ID
     """
     try:
-        # 使用扫描应用服务取消扫描
-        scan_service = ScanApplicationService()
-        result = await scan_service.cancel_scan(scan_id)
+        # 使用新架构的扫描会话管理器
+        from pathlib import Path
         
-        if result.get("success"):
+        # 初始化扫描会话管理器
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
+        manager = ScanSessionManager(str(db_path))
+        await manager.start()
+        
+        # 取消扫描
+        result = await manager.cancel_scan(scan_id)
+        
+        if result:
             return {
                 "success": True,
                 "data": {"scan_id": scan_id, "status": "cancelled"},
-                "message": result.get("message", f"扫描任务已取消: {scan_id}"),
+                "message": f"新架构扫描会话已取消: {scan_id}",
             }
         else:
-            # 如果扫描不存在或已完成，返回404
-            error_msg = result.get("message", "")
-            if "不存在" in error_msg or "已完成" in error_msg:
-                raise HTTPException(status_code=404, detail=error_msg)
-            raise HTTPException(status_code=500, detail=error_msg)
+            raise HTTPException(status_code=404, detail=f"扫描会话不存在或无法取消: {scan_id}")
             
     except HTTPException:
         raise
@@ -248,16 +274,25 @@ async def cancel_scan(scan_id: str):
 @router.get("/active", response_model=dict[str, Any])
 async def get_active_scans():
     """
-    获取当前活跃的扫描任务
+    获取当前活跃的扫描任务 - 使用新架构的ScanSessionManager
     """
     try:
-        # 简化实现，暂时返回空的活跃扫描列表
-        active_scans = []  # 暂时没有活跃扫描
+        # 使用新架构的扫描会话管理器
+        from pathlib import Path
         
+        # 初始化扫描会话管理器
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
+        manager = ScanSessionManager(str(db_path))
+        await manager.start()
+        
+        # 获取活跃扫描会话
+        active_sessions = await manager.list_active_sessions()
+        
+        # 为前端兼容性，直接返回active_scans数组格式
         return {
             "success": True,
-            "data": active_scans,
-            "message": f"成功获取 {len(active_scans)} 个活跃扫描",
+            "data": active_sessions,  # 直接返回数组，不包装在active_scans对象中
+            "message": f"成功获取 {len(active_sessions)} 个活跃扫描会话",
         }
     except Exception as e:
         logger.error(f"获取活跃扫描失败: {e}")
@@ -272,18 +307,18 @@ async def get_database_stats():
     """
     try:
         from pathlib import Path
-        from infrastructure.db_initializer import ensure_v2_1_database, get_v2_1_database_stats
+        from infrastructure.db_initializer import ensure_database, get_database_stats
         
-        # 使用V2.1数据库路径
-        v2_1_db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n_v2_1.db"
+        # 使用数据库路径
+        db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n.db"
         
         # 确保数据库存在，如果不存在则自动创建
-        if not ensure_v2_1_database(str(v2_1_db_path)):
+        if not ensure_database(str(db_path)):
             logger.error("数据库初始化失败")
             raise HTTPException(status_code=500, detail="数据库初始化失败")
         
         # 获取数据库统计信息
-        db_stats = get_v2_1_database_stats(str(v2_1_db_path))
+        db_stats = get_database_stats(str(db_path))
         
         if not db_stats.get("database_exists", False):
             error_msg = db_stats.get("error", "数据库不存在")
@@ -299,7 +334,7 @@ async def get_database_stats():
                 "totalFiles": db_stats.get("content_instances_count", 0),
                 "totalEntries": db_stats.get("pack_content_relations_count", 0),
                 "totalTables": db_stats.get("total_tables", 0),
-                "database_path": db_stats.get("database_path", str(v2_1_db_path)),
+                "database_path": db_stats.get("database_path", str(db_path)),
                 "database_size": db_stats.get("database_size", 0),
                 "pack_versions": db_stats.get("pack_versions_count", 0),
                 "mod_instances": db_stats.get("mod_version_instances_count", 0),

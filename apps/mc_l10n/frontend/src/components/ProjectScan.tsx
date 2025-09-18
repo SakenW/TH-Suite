@@ -171,12 +171,12 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
 
   const handleWebScan = async () => {
     try {
-      const response = await fetch('http://localhost:18000/api/v1/scan-project', {
+      const response = await fetch('http://localhost:18000/api/v1/scan/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ directory: selectedPath }),
+        body: JSON.stringify({ directory: selectedPath, incremental: true }),
       })
 
       if (!response.ok) {
@@ -184,7 +184,7 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
       }
 
       const data = await response.json()
-      const scanId = data.scan_id
+      const scanId = data.data.scan_id
 
       // 启动真实的进度监控
       monitorWebScanProgress(scanId)
@@ -221,7 +221,7 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
 
     const poll = async () => {
       try {
-        const response = await fetch(`http://localhost:18000/api/v1/scan-result/${scanId}`)
+        const response = await fetch(`http://localhost:18000/api/v1/scan/status/${scanId}`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -241,23 +241,23 @@ const ProjectScan: React.FC<ProjectScanProps> = ({ onScanComplete, onCreateProje
               onScanComplete(scanData)
             }
             return
-          } else if (scanData.status === 'scanning') {
+          } else if (scanData.status === 'scanning' || scanData.stage === 'processing') {
             // 更新进度
             const progress = Math.min(
-              ((scanData.processed_files || 0) / Math.max(scanData.total_files || 1, 1)) * 100,
+              ((scanData.processed_count || 0) / Math.max(scanData.total_count || 1, 1)) * 100,
               99,
             )
 
             setScanProgress({
               scan_id: scanId,
-              phase: 'scanning',
+              phase: scanData.stage || 'scanning',
               progress: progress,
-              message: `正在扫描... (${scanData.processed_files || 0}/${scanData.total_files || 0})`,
-              current_file: scanData.current_file || '',
-              processed_files: scanData.processed_files || 0,
-              total_files: scanData.total_files || 0,
-              estimated_remaining: scanData.total_files
-                ? Math.max(scanData.total_files - (scanData.processed_files || 0), 0)
+              message: `正在扫描... (${scanData.processed_count || 0}/${scanData.total_count || 0})`,
+              current_file: scanData.current_item || '',
+              processed_files: scanData.processed_count || 0,
+              total_files: scanData.total_count || 0,
+              estimated_remaining: scanData.total_count
+                ? Math.max(scanData.total_count - (scanData.processed_count || 0), 0)
                 : undefined,
               updated_at: new Date().toISOString(),
             })

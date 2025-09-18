@@ -1,0 +1,499 @@
+name: TH-Suite Claude Flow CI
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # 每日 UTC 02:00 (北京时间 10:00) 运行全面分析
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  POETRY_VERSION: '1.6.1'
+  CLAUDE_FLOW_VERSION: 'alpha'
+
+jobs:
+  # 环境和依赖检查
+  setup-and-lint:
+    name: 环境设置和代码检查
+    runs-on: ubuntu-latest
+    outputs:
+      changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+      has-python-changes: ${{ steps.changed-files.outputs.any_changed }}
+      has-frontend-changes: ${{ steps.changed-files.outputs.any_changed }}
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 检测变更文件
+      id: changed-files
+      uses: tj-actions/changed-files@v40
+      with:
+        files: |
+          apps/mc_l10n/backend/**
+          apps/mc_l10n/frontend/**
+          packages/**
+          *.py
+          *.ts
+          *.tsx
+          *.json
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: 设置 Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: 安装 Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: 缓存依赖
+      uses: actions/cache@v3
+      with:
+        path: |
+          node_modules
+          ~/.cache/pypoetry
+          .venv
+        key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json', 'poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deps-
+    
+    - name: 安装依赖
+      run: |
+        npm install
+        poetry install
+    
+    - name: Python 代码检查 (Ruff)
+      run: |
+        cd apps/mc_l10n/backend
+        poetry run ruff check .
+        poetry run ruff format --check .
+    
+    - name: Python 类型检查 (MyPy)
+      run: |
+        cd apps/mc_l10n/backend
+        poetry run mypy .
+    
+    - name: 前端代码检查
+      run: |
+        cd apps/mc_l10n/frontend
+        npm run lint
+        npm run type-check
+    
+    - name: 保存变更文件列表
+      run: |
+        echo "${{ steps.changed-files.outputs.all_changed_files }}" > changed-files.txt
+    
+    - name: 上传变更文件信息
+      uses: actions/upload-artifact@v3
+      with:
+        name: changed-files
+        path: changed-files.txt
+
+  # Claude Flow 智能代码审查
+  claude-flow-review:
+    name: Claude Flow 智能代码审查
+    runs-on: ubuntu-latest
+    needs: setup-and-lint
+    if: needs.setup-and-lint.outputs.changed-files != ''
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 下载变更文件信息
+      uses: actions/download-artifact@v3
+      with:
+        name: changed-files
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 运行 TH-Suite 专用代码审查
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        CHANGED_FILES=$(cat changed-files.txt | tr '\n' ' ')
+        ./scripts/claude-flow-helpers.sh review "$CHANGED_FILES"
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 上传审查报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: claude-flow-review-report
+        path: .claude-flow/review-*.md
+
+  # 安全扫描
+  security-scan:
+    name: TH-Suite 安全扫描
+    runs-on: ubuntu-latest
+    needs: setup-and-lint
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: 安装 Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+    
+    - name: 安装 Python 依赖
+      run: |
+        cd apps/mc_l10n/backend
+        poetry install
+    
+    - name: Python 依赖安全扫描
+      run: |
+        cd apps/mc_l10n/backend
+        poetry export -f requirements.txt | pip-audit -r /dev/stdin --format json --output ../../dependency-vulnerabilities.json
+      continue-on-error: true
+    
+    - name: Node.js 依赖安全扫描
+      run: |
+        cd apps/mc_l10n/frontend
+        npm audit --json > ../../frontend-vulnerabilities.json
+      continue-on-error: true
+    
+    - name: 设置 Node.js (Claude Flow)
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 运行 Claude Flow 安全扫描
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        ./scripts/claude-flow-helpers.sh security-scan full
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 上传安全报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-scan-reports
+        path: |
+          dependency-vulnerabilities.json
+          frontend-vulnerabilities.json
+          .claude-flow/security-*.json
+
+  # 架构合规检查
+  architecture-check:
+    name: 架构合规性检查
+    runs-on: ubuntu-latest
+    needs: setup-and-lint
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 检查项目结构
+      run: |
+        echo "检查 TH-Suite 项目结构合规性..."
+        
+        # 检查关键目录
+        test -d "apps/mc_l10n/backend/adapters" || { echo "❌ 缺少适配器层"; exit 1; }
+        test -d "apps/mc_l10n/backend/application" || { echo "❌ 缺少应用层"; exit 1; }
+        test -d "apps/mc_l10n/backend/domain" || { echo "❌ 缺少领域层"; exit 1; }
+        test -d "apps/mc_l10n/backend/infrastructure" || { echo "❌ 缺少基础设施层"; exit 1; }
+        
+        # 检查配置文件
+        test -f "apps/mc_l10n/frontend/src-tauri/tauri.conf.json" || { echo "❌ 缺少 Tauri 配置"; exit 1; }
+        test -f "pyproject.toml" || { echo "❌ 缺少 Poetry 配置"; exit 1; }
+        
+        echo "✅ 项目结构检查通过"
+    
+    - name: 运行 Claude Flow 架构分析
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        ./scripts/claude-flow-helpers.sh arch-check
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 上传架构报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: architecture-reports
+        path: .claude-flow/architecture-*.json
+
+  # 性能分析
+  performance-analysis:
+    name: 性能分析
+    runs-on: ubuntu-latest
+    needs: setup-and-lint
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[perf]')
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 运行性能分析
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        ./scripts/claude-flow-helpers.sh perf-analysis
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 上传性能报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: .claude-flow/performance-*.json
+
+  # 测试执行
+  test-suite:
+    name: 测试套件执行
+    runs-on: ubuntu-latest
+    needs: setup-and-lint
+    
+    strategy:
+      matrix:
+        test-type: [unit, integration]
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Python 和 Node.js
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 安装 Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+    
+    - name: 安装依赖
+      run: |
+        npm install
+        cd apps/mc_l10n/backend && poetry install
+        cd ../frontend && npm install
+    
+    - name: 运行 Python 测试
+      run: |
+        cd apps/mc_l10n/backend
+        poetry run pytest --cov=. --cov-report=json:coverage-${{ matrix.test-type }}.json tests/${{ matrix.test-type }}/
+    
+    - name: 运行前端测试
+      run: |
+        cd apps/mc_l10n/frontend
+        npm run test:${{ matrix.test-type }} -- --coverage --coverageReporters=json
+    
+    - name: 上传测试结果
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.test-type }}
+        path: |
+          apps/mc_l10n/backend/coverage-${{ matrix.test-type }}.json
+          apps/mc_l10n/frontend/coverage/coverage-final.json
+
+  # 生成综合报告
+  generate-report:
+    name: 生成 TH-Suite 综合报告
+    runs-on: ubuntu-latest
+    needs: [claude-flow-review, security-scan, architecture-check, test-suite]
+    if: always()
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 下载所有报告
+      uses: actions/download-artifact@v3
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 整理报告文件
+      run: |
+        mkdir -p .claude-flow
+        
+        # 复制各种报告到 Claude Flow 目录
+        find . -name "*-report*.md" -exec cp {} .claude-flow/ \;
+        find . -name "*-report*.json" -exec cp {} .claude-flow/ \;
+        find . -name "*vulnerabilities*.json" -exec cp {} .claude-flow/ \;
+        find . -name "coverage*.json" -exec cp {} .claude-flow/ \;
+    
+    - name: 生成综合报告
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        ./scripts/claude-flow-helpers.sh report
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 上传综合报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: th-suite-comprehensive-report
+        path: .claude-flow/comprehensive-report.md
+    
+    - name: 评论 PR (如果是 PR)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const report = fs.readFileSync('.claude-flow/comprehensive-report.md', 'utf8');
+            const summary = report.split('## 📊')[1]?.split('##')[0] || '报告生成中...';
+            
+            const comment = `## 🤖 TH-Suite Claude Flow 自动分析报告
+            
+            ${summary}
+            
+            📋 完整报告请查看 Actions 产物中的 \`th-suite-comprehensive-report\`
+            
+            ---
+            *由 Claude Flow CI 自动生成*`;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.log('报告文件不存在或格式错误:', error.message);
+          }
+
+  # 自动修复 (仅在特定条件下)
+  auto-fix:
+    name: 自动代码修复
+    runs-on: ubuntu-latest
+    needs: [claude-flow-review, security-scan]
+    if: |
+      contains(github.event.head_commit.message, '[autofix]') || 
+      (github.event_name == 'schedule' && github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: Checkout 代码
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 设置 Git
+      run: |
+        git config --global user.name 'Claude Flow Bot'
+        git config --global user.email 'claude-flow@th-suite.local'
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 设置 Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: 安装 Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+    
+    - name: 安装依赖
+      run: |
+        npm install
+        cd apps/mc_l10n/backend && poetry install
+    
+    - name: 安装 Claude Flow
+      run: |
+        npm install -g claude-flow@${{ env.CLAUDE_FLOW_VERSION }}
+    
+    - name: 运行自动修复
+      run: |
+        chmod +x ./scripts/claude-flow-helpers.sh
+        ./scripts/claude-flow-helpers.sh autofix format
+      env:
+        CLAUDE_FLOW_DEBUG: ${{ secrets.CLAUDE_FLOW_DEBUG }}
+    
+    - name: 提交修复
+      run: |
+        git add .
+        git diff --cached --quiet || git commit -m "🤖 自动代码格式化和修复
+
+        由 Claude Flow CI 自动生成的代码质量修复:
+        - Python: Ruff 格式化和问题修复
+        - TypeScript: ESLint 和 Prettier 格式化
+        - 架构: 依赖方向和分层问题修复
+        
+        Co-authored-by: Claude Flow <claude-flow@th-suite.local>"
+        
+        git push origin ${{ github.ref_name }}
+
+# 工作流程完成通知
+  workflow-complete:
+    name: 工作流程完成通知
+    runs-on: ubuntu-latest
+    needs: [generate-report, auto-fix]
+    if: always()
+    
+    steps:
+    - name: 发送通知
+      run: |
+        echo "🎮 TH-Suite Claude Flow CI 工作流程完成"
+        echo "分支: ${{ github.ref_name }}"
+        echo "提交: ${{ github.sha }}"
+        echo "触发: ${{ github.event_name }}"

@@ -65,7 +65,7 @@ const ScanPageWeb: React.FC = () => {
   
   // 状态管理
   const [state, setState] = useState<ScanPageState>({
-    scanDirectory: '/mnt/d/Games/Curseforge/Minecraft/Instances/DeceasedCraft - Modern Zombie Apocalypse/mods',
+    scanDirectory: '/mnt/d/Games/Curseforge/Minecraft/Instances/DeceasedCraft - Modern Zombie Apocalypse',
     activeScans: [],
     scanHistory: [],
     projects: [],
@@ -109,15 +109,17 @@ const ScanPageWeb: React.FC = () => {
     setState(prev => ({ ...prev, loading: true }))
     
     try {
-      // 并行加载所有需要的数据
+      // 并行加载项目和统计数据
       await Promise.all([
         loadProjects(),
         loadScanStatistics(),
-        loadActiveScans(),
         loadScanHistory()
       ])
       
-      // 检查是否有进行中的扫描需要恢复
+      // 先加载活跃扫描数据
+      await loadActiveScans()
+      
+      // 然后检查是否有进行中的扫描需要恢复
       await checkAndResumeActiveScans()
       
     } catch (error: any) {
@@ -252,6 +254,9 @@ const ScanPageWeb: React.FC = () => {
       
       // 开始轮询扫描状态
       startScanStatusPolling(latestScan.scan_id)
+    } else {
+      // 如果没有活跃扫描，确保清除当前扫描状态
+      setState(prev => ({ ...prev, currentScan: undefined }))
     }
   }
 
@@ -259,10 +264,9 @@ const ScanPageWeb: React.FC = () => {
   // 扫描操作
   // ============================================================
 
-  // 启动扫描 - 超级简化版本
-  const startScan = () => {
+  // 启动扫描 - 实际功能版本
+  const startScan = async () => {
     console.log('🔍 startScan 被点击了！')
-    alert('扫描按钮被点击了！这是一个测试')
     
     // 简单的扫描逻辑
     const directory = state.scanDirectory || '/tmp'
@@ -270,42 +274,53 @@ const ScanPageWeb: React.FC = () => {
     
     // 显示通知
     notification.info({
-      message: '扫描功能测试',
-      description: `准备扫描目录: ${directory}`,
+      message: '开始扫描',
+      description: `正在扫描目录: ${directory}`,
       duration: 2
     })
     
     // 直接调用API
-    setTimeout(async () => {
-      try {
-        console.log('发送API请求...')
-        const response = await fetch('http://localhost:18000/api/v2.1/scan/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            directory: directory,
-            incremental: true,
-            options: { include_subdirectories: true }
-          })
+    try {
+      console.log('发送API请求...')
+      const response = await fetch('http://localhost:18000/api/v1/scan/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          directory: directory,
+          incremental: true,
+          options: { include_subdirectories: true }
         })
-        
-        const result = await response.json()
-        console.log('API响应:', result)
-        
+      })
+      
+      const result = await response.json()
+      console.log('API响应:', result)
+      
+      if (response.ok && result.success) {
         notification.success({
-          message: response.ok ? '扫描请求成功' : '扫描请求失败',
-          description: result.message || JSON.stringify(result),
-          duration: 5
+          message: '扫描启动成功',
+          description: result.message || '扫描任务已开始',
+          duration: 3
         })
-      } catch (error) {
-        console.error('API调用失败:', error)
+        
+        // 开始状态轮询
+        if (result.data?.scan_id) {
+          startScanStatusPolling(result.data.scan_id)
+        }
+      } else {
         notification.error({
-          message: 'API调用失败',
-          description: error.message,
+          message: '扫描启动失败',
+          description: result.message || '未知错误',
           duration: 5
         })
       }
-    }, 500)
+    } catch (error: any) {
+      console.error('API调用失败:', error)
+      notification.error({
+        message: 'API调用失败',
+        description: error.message || '网络连接错误',
+        duration: 5
+      })
+    }
   }
 
   // 扫描状态轮询
@@ -406,12 +421,13 @@ const ScanPageWeb: React.FC = () => {
           <Select
             placeholder="选择项目"
             style={{ width: '100%', marginTop: 8 }}
-            value={state.selectedProject?.project_id}
+            value={state.selectedProject?.project_id || undefined}
             onChange={(projectId) => {
               const project = state.projects?.find(p => p.project_id === projectId)
               setState(prev => ({ ...prev, selectedProject: project }))
             }}
             loading={state.loadingProjects}
+            allowClear
           >
             {state.projects?.map(project => (
               <Option key={project.project_id} value={project.project_id}>

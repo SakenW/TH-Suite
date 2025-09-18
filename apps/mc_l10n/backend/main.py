@@ -21,6 +21,13 @@ from api.routes.mod_routes import router as mod_router
 from api.routes.project_routes import router as project_router
 from api.routes.scan_routes import router as scan_router
 from api.routes.translation_routes import router as translation_router
+# V5架构新增路由
+from api.routes.pack_routes import router as pack_router
+from api.routes.queue_routes import router as queue_router
+from api.routes.sync_routes import router as sync_router
+from api.routes.cache_routes import router as cache_router
+from api.routes.optimized_scan_routes import router as optimized_scan_router
+from api.routes.low_memory_scan_routes import router as low_memory_scan_router
 # from api.v6.router import v6_router  # V6 API路由 - 暂时禁用
 # from api.v6.middleware.middleware import setup_v6_middlewares, V6MiddlewareConfig  # V6中间件 - 暂时禁用
 from core.di_container import (
@@ -37,6 +44,11 @@ from pydantic import BaseModel
 # 导入工具类
 from utils.process_manager import setup_process_manager
 from utils.simple_logging import StructLogFactory
+
+# 旧工作队列处理器已移除，使用新架构的ScanSessionManager
+
+# 导入多层缓存服务
+from infrastructure.services.multi_layer_cache_service import initialize_cache_service, cleanup_cache_service
 
 # 加载环境变量
 load_dotenv()
@@ -80,6 +92,14 @@ async def lifespan(app: FastAPI):
         if infra_service:
             await infra_service.initialize()
 
+        # 旧工作队列处理器已移除，新架构使用ScanSessionManager自带的Worker管理
+        logger.info("新架构已启用，扫描功能由ScanSessionManager管理")
+
+        # 初始化多层缓存服务
+        logger.info("初始化多层缓存服务...")
+        await initialize_cache_service()
+        logger.info("多层缓存服务已启动")
+
         logger.info("MC L10n API服务启动完成")
 
         yield  # 应用运行期间
@@ -90,6 +110,16 @@ async def lifespan(app: FastAPI):
     finally:
         # 关闭时执行
         logger.info("MC L10n API服务关闭中...")
+
+        # 旧工作队列处理器已移除
+        logger.info("新架构清理：无需停止旧工作队列处理器")
+
+        # 停止多层缓存服务
+        try:
+            await cleanup_cache_service()
+            logger.info("多层缓存服务已停止")
+        except Exception as e:
+            logger.warning(f"停止多层缓存服务时出错: {e}")
 
         # 通过容器清理资源
         infra_service = get_infrastructure_service()
@@ -162,6 +192,14 @@ def create_app() -> FastAPI:
     app.include_router(scan_router)
     app.include_router(translation_router)
     app.include_router(transhub.router)  # Trans-Hub集成路由
+    
+    # V5架构新路由
+    app.include_router(pack_router)      # 整合包管理
+    app.include_router(queue_router)     # 工作队列管理
+    app.include_router(sync_router)      # 同步协议管理
+    app.include_router(cache_router)     # 多层缓存管理
+    app.include_router(optimized_scan_router)  # 优化扫描功能
+    app.include_router(low_memory_scan_router)  # 低内存扫描功能
 
     # 注册本地数据管理路由 (已移除，待迁移到新结构)
 
@@ -211,258 +249,10 @@ def create_app() -> FastAPI:
         }
 
     # 数据库初始化已由依赖注入容器处理
+    
+    # 兼容性路由已移除 - 参见 archive/version_cleanup_20250916/
 
-    # 兼容性端点
-    from fastapi import APIRouter
-
-    compat_router = APIRouter()
-
-    @compat_router.get("/api/v1/scan-project-test-get")
-    async def scan_project_test_get():
-        """GET测试端点"""
-        return {"success": True, "message": "GET test endpoint working"}
-
-    @compat_router.post("/api/v1/scan-project-test")
-    async def scan_project_test():
-        """最简单的测试端点"""
-        return {"success": True, "message": "test endpoint working"}
-
-    @compat_router.post("/api/v1/scan-project-test-json")
-    async def scan_project_test_json(request: dict):
-        """测试JSON解析"""
-        return {"success": True, "received": request}
-
-    @compat_router.post("/api/v1/scan-project")
-    async def scan_project_v1_compat(request: ScanRequest):
-        """使用应用服务的扫描端点"""
-        from application.services.scan_application_service import ScanApplicationService
-
-        try:
-            scan_service = ScanApplicationService()
-            result = await scan_service.start_project_scan(
-                directory=request.directory, incremental=request.incremental
-            )
-
-            if result["success"]:
-                return {
-                    "success": True,
-                    "message": result["message"],
-                    "job_id": result["scan_id"],
-                    "scan_id": result["scan_id"],
-                }
-            else:
-                raise HTTPException(
-                    status_code=500, detail=result.get("message", "扫描启动失败")
-                )
-
-        except Exception as e:
-            logger.error(f"启动扫描失败: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
-
-    @compat_router.get("/api/v1/scan-status/{scan_id}")
-    async def get_scan_status_v1_compat(scan_id: str):
-        """使用应用服务获取扫描状态"""
-        from application.services.scan_application_service import ScanApplicationService
-
-        scan_service = ScanApplicationService()
-        return await scan_service.get_scan_status(scan_id)
-
-    @compat_router.get("/api/v1/scan-results/{scan_id}")
-    async def get_scan_results_v1_compat(scan_id: str):
-        """使用应用服务获取扫描结果"""
-        from application.services.scan_application_service import ScanApplicationService
-
-        scan_service = ScanApplicationService()
-        return await scan_service.get_scan_results(scan_id)
-
-    @compat_router.post("/api/v1/scan-cancel/{scan_id}")
-    async def cancel_scan_v1_compat(scan_id: str):
-        """使用应用服务取消扫描"""
-        from application.services.scan_application_service import ScanApplicationService
-
-        scan_service = ScanApplicationService()
-        return await scan_service.cancel_scan(scan_id)
-
-    @compat_router.get("/api/v1/scans/active")
-    async def get_active_scans():
-        """获取活跃的扫描状态"""
-        try:
-            active_scan_list = []
-            for scan_id, scan_status in active_scans.items():
-                active_scan_list.append(
-                    {
-                        "id": scan_id,
-                        "status": scan_status.get("status", "unknown"),
-                        "progress": scan_status.get("progress", 0),
-                        "processed_files": scan_status.get("processed_files", 0),
-                        "total_files": scan_status.get("total_files", 0),
-                        "current_file": scan_status.get("current_file", ""),
-                        "total_mods": scan_status.get("total_mods", 0),
-                        "total_language_files": scan_status.get(
-                            "total_language_files", 0
-                        ),
-                        "total_keys": scan_status.get("total_keys", 0),
-                        "scan_mode": scan_status.get("scan_mode", "未知"),
-                        "started_at": scan_status.get("started_at", ""),
-                    }
-                )
-
-            return {"success": True, "data": active_scan_list}
-        except Exception as e:
-            logger.error(f"获取活跃扫描失败: {e}")
-            return {"success": False, "error": str(e)}
-
-    @compat_router.get("/api/v1/scans/history")
-    async def get_scan_history():
-        """获取历史扫描记录"""
-        try:
-            conn = sqlite3.connect("data/mc_l10n_v6.db")
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-
-            # 获取所有扫描会话
-            cursor.execute("""
-                SELECT * FROM scan_sessions
-                ORDER BY started_at DESC
-                LIMIT 50
-            """)
-            sessions = cursor.fetchall()
-
-            scan_list = []
-            for session in sessions:
-                scan_list.append(
-                    {
-                        "id": session["id"],
-                        "directory": session["project_path"],
-                        "status": session["status"],
-                        "scan_type": session["scan_type"],
-                        "total_mods": session["discovered_mods"],
-                        "total_language_files": session["discovered_languages"],
-                        "total_keys": session["discovered_entries"],
-                        "started_at": session["started_at"],
-                        "completed_at": session["completed_at"],
-                    }
-                )
-
-            conn.close()
-            return {"success": True, "data": scan_list}
-
-        except Exception as e:
-            logger.error(f"获取历史扫描记录失败: {e}")
-            return {"success": False, "error": str(e)}
-
-    @compat_router.get("/api/v1/scans/latest")
-    async def get_latest_scan():
-        """获取最新的扫描结果"""
-        try:
-            conn = sqlite3.connect("data/mc_l10n_v6.db")
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-
-            # 获取最新完成的扫描
-            cursor.execute("""
-                SELECT * FROM scan_sessions
-                WHERE status = 'completed'
-                ORDER BY completed_at DESC
-                LIMIT 1
-            """)
-            session = cursor.fetchone()
-
-            if not session:
-                conn.close()
-                return {"success": True, "data": None}
-
-            scan_id = session["id"]
-
-            # 获取V6架构的模组数据
-            cursor.execute(
-                """
-                SELECT uid, modid, name, created_at, updated_at FROM core_mods
-                ORDER BY name
-            """
-            )
-            mods = cursor.fetchall()
-
-            mod_list = []
-            for mod in mods:
-                # 获取该模组的语言文件统计 - V6架构
-                cursor.execute(
-                    """
-                    SELECT COUNT(lf.uid) as lang_count, COUNT(te.uid) as total_keys
-                    FROM core_language_files lf
-                    LEFT JOIN core_translation_entries te ON lf.uid = te.language_file_uid
-                    WHERE lf.carrier_uid = ?
-                """,
-                    (mod["uid"],),
-                )
-                stats = cursor.fetchone()
-                
-                # 获取该模组的版本信息
-                cursor.execute(
-                    """
-                    SELECT version, loader, mc_version FROM core_mod_versions
-                    WHERE mod_uid = ?
-                    ORDER BY discovered_at DESC LIMIT 1
-                """,
-                    (mod["uid"],),
-                )
-                version_info = cursor.fetchone()
-
-                mod_list.append(
-                    {
-                        "id": mod["modid"],
-                        "name": mod["name"],
-                        "version": version_info["version"] if version_info else "",
-                        "file_path": "",  # V6架构不存储文件路径
-                        "mod_loader": version_info["loader"] if version_info else "",
-                        "language_files": stats["lang_count"] if stats else 0,
-                        "total_keys": stats["total_keys"] if stats else 0,
-                    }
-                )
-
-            conn.close()
-
-            # 解析 metadata JSON 字段以获取真实的统计数据
-            import json
-
-            metadata = {}
-            if session["metadata"]:
-                try:
-                    metadata = json.loads(session["metadata"])
-                except json.JSONDecodeError:
-                    pass
-
-            return {
-                "success": True,
-                "data": {
-                    "scan_id": scan_id,
-                    "directory": session["project_path"],
-                    "completed_at": session["completed_at"],
-                    "statistics": {
-                        "total_mods": metadata.get(
-                            "total_mods", session["discovered_mods"]
-                        ),
-                        "total_language_files": metadata.get(
-                            "total_language_files", session["discovered_languages"]
-                        ),
-                        "total_keys": metadata.get(
-                            "total_keys", session["discovered_entries"]
-                        ),
-                    },
-                    "mods": mod_list,
-                },
-            }
-
-        except Exception as e:
-            logger.error(f"获取最新扫描结果失败: {e}")
-            return {"success": False, "error": str(e)}
-
-    app.include_router(compat_router)
-
-    # 直接在app上添加测试路由
-    @app.get("/api/v1/direct-test")
-    async def direct_test():
-        return {"success": True, "message": "Direct route working"}
+    # V1兼容性路由已清理完毕 - 已归档至 archive/version_cleanup_20250916/
 
     # 添加健康检查端点
     @app.get("/health", tags=["系统"], summary="健康检查")

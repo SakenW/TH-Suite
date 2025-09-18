@@ -48,7 +48,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<Project>> {
     try {
       const response = await this.client.post<Project>(
-        '/api/v2.1/projects',
+        '/api/v1/projects',
         request,
         config
       )
@@ -89,7 +89,7 @@ export class ProjectApiService {
     try {
       const params = includeStatistics ? { include_statistics: true } : undefined
       const response = await this.client.get<Project>(
-        `/api/v2.1/projects/${projectId}`,
+        `/api/v1/projects/${projectId}`,
         { ...config, params }
       )
 
@@ -128,7 +128,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<Project>> {
     try {
       const response = await this.client.put<Project>(
-        `/api/v2.1/projects/${projectId}`,
+        `/api/v1/projects/${projectId}`,
         request,
         config
       )
@@ -169,7 +169,7 @@ export class ProjectApiService {
     try {
       const params = force ? { force: true } : undefined
       const response = await this.client.delete<{ deleted: boolean }>(
-        `/api/v2.1/projects/${projectId}`,
+        `/api/v1/projects/${projectId}`,
         { ...config, params }
       )
 
@@ -208,7 +208,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.post<{ archived: boolean }>(
-        `/api/v2.1/projects/${projectId}/archive`,
+        `/api/v1/projects/${projectId}/archive`,
         { reason },
         config
       )
@@ -247,7 +247,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.post<{ unarchived: boolean }>(
-        `/api/v2.1/projects/${projectId}/unarchive`,
+        `/api/v1/projects/${projectId}/unarchive`,
         {},
         config
       )
@@ -290,7 +290,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<PaginatedResponse<Project>>> {
     try {
       const response = await this.client.get<PaginatedResponse<Project>>(
-        '/api/v2.1/projects',
+        '/api/v1/projects',
         { ...config, params }
       )
 
@@ -334,7 +334,7 @@ export class ProjectApiService {
       }
 
       const response = await this.client.get<PaginatedResponse<Project>>(
-        '/api/v2.1/projects/search',
+        '/api/v1/projects/search',
         { ...config, params: searchParams }
       )
 
@@ -373,7 +373,7 @@ export class ProjectApiService {
     try {
       const params = { limit }
       const response = await this.client.get<Project[]>(
-        '/api/v2.1/projects/recent',
+        '/api/v1/projects/recent',
         { ...config, params }
       )
 
@@ -415,7 +415,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<ProjectStatistics>> {
     try {
       const response = await this.client.get<ProjectStatistics>(
-        `/api/v2.1/projects/${projectId}/statistics`,
+        `/api/v1/projects/${projectId}/statistics`,
         config
       )
 
@@ -453,7 +453,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<ProjectStatistics>> {
     try {
       const response = await this.client.post<ProjectStatistics>(
-        `/api/v2.1/projects/${projectId}/statistics/refresh`,
+        `/api/v1/projects/${projectId}/statistics/refresh`,
         {},
         config
       )
@@ -505,7 +505,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.get(
-        '/api/v2.1/projects/statistics/global',
+        '/api/v1/projects/statistics/global',
         config
       )
 
@@ -569,7 +569,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.get(
-        `/api/v2.1/projects/${projectId}/config`,
+        `/api/v1/projects/${projectId}/config`,
         config
       )
 
@@ -608,7 +608,7 @@ export class ProjectApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.client.put<{ updated: boolean }>(
-        `/api/v2.1/projects/${projectId}/config`,
+        `/api/v1/projects/${projectId}/config`,
         configUpdate,
         config
       )
@@ -661,7 +661,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.post(
-        '/api/v2.1/projects/validate-paths',
+        '/api/v1/projects/validate-paths',
         {
           source_path: sourcePath,
           output_path: outputPath
@@ -712,7 +712,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.get(
-        `/api/v2.1/projects/${projectId}/health`,
+        `/api/v1/projects/${projectId}/health`,
         config
       )
 
@@ -758,7 +758,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.get(
-        `/api/v2.1/projects/${projectId}/export`,
+        `/api/v1/projects/${projectId}/export`,
         config
       )
 
@@ -809,7 +809,7 @@ export class ProjectApiService {
   }>> {
     try {
       const response = await this.client.post(
-        '/api/v2.1/projects/import',
+        '/api/v1/projects/import',
         {
           config_data: configData,
           options

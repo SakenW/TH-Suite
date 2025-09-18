@@ -12,15 +12,26 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List
 
+from .jar_extraction_helper import AsyncJarReader
+
 logger = logging.getLogger(__name__)
 
 
 class SimpleMinecraftScannerService:
     """简化的Minecraft扫描服务，提供基础的扫描功能"""
     
-    def __init__(self, db_path: str = "data/simple_scanner.db"):
+    def __init__(self, db_path: str = "data/mc_l10n.db"):
         self.db_path = db_path
         self._active_scans: Dict[str, Dict[str, Any]] = {}
+        
+        # 初始化JAR文件读取器，使用数据库目录内的专用临时目录
+        from pathlib import Path
+        data_dir = Path(self.db_path).parent
+        temp_extract_dir = data_dir / "temp_extracts"
+        temp_extract_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.jar_reader = AsyncJarReader(str(temp_extract_dir))
+        
         logger.info("Simple Minecraft Scanner Service 已初始化")
     
     async def start_scan(
@@ -60,6 +71,10 @@ class SimpleMinecraftScannerService:
             
             self._active_scans[scan_id] = scan_state
             
+            # 快速预扫描获取文件数量估计
+            estimated_files = await self._quick_count_files(target, scan_options or {})
+            scan_state["estimated_files"] = estimated_files
+            
             # 异步执行扫描
             asyncio.create_task(self._perform_scan(scan_id, target, scan_options or {}))
             
@@ -72,10 +87,11 @@ class SimpleMinecraftScannerService:
                     "mods_found": 0,
                     "total_translation_keys": 0,
                     "language_files_found": 0,
-                    "total_files": 0
+                    "total_files": 0,
+                    "estimated_files": estimated_files
                 },
                 "duration_seconds": 0,
-                "message": f"扫描任务已启动，正在扫描: {target_path}"
+                "message": f"扫描任务已启动，预计 {estimated_files} 个文件，正在扫描: {target_path}"
             }
                 
         except Exception as e:
@@ -93,10 +109,14 @@ class SimpleMinecraftScannerService:
             
             # 发现文件
             logger.info(f"📁 发现文件: {target_path}")
-            files = await self._discover_files(target_path, scan_options)
+            scan_state["current_item"] = "正在发现文件..."
+            scan_state["progress"] = 5
+            
+            files = await self._discover_files(target_path, scan_options, scan_state)
             
             scan_state["total_count"] = len(files)
-            scan_state["progress"] = 10
+            scan_state["progress"] = 15
+            scan_state["current_item"] = f"发现 {len(files)} 个文件，开始处理..."
             
             discovered_items = []
             statistics = {
@@ -116,6 +136,18 @@ class SimpleMinecraftScannerService:
                 scan_state["progress"] = 10 + (i / len(files)) * 80
                 
                 # 处理JAR文件
+                if file_path.suffix.lower() in ['.jar', '.zip']:
+                    await self._process_jar_file(file_path, statistics, discovered_items)
+                
+                # 处理独立的语言文件
+                elif file_path.suffix.lower() in ['.json', '.lang', '.properties']:
+                    await self._process_language_file(file_path, statistics, discovered_items)
+                
+                # 原JAR处理逻辑移到单独方法
+                continue
+                
+            if False:  # 保持原代码结构但不执行
+                # 处理JAR文件（已移动到_process_jar_file）
                 if file_path.suffix.lower() in ['.jar', '.zip']:
                     # 首先判断是否为MOD
                     if await self._is_minecraft_mod(file_path):
@@ -150,6 +182,8 @@ class SimpleMinecraftScannerService:
                                     lang_code = Path(lang_file_path).stem
                                     
                                     # 尝试读取文件并计算条目数量
+                                    lang_content = {}
+                                    entries_count = 0
                                     try:
                                         with jar.open(lang_file_path) as lang_file:
                                             lang_content = json.loads(lang_file.read().decode('utf-8'))
@@ -162,7 +196,8 @@ class SimpleMinecraftScannerService:
                                         "language_code": lang_code,
                                         "parent_mod": mod_metadata["mod_id"],
                                         "entries_count": entries_count,
-                                        "file_path": lang_file_path
+                                        "file_path": lang_file_path,
+                                        "translations": lang_content  # 保存实际翻译内容
                                     }
                                     mod_item["language_files"].append(lang_file_info)
                                     statistics["language_files_found"] += 1
@@ -202,34 +237,79 @@ class SimpleMinecraftScannerService:
                 self._active_scans[scan_id]["status"] = "failed"
                 self._active_scans[scan_id]["error"] = str(e)
     
-    async def _discover_files(self, target_path: Path, scan_options: Dict[str, Any]) -> List[Path]:
-        """发现需要处理的文件"""
+    async def _discover_files(self, target_path: Path, scan_options: Dict[str, Any], scan_state: Dict[str, Any] = None) -> List[Path]:
+        """发现需要处理的文件 - 优化版本，支持大型目录"""
         files = []
         max_depth = scan_options.get("max_depth", 10)
+        processed_dirs = 0
+        total_dirs_estimate = 100  # 初始估计
         
-        def scan_directory(path: Path, depth: int = 0):
+        # 异步递归扫描函数
+        async def scan_directory_async(path: Path, depth: int = 0):
+            nonlocal processed_dirs, total_dirs_estimate
+            
             if depth > max_depth:
                 return
             
             try:
-                for item in path.iterdir():
-                    if item.is_file() and item.suffix.lower() in ['.jar', '.zip']:
+                items = list(path.iterdir())
+                subdirs = []
+                
+                # 处理当前目录的文件
+                for item in items:
+                    # 扩展文件类型支持：JAR、ZIP和语言文件
+                    if item.is_file() and item.suffix.lower() in ['.jar', '.zip', '.json', '.lang', '.properties']:
                         # 检查文件大小限制
                         max_size_mb = scan_options.get("max_file_size_mb", 500)
-                        if item.stat().st_size <= max_size_mb * 1024 * 1024:
-                            files.append(item)
+                        try:
+                            if item.stat().st_size <= max_size_mb * 1024 * 1024:
+                                files.append(item)
+                        except (OSError, PermissionError):
+                            continue  # 跳过无法访问的文件
                     elif item.is_dir() and depth < max_depth:
-                        scan_directory(item, depth + 1)
+                        subdirs.append(item)
+                
+                processed_dirs += 1
+                
+                # 每处理10个目录就释放一次控制权，并更新进度
+                if processed_dirs % 10 == 0:
+                    await asyncio.sleep(0.001)  # 极短暂的异步暂停
+                    progress_msg = f"正在发现文件... ({processed_dirs} 个目录，{len(files)} 个文件)"
+                    logger.info(f"📁 {progress_msg}")
+                    if scan_state:
+                        scan_state["current_item"] = progress_msg
+                        scan_state["progress"] = min(5 + (processed_dirs / total_dirs_estimate) * 10, 14)
+                
+                # 递归处理子目录
+                for subdir in subdirs:
+                    await scan_directory_async(subdir, depth + 1)
+                    
             except PermissionError:
                 logger.warning(f"权限不足: {path}")
+            except Exception as e:
+                logger.warning(f"访问目录失败 {path}: {e}")
         
         if target_path.is_file():
             if target_path.suffix.lower() in ['.jar', '.zip']:
                 files.append(target_path)
         else:
-            scan_directory(target_path)
+            # 快速估算目录数量
+            try:
+                sample_dirs = 0
+                for root, dirs, _ in os.walk(target_path):
+                    sample_dirs += len(dirs)
+                    if sample_dirs > 50:  # 只采样前50个目录
+                        total_dirs_estimate = sample_dirs * 10  # 估算总数
+                        break
+                total_dirs_estimate = max(sample_dirs, 20)
+                logger.info(f"📊 估计需要处理约 {total_dirs_estimate} 个目录")
+            except:
+                pass
+            
+            # 开始异步扫描
+            await scan_directory_async(target_path)
         
-        logger.info(f"📋 发现 {len(files)} 个文件")
+        logger.info(f"📋 发现 {len(files)} 个文件（共处理 {processed_dirs} 个目录）")
         return files
     
     async def _is_minecraft_mod(self, file_path: Path) -> bool:
@@ -476,118 +556,263 @@ class SimpleMinecraftScannerService:
 
 
     async def _save_scan_results_to_database(self, scan_id: str, discovered_items: List[Dict], statistics: Dict):
-        """保存扫描结果到数据库"""
+        """保存扫描结果到V5数据库"""
+        logger.info(f"🔧 开始保存扫描结果到V5架构: scan_id={scan_id}, items={len(discovered_items)}")
         try:
-            # 直接使用数据库路径，避免依赖注入的复杂性
-            from pathlib import Path
-            import sqlite3
-            import uuid
+            # 使用V5架构的Repository模式
+            from infrastructure.repositories.repository_factory import get_repository_factory
+            from infrastructure.repositories.core_project_repository import CoreProject
+            from infrastructure.repositories.core_pack_repository import CorePack, PackPlatform
+            from infrastructure.repositories.core_mod_repository import CoreMod
             from datetime import datetime
-            
-            # 获取数据库文件路径
-            db_path = Path(__file__).parent.parent.parent / "data" / "mc_l10n_v2_1.db"
+            import uuid
             
             # 获取扫描状态信息
             scan_state = self._active_scans[scan_id]
+            factory = get_repository_factory()
             
-            # 创建项目记录 - 使用正确的字段
+            # 使用V5 Repository
+            project_repo = factory.get_core_project_repo()
+            pack_repo = factory.get_core_pack_repo()
+            mod_repo = factory.get_core_mod_repo()
+            
             project_name = f"扫描项目_{scan_id}"
             project_path = scan_state["target_path"]
             
-            # 连接数据库并保存数据
-            conn = sqlite3.connect(str(db_path))
-            try:
-                # 1. 插入pack记录
-                pack_sql = """
-                INSERT INTO packs (name, project_type, game_type, path, description, created_at, updated_at, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """
-                now = datetime.now().isoformat()
-                cursor = conn.execute(pack_sql, (
-                    project_name,
-                    "modpack",  # project_type
-                    "minecraft",  # game_type
-                    project_path,
-                    f"通过扫描发现的项目，包含 {statistics.get('mods_found', 0)} 个MOD",
-                    now,  # created_at
-                    now,  # updated_at
-                    True  # is_active
-                ))
-                pack_id = cursor.lastrowid
-                
-                # 2. 插入pack_version记录
-                pack_version_sql = """
-                INSERT INTO pack_versions (pack_id, version_tag, minecraft_version, loader_type, display_name, is_default, is_stable, local_path, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
-                cursor = conn.execute(pack_version_sql, (
-                    pack_id,
-                    "1.0.0",  # version_tag
-                    "1.20.1",  # minecraft_version (默认)
-                    "forge",  # loader_type (默认)
-                    f"{project_name} v1.0.0",  # display_name
-                    True,  # is_default
-                    True,  # is_stable
-                    project_path,  # local_path
-                    now,  # created_at
-                    now   # updated_at
-                ))
-                pack_version_id = cursor.lastrowid
-                
-                # 3. 插入mod_version_instances记录并创建关联
-                mod_count = 0
-                for item in discovered_items:
-                    if item.get("type") == "mod":
-                        # 插入MOD实例记录
-                        mod_instance_sql = """
-                        INSERT INTO mod_version_instances 
-                        (mod_id, mod_version, mod_name, jar_file_path, jar_file_size, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """
-                        cursor = conn.execute(mod_instance_sql, (
-                            str(uuid.uuid4()),  # mod_id
-                            item.get("version", "unknown"),  # mod_version
-                            item.get("name", "Unknown"),  # mod_name
-                            item.get("path", ""),  # jar_file_path
-                            item.get("size", 0),  # jar_file_size
-                            now,  # created_at
-                            now   # updated_at
-                        ))
-                        mod_instance_id = cursor.lastrowid
+            logger.info(f"📝 创建V5项目记录: {project_name}")
+            
+            # 1. 创建项目记录
+            now = datetime.now().isoformat()
+            project = CoreProject(
+                uid=str(uuid.uuid4()),
+                name=project_name,
+                description=f"通过扫描发现的项目，包含 {statistics.get('mods_found', 0)} 个MOD。扫描路径: {project_path}",
+                created_at=now,
+                updated_at=now
+            )
+            
+            project_uid = project_repo.create(project)
+            logger.info(f"✅ 项目已创建: {project_uid}")
+            
+            # 2. 创建整合包记录
+            pack = CorePack(
+                uid=str(uuid.uuid4()),
+                platform=PackPlatform.CUSTOM,
+                slug=f"scan-pack-{scan_id[:8]}",
+                title=f"扫描发现的整合包 {scan_id[:8]}",
+                author="MC L10n Scanner",
+                created_at=now,
+                updated_at=now
+            )
+            
+            pack_uid = pack_repo.create(pack)
+            logger.info(f"✅ 整合包已创建: {pack_uid}")
+            
+            # 3. 保存发现的MOD
+            mod_count = 0
+            for item in discovered_items:
+                if item.get("type") == "mod":
+                    try:
+                        mod = CoreMod(
+                            uid=str(uuid.uuid4()),
+                            modid=item.get("mod_id", f"unknown_mod_{mod_count}"),
+                            slug=item.get("mod_id", f"unknown-mod-{mod_count}"),
+                            name=item.get("name", "Unknown Mod"),
+                            created_at=now,
+                            updated_at=now
+                        )
                         
-                        # 4. 创建pack_version与mod_instance的关联
-                        relation_sql = """
-                        INSERT INTO pack_mod_relations (pack_version_id, mod_instance_id, relation_type, detected_at, detection_method, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                        """
-                        conn.execute(relation_sql, (
-                            pack_version_id,  # pack_version_id (正确字段名)
-                            mod_instance_id,  # mod_instance_id (正确字段名)
-                            "included",  # relation_type
-                            now,  # detected_at
-                            "filesystem_scan",  # detection_method
-                            now   # created_at
-                        ))
+                        mod_uid = mod_repo.create(mod)
                         mod_count += 1
+                        logger.info(f"📦 MOD已保存: {mod.modid} -> {mod_uid}")
+                        
+                    except Exception as e:
+                        logger.warning(f"保存MOD失败 {item.get('mod_id', 'unknown')}: {e}")
+                        continue
+            
+            logger.info(f"💾 V5数据库保存完成: 项目={project_uid}, 整合包={pack_uid}, MOD数量={mod_count}")
+            
+            return {
+                "success": True,
+                "project_uid": project_uid,
+                "pack_uid": pack_uid,
+                "saved_mods": mod_count
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ V5数据库保存失败: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
+
+    async def _process_jar_file(self, file_path: Path, statistics: Dict[str, Any], discovered_items: List[Dict[str, Any]]):
+        """处理JAR文件（从原代码提取）"""
+        # 首先判断是否为MOD
+        if await self._is_minecraft_mod(file_path):
+            statistics["mods_found"] += 1
+            
+            # 提取真实的MOD元数据
+            mod_metadata = await self._extract_mod_metadata(file_path)
+            
+            mod_item = {
+                "type": "mod",
+                "mod_id": mod_metadata["mod_id"],
+                "name": mod_metadata["name"],
+                "version": mod_metadata["version"],
+                "authors": mod_metadata["authors"],
+                "description": mod_metadata["description"],
+                "minecraft_version": mod_metadata["minecraft_version"],
+                "loader_type": mod_metadata["loader_type"],
+                "path": str(file_path),
+                "size": file_path.stat().st_size,
+                "language_files": []
+            }
+            
+            # 尝试发现真实的语言文件
+            try:
+                import zipfile
+                with zipfile.ZipFile(file_path, 'r') as jar:
+                    # 查找assets/*/lang/*.json文件
+                    lang_files = [f for f in jar.namelist() if f.startswith('assets/') and '/lang/' in f and f.endswith('.json')]
+                    
+                    for lang_file_path in lang_files:
+                        # 提取语言代码
+                        lang_code = Path(lang_file_path).stem
+                        
+                        # 尝试读取文件并计算条目数量
+                        lang_content = {}
+                        entries_count = 0
+                        try:
+                            with jar.open(lang_file_path) as lang_file:
+                                lang_content = json.loads(lang_file.read().decode('utf-8'))
+                                entries_count = len(lang_content)
+                                statistics["total_translation_keys"] += entries_count
+                                statistics["language_files_found"] += 1
+                        except (json.JSONDecodeError, UnicodeDecodeError):
+                            logger.warning(f"无法解析语言文件: {lang_file_path}")
+                            continue
+                        
+                        lang_item = {
+                            "type": "language_file",
+                            "language": lang_code,
+                            "path": lang_file_path,
+                            "mod_id": mod_metadata["mod_id"],
+                            "key_count": entries_count,
+                            "sample_keys": list(lang_content.keys())[:10]
+                        }
+                        mod_item["language_files"].append(lang_item)
+                        
+            except Exception as e:
+                logger.warning(f"处理语言文件时出错 {file_path}: {e}")
+            
+            discovered_items.append(mod_item)
+
+    async def _process_language_file(self, file_path: Path, statistics: Dict[str, Any], discovered_items: List[Dict[str, Any]]):
+        """处理独立的语言文件"""
+        try:
+            # 识别语言文件类型和语言代码
+            lang_code = file_path.stem
+            file_type = file_path.suffix.lower()
+            
+            # 读取并解析文件内容
+            content = {}
+            entries_count = 0
+            
+            if file_type == '.json':
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = json.load(f)
+                        entries_count = len(content)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    logger.warning(f"无法解析JSON语言文件: {file_path}")
+                    return
+                    
+            elif file_type in ['.lang', '.properties']:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                key, value = line.split('=', 1)
+                                content[key.strip()] = value.strip()
+                        entries_count = len(content)
+                except UnicodeDecodeError:
+                    logger.warning(f"无法解析语言文件: {file_path}")
+                    return
+            
+            if entries_count > 0:
+                statistics["language_files_found"] += 1
+                statistics["total_translation_keys"] += entries_count
                 
-                conn.commit()
-                logger.info(f"✅ 已保存 {mod_count} 个MOD到数据库 (pack_id: {pack_id}, pack_version_id: {pack_version_id})")
-                logger.info(f"📊 统计信息: {statistics.get('mods_found', 0)} 个MOD, {statistics.get('total_translation_keys', 0)} 个翻译条目")
-            finally:
-                conn.close()
+                # 创建模拟的MOD信息（基于目录结构）
+                parent_dir = file_path.parent.name
+                mod_id = parent_dir if parent_dir != 'lang' else file_path.parent.parent.name
+                
+                lang_item = {
+                    "type": "standalone_language_file",
+                    "language": lang_code,
+                    "path": str(file_path),
+                    "mod_id": mod_id,
+                    "key_count": entries_count,
+                    "format": file_type,
+                    "sample_keys": list(content.keys())[:10] if content else []
+                }
+                discovered_items.append(lang_item)
+                
+                logger.info(f"发现语言文件: {file_path} ({entries_count} 个翻译条目)")
                 
         except Exception as e:
-            logger.error(f"❌ 数据库保存失败: {e}")
-            # 不重新抛出异常，避免中断扫描流程
-            import traceback
-            logger.error(f"数据库保存详细错误: {traceback.format_exc()}")
+            logger.warning(f"处理语言文件时出错 {file_path}: {e}")
+
+
+    async def _quick_count_files(self, target_path: Path, scan_options: Dict[str, Any]) -> int:
+        """快速统计文件数量，用于立即响应"""
+        try:
+            count = 0
+            max_depth = 3  # 限制深度用于快速统计
+            max_sample = 500  # 最大采样数量
+            
+            def quick_count_sync(path: Path, depth: int = 0) -> int:
+                nonlocal count
+                if depth > max_depth or count > max_sample:
+                    return count
+                
+                try:
+                    for item in path.iterdir():
+                        if count > max_sample:
+                            break
+                        if item.is_file() and item.suffix.lower() in ['.jar', '.zip', '.json', '.lang', '.properties']:
+                            count += 1
+                        elif item.is_dir() and depth < max_depth:
+                            quick_count_sync(item, depth + 1)
+                except (PermissionError, OSError):
+                    pass
+                return count
+            
+            result = quick_count_sync(target_path)
+            
+            # 如果采样数量达到上限，则估算总数
+            if result >= max_sample:
+                # 基于采样估算，通常实际文件数量是采样的2-5倍
+                estimated_total = result * 3
+                logger.info(f"📊 快速采样发现 {result} 个文件，估算总数约 {estimated_total}")
+                return estimated_total
+            
+            logger.info(f"📊 快速统计完成: {result} 个文件")
+            return result
+            
+        except Exception as e:
+            logger.warning(f"快速统计失败: {e}")
+            return 100  # 默认估算值
 
 
 # 全局实例
 _simple_scanner_service: SimpleMinecraftScannerService = None
 
 
-def get_simple_minecraft_scanner_service(db_path: str = "data/simple_scanner.db") -> SimpleMinecraftScannerService:
+def get_simple_minecraft_scanner_service(db_path: str = "data/mc_l10n.db") -> SimpleMinecraftScannerService:
     """获取简化的Minecraft扫描服务实例"""
     global _simple_scanner_service
     if _simple_scanner_service is None:

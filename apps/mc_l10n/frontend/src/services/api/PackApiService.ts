@@ -20,7 +20,7 @@ export class PackApiService {
    * 创建整合包
    */
   async createPack(request: PackCreateRequest, config?: RequestConfig): Promise<PackInfo> {
-    const response = await this.client.post('/api/v2.1/projects', request, config)
+    const response = await this.client.post('/api/v1/projects', request, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '创建整合包失败')
@@ -45,7 +45,7 @@ export class PackApiService {
     if (options?.platform) params.append('platform', options.platform)
     if (options?.search) params.append('search', options.search)
 
-    const url = `/api/v2.1/projects${params.toString() ? '?' + params.toString() : ''}`
+    const url = `/api/v1/projects${params.toString() ? '?' + params.toString() : ''}`
     const response = await this.client.get(url, config)
     
     if (!response.success || !response.data) {
@@ -59,7 +59,7 @@ export class PackApiService {
    * 获取整合包详情
    */
   async getPackById(packId: string, config?: RequestConfig): Promise<PackInfo> {
-    const response = await this.client.get(`/api/v2.1/projects/${packId}`, config)
+    const response = await this.client.get(`/api/v1/projects/${packId}`, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '获取整合包详情失败')
@@ -72,7 +72,7 @@ export class PackApiService {
    * 更新整合包
    */
   async updatePack(packId: string, updates: Partial<PackCreateRequest>, config?: RequestConfig): Promise<PackInfo> {
-    const response = await this.client.put(`/api/v2.1/projects/${packId}`, updates, config)
+    const response = await this.client.put(`/api/v1/projects/${packId}`, updates, config)
     
     if (!response.success || !response.data) {
       throw new Error(response.message || '更新整合包失败')
@@ -85,7 +85,7 @@ export class PackApiService {
    * 删除整合包
    */
   async deletePack(packId: string, config?: RequestConfig): Promise<void> {
-    const response = await this.client.delete(`/api/v2.1/projects/${packId}`, config)
+    const response = await this.client.delete(`/api/v1/projects/${packId}`, config)
     
     if (!response.success) {
       throw new Error(response.message || '删除整合包失败')

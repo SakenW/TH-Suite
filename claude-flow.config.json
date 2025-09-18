@@ -1,0 +1,47 @@
+{
+  "features": {
+    "autoTopologySelection": true,
+    "parallelExecution": true,
+    "neuralTraining": true,
+    "bottleneckAnalysis": true,
+    "smartAutoSpawning": true,
+    "selfHealingWorkflows": true,
+    "crossSessionMemory": true,
+    "githubIntegration": true
+  },
+  "performance": {
+    "maxAgents": 8,
+    "defaultTopology": "hierarchical",
+    "executionStrategy": "parallel",
+    "tokenOptimization": true,
+    "cacheEnabled": true,
+    "telemetryLevel": "detailed"
+  },
+  "project": {
+    "name": "TH-Suite",
+    "type": "monorepo",
+    "mainLanguages": ["python", "typescript"],
+    "frameworks": ["tauri", "fastapi", "react", "ant-design"],
+    "architecture": "clean-architecture",
+    "testFrameworks": ["pytest", "jest", "vitest"],
+    "codeQualityTools": ["ruff", "mypy", "eslint", "prettier"]
+  },
+  "specialization": {
+    "domain": "game-localization",
+    "specificTools": ["minecraft-jar-processing", "mod-loader-detection", "i18n-extraction"],
+    "targetGames": ["minecraft", "rusted-warfare"],
+    "integrations": ["trans-hub-core", "uida-protocol"],
+    "security": {
+      "jarModification": "sandboxed",
+      "fileSystemAccess": "restricted",
+      "userDataEncryption": "sqlcipher"
+    }
+  },
+  "automation": {
+    "preCommitHooks": true,
+    "continuousIntegration": true,
+    "architectureValidation": true,
+    "securityScanning": true,
+    "performanceMonitoring": true
+  }
+}

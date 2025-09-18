@@ -203,7 +203,7 @@ class DatabaseServiceAdapter(IDatabaseService):
         import os
         import sqlite3
 
-        db_path = "data/mc_l10n_v6.db"
+        db_path = "data/mc_l10n.db"
         stats = {
             "total_mods": 0,
             "total_language_files": 0,
@@ -388,6 +388,6 @@ def get_database_manager():
     from repositories.v2_1_repositories import PackRepository
     from pathlib import Path
     
-    # 使用与其他服务一致的v2.1数据库路径
-    db_path = str(Path(__file__).parent.parent / "data" / "mc_l10n_v2_1.db")
+    # 使用统一的数据库路径
+    db_path = str(Path(__file__).parent.parent / "data" / "mc_l10n.db")
     return PackRepository(db_path)

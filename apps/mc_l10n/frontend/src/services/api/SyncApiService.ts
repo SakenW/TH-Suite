@@ -174,7 +174,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<SyncTask>> {
     try {
       const response = await this.apiClient.post<SyncTask>(
-        '/api/v2.1/sync/start',
+        '/api/v1/sync/start',
         request,
         config
       )
@@ -213,7 +213,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<SyncTask>> {
     try {
       const response = await this.apiClient.get<SyncTask>(
-        `/api/v2.1/sync/tasks/${taskId}`,
+        `/api/v1/sync/tasks/${taskId}`,
         config
       )
 
@@ -252,7 +252,7 @@ export class SyncApiService {
     try {
       const params = projectId ? { project_id: projectId } : undefined
       const response = await this.apiClient.get<SyncTask[]>(
-        '/api/v2.1/sync/tasks/active',
+        '/api/v1/sync/tasks/active',
         { ...config, params }
       )
 
@@ -291,7 +291,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.apiClient.post<{ cancelled: boolean }>(
-        `/api/v2.1/sync/tasks/${taskId}/cancel`,
+        `/api/v1/sync/tasks/${taskId}/cancel`,
         { reason },
         config
       )
@@ -330,7 +330,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.apiClient.post<{ paused: boolean }>(
-        `/api/v2.1/sync/tasks/${taskId}/pause`,
+        `/api/v1/sync/tasks/${taskId}/pause`,
         {},
         config
       )
@@ -369,7 +369,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.apiClient.post<{ resumed: boolean }>(
-        `/api/v2.1/sync/tasks/${taskId}/resume`,
+        `/api/v1/sync/tasks/${taskId}/resume`,
         {},
         config
       )
@@ -424,7 +424,7 @@ export class SyncApiService {
       }
 
       const response = await this.apiClient.get(
-        '/api/v2.1/sync/history',
+        '/api/v1/sync/history',
         { ...config, params }
       )
 
@@ -463,7 +463,7 @@ export class SyncApiService {
     try {
       const params = projectId ? { project_id: projectId } : undefined
       const response = await this.apiClient.get<SyncStatistics>(
-        '/api/v2.1/sync/statistics',
+        '/api/v1/sync/statistics',
         { ...config, params }
       )
 
@@ -505,7 +505,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<SyncTaskResult['conflicts']>> {
     try {
       const response = await this.apiClient.get(
-        `/api/v2.1/sync/tasks/${taskId}/conflicts`,
+        `/api/v1/sync/tasks/${taskId}/conflicts`,
         config
       )
 
@@ -546,7 +546,7 @@ export class SyncApiService {
   ): Promise<ServiceResult<boolean>> {
     try {
       const response = await this.apiClient.post<{ resolved: boolean }>(
-        `/api/v2.1/sync/tasks/${taskId}/conflicts/resolve`,
+        `/api/v1/sync/tasks/${taskId}/conflicts/resolve`,
         {
           content_key: contentKey,
           resolution,
@@ -613,7 +613,7 @@ export class SyncApiService {
       }
 
       const response = await this.apiClient.post(
-        '/api/v2.1/sync/dry-run',
+        '/api/v1/sync/dry-run',
         dryRunRequest,
         config
       )
@@ -657,7 +657,7 @@ export class SyncApiService {
   }>> {
     try {
       const response = await this.apiClient.get(
-        '/api/v2.1/sync/service/status',
+        '/api/v1/sync/service/status',
         { ...config, timeout: 5000 }
       )
 

@@ -1,22 +1,62 @@
-# 📚 TransHub Suite 文档中心
+# 📚 TH-Suite 文档中心
 
-欢迎访问 TransHub Suite 项目文档中心。本文档库包含了项目的完整技术文档、用户指南和运维手册。
+> **TH-Suite v2.0** - Core-First专业适配器，专为Trans-Hub生态系统设计的游戏本地化工具
 
-## 📖 文档目录结构
+欢迎访问 TH-Suite 项目文档中心。本文档库包含了项目的完整技术文档、用户指南和开发文档。
+
+## 📖 新文档目录结构 (2025-09-17 重组)
 
 ```
 docs/
-├── projects/         # 具体项目文档
-│   ├── mc-l10n/     # Minecraft本地化工具
-│   └── rw-l10n/     # Rusted Warfare本地化工具
-├── architecture/     # 通用架构设计
-├── technical/        # 通用技术规范
-├── user/            # 用户使用指南
-├── deployment/      # 部署和构建指南
-└── operations/      # 运维和管理文档
+├── specifications/      # 🔧 规格文档 - 项目需求和技术规格
+├── design/             # 🎨 设计文档 - UI/UX设计规范
+├── architecture/       # 🏗️ 架构文档 - 系统架构设计
+├── developer/          # 👨‍💻 开发者文档 - 开发环境和工具
+├── reports/archived/   # 📊 历史报告 - 项目开发历程记录
+├── projects/           # 🎮 项目文档 (现有)
+│   ├── mc-l10n/       # Minecraft本地化工具
+│   └── rw-l10n/       # Rusted Warfare本地化工具
+├── technical/          # 🔧 技术规范 (现有)
+├── user/              # 📘 用户指南 (现有) 
+├── deployment/        # 🚀 部署指南 (现有)
+└── operations/        # 🔨 运维管理 (现有)
 ```
 
 ## 🗂️ 文档索引
+
+### 🔧 新增规格文档 (Specifications) - **2025-09-17 新增**
+
+| 文档 | 描述 |
+|------|------|
+| [TH-Suite Core-First适配升级方案](./specifications/TH-Suite_Core-First适配升级方案.md) | **v2.0架构升级完整方案** |
+| [TH-Suite修复需求文档](./specifications/TH-Suite_修复需求文档.md) | 系统修复需求规格 |
+
+### 🏗️ 新增架构文档 (Architecture) - **2025-09-17 重组**
+
+| 文档 | 描述 |
+|------|------|
+| [最优架构总结](./architecture/OPTIMAL_ARCHITECTURE_SUMMARY.md) | 系统架构设计总结 |
+
+### 👨‍💻 新增开发者文档 (Developer) - **2025-09-17 新增**
+
+| 文档 | 描述 |
+|------|------|
+| [开发者指南](./developer/DEVELOPER_GUIDE.md) | **完整的开发环境设置和最佳实践** |
+| [故障排除指南](./developer/TROUBLESHOOTING.md) | 常见问题解决方案 |
+| [贡献指南](./developer/CONTRIBUTING.md) | 代码贡献规范和流程 |
+
+### 📊 新增历史报告 (Reports/Archived) - **2025-09-17 归档**
+
+项目开发历程中的重要阶段报告：
+
+| 文档 | 描述 |
+|------|------|
+| [Phase 2完成报告](./reports/archived/PHASE2_COMPLETION_REPORT.md) | 第二阶段开发总结 |
+| [Phase 3完成报告](./reports/archived/PHASE3_COMPLETION_REPORT.md) | 第三阶段开发总结 |
+| [React 19兼容性报告](./reports/archived/REACT19_COMPATIBILITY_REPORT.md) | 前端框架升级报告 |
+| [重构总结](./reports/archived/REFACTORING_SUMMARY.md) | 架构重构过程总结 |
+| [项目结构重构](./reports/archived/PROJECT_STRUCTURE_REFACTOR.md) | 目录结构重构记录 |
+| [MC L10n进度报告](./reports/archived/MC-L10N-PROGRESS.md) | Minecraft本地化工具开发进度 |
 
 ### 🎮 项目文档 (Projects)
 
@@ -128,11 +168,28 @@ docs/
 
 ---
 
+## 🔄 文档重组说明 (2025-09-17)
+
+### ✅ 已完成重组
+1. **规格文档迁移**: 将根目录的规格文档移至 `specifications/`
+2. **架构文档整理**: 将架构相关文档移至 `architecture/`  
+3. **开发者文档集中**: 将开发指南、故障排除等移至 `developer/`
+4. **历史报告归档**: 将项目阶段报告移至 `reports/archived/`
+5. **索引系统更新**: 更新文档索引以反映新的组织结构
+
+### 📂 新旧目录对应关系
+- `TH-Suite_Core-First适配升级方案.md` → `specifications/TH-Suite_Core-First适配升级方案.md`
+- `OPTIMAL_ARCHITECTURE_SUMMARY.md` → `architecture/OPTIMAL_ARCHITECTURE_SUMMARY.md`
+- `DEVELOPER_GUIDE.md` → `developer/DEVELOPER_GUIDE.md`
+- `TROUBLESHOOTING.md` → `developer/TROUBLESHOOTING.md`
+- `PHASE*_COMPLETION_REPORT.md` → `reports/archived/PHASE*_COMPLETION_REPORT.md`
+
 ## 📝 版本信息
 
-- **文档版本**: 2.0.0
-- **更新日期**: 2025-09-05
-- **维护团队**: TransHub Suite Team
+- **文档版本**: 2.0.0 (重组版)
+- **重组日期**: 2025-09-17  
+- **原始创建**: 2025-09-05
+- **维护团队**: TH-Suite Team
 
 ---
 

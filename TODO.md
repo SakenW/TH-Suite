@@ -1,122 +1,231 @@
-# TH-Suite 与 Trans-Hub 集成优化任务清单
+# TODO: 分层异步增量扫描系统实现
 
-基于 `docs/optimization/README.md` 的全面优化方案，对 TH-Suite v2.0 Core-First 架构进行深度重构和集成优化。
+基于 `/home/saken/project/TH-Suite/扫描规则.md` 规格，实现新的分层异步增量扫描架构，解决当前扫描卡顿和数据库冲突问题。
 
-## 🎯 优化目标概览
+## 🎯 核心目标
 
-**核心问题**: SDK集成不完整、数据库设计缺陷、测试覆盖率低  
-**预期收益**: 减少 15,000+ 行重复代码、提升 70%+ 测试覆盖率、降低 60% 维护成本  
-**实施工期**: 5-7 个工作日、分 5 个阶段执行  
-**风险等级**: 中等（已完成备份和回滚方案）  
+**当前问题**: 扫描卡顿、UNIQUE约束冲突、用户体验差  
+**预期收益**: 1-2秒首屏响应、渐进式补全、中断可续扫、增量更新  
+**实施工期**: 约2周工作量、分10个阶段执行  
+**风险等级**: 中等（保持V5 SSOT架构，仅增补缓存表）
 
----
+## ✅ 核心设计原则
 
-## ✅ 已完成的备份和准备工作
+- **1-2秒首屏响应**：点击扫描后立即显示MOD列表
+- **渐进式补全**：10秒内≥30%行补齐关键信息
+- **中断可续扫**：异常退出后≤1秒恢复进度
+- **增量扫描**：版本变更时仅处理Δ部分，耗时≤首次20%
+- **保持V5 SSOT**：不改动core/ops表结构，仅增补cache表
 
-### 🛡️ 环境备份和分支管理
-- [x] **Git 分支**: 创建 `optimization-refactor-2025-09-12` 优化分支
-- [x] **代码备份**: 提交完整代码快照 (commit: ef2d1cc)
-- [x] **数据备份**: 备份 `apps/mc_l10n/backend/data/` 至 `backups/2025-09-12/`
-- [x] **文档分析**: 完成优化文档阅读和现有代码库分析
+## 📋 实施清单（按优先级排序）
 
----
+### Phase 1: 数据库契约与快照引擎（0.5天 + 2天）
 
-## 📈 实施进度 (总工期 5-7 工作日)
+#### 1.1 数据库表结构设计
+- [ ] **新增 `cache_scan_snapshots` 表**
+  - 字段：`snapshot_id, session_id, pack_uid, pack_version_uid?, root_path, files_json, created_at`
+  - 存储：文件快照（路径、大小、修改时间、JAR中央目录信息）
+  - 索引：`(created_at)`, `(pack_uid, created_at)`
 
-### 第一阶段: 基础准备 (1天) ✅
-- [x] **环境准备**: 创建优化分支和完整备份
-- [x] **文档分析**: 阅读优化文档套件，理解重构目标
-- [x] **现状评估**: 识别关键问题和优化机会
-- [x] **TODO 清理**: 移除与重构冲突的陈旧内容
+- [ ] **新增 `cache_scan_delta` 表**
+  - 字段：`snapshot_id, session_id, delta_json{added[],modified[],moved[],removed[],touched_mods[]}, created_at`
+  - 存储：两次扫描间的文件变化差异
+  - 索引：`(snapshot_id)`, `(session_id, created_at)`
 
-### 第二阶段: 数据库重构 (2天) 🔄
-- [ ] **新表结构创建**: 按照 `02-database-optimization.md` 实现细粒度版本管理
-- [ ] **数据分层设计**: 区分本地构建数据和同步业务数据  
-- [ ] **数据迁移脚本**: 实现安全的数据迁移和验证
-- [ ] **ORM 模型更新**: 更新领域模型和仓库模式
+- [ ] **可选：`ops_event_log` 表**
+  - 字段：`event_id, session_id, event_type, entity_ref, stage, artifact_hash?, payload_json, ts`
+  - 存储：扫描事件流水，支持幂等和重放
+  - 索引：`(session_id, ts)`, `(event_type, entity_ref)`
 
-### 第三阶段: SDK 集成 (1.5天) 🔄
-- [ ] **客户端重构**: 替换自定义 HTTP 客户端，集成 Trans-Hub 官方 SDK
-- [ ] **配置管理统一**: 与 Trans-Hub 保持一致的配置模式
-- [ ] **API 兼容性**: 验证 SDK 版本匹配和功能完整性
-- [ ] **错误处理**: 实现统一的错误处理和重试机制
+#### 1.2 快照构建引擎
+- [ ] **实现 SnapshotBuilder 类**
+  - 快速遍历目录结构（≤2秒）
+  - 生成文件指纹信息：`size+mtime` → `jar_cd_entries/jar_cd_crc` → `BLAKE3`
+  - 写入 `cache_scan_snapshots`
+  - 支持中断恢复
 
-### 第四阶段: 数据映射实现 (1天) 🔄  
-- [ ] **投影适配器增强**: 实现 Minecraft ↔ UIDA 双向数据转换
-- [ ] **统一内容映射**: MOD、整合包、任务包统一处理系统
-- [ ] **版本关系同步**: 实现完整的版本追踪信息同步
-- [ ] **服务器端过滤**: 支持按版本、MOD、内容类型多维度过滤
+- [ ] **实现 DiffEngine 类**
+  - 对比当前快照与上次快照
+  - 生成增量变化（added/modified/moved/removed）
+  - 识别移动/重命名（hash不变仅更新路径）
+  - 写入 `cache_scan_delta`
 
-### 第五阶段: 测试和验证 (0.5天) 🔄
-- [ ] **集成测试**: 版本化项目创建、SDK集成、数据映射、同步工作流
-- [ ] **性能验证**: 比对优化前后的性能指标
-- [ ] **数据一致性**: 验证数据迁移完整性和准确性
-- [ ] **回滚测试**: 验证回滚方案的有效性
+### Phase 2: 任务队列与检查点系统（2天）
 
-## 📊 预期收益和成功指标
+#### 2.1 扩展工作队列
+- [ ] **扩展 `ops_work_queue.type` 枚举**
+  - 新增：`scan_enum`, `scan_meta`, `scan_lang`, `scan_verify`
+  - 保持现有表结构不变，仅增加类型
 
-### 量化目标
-| 指标类型 | 优化前 | 优化后 | 提升幅度 |
-|----------|--------|--------|----------|
-| 重复代码行数 | 15,000+ | <1,000 | -93% |
-| 测试覆盖率 | 6.4% | >70% | +1000% |
-| 维护成本 | 高 | 低 | -60% |
-| 集成效率 | 基准 | 提升 | +50% |
+- [ ] **实现检查点机制**
+  - 检查点数据写入 `payload_json`：`{stage, artifact_ref, artifact_hash?, last_step, offset?}`
+  - 支持任务中断后从检查点续扫
+  - 指数退避重试机制
 
-### 质量目标
-- [ ] 所有单元测试通过
-- [ ] 集成测试覆盖率 > 80%
-- [ ] 代码质量检查通过
-- [ ] 文档完整更新
+#### 2.2 扫描编排器
+- [ ] **实现 ScanOrchestrator 类**
+  - 协调快照→差异→任务派发流程
+  - 管理扫描会话生命周期
+  - 优先级调度：可见优先(100) > Δ变更(70) > RAS补完(50) > 非RAS补完(20)
 
----
+### Phase 3: 单写入者与批量落库（2天）
 
-## ⚠️ 风险控制和回滚方案
+#### 3.1 EventApplier实现
+- [ ] **实现EventApplier类**
+  - 单写入者模式，避免数据库锁争用
+  - 批量处理：batch_size=200 或 flush_interval=500ms
+  - WAL模式写入，确保数据安全
+  - 支持事务回滚
 
-### 高风险项及缓解方案
-1. **数据迁移风险**: 可能导致数据丢失
-   - **缓解**: 完整备份 + 分步迁移 + 验证脚本
-   
-2. **API 兼容性**: SDK 版本不匹配
-   - **缓解**: 版本锁定 + 兼容性测试
+#### 3.2 数据库操作优化
+- [ ] **修复UNIQUE约束冲突**
+  - 实现UPSERT逻辑：`INSERT ... ON CONFLICT DO UPDATE`
+  - 处理重复modid的情况
+  - 确保数据一致性
 
-3. **性能回退**: 新架构可能影响性能
-   - **缓解**: 基准测试 + 性能监控
+### Phase 4: 异步Worker系统（3天）
 
-### 回滚计划
-```bash
-# 如果需要回滚
-git checkout main
-cp backups/2025-09-12/data/* apps/mc_l10n/backend/data/ 
-poetry install  # 恢复原依赖
-```
+#### 4.1 分层Worker实现
+- [ ] **ENUM Worker**
+  - 处理目录枚举和manifest解析
+  - 支持Modrinth/CurseForge/自定义格式
+  - 产生 `LIST_UPSERT` 事件
 
----
+- [ ] **META Worker**  
+  - 解析MOD元数据：mods.toml/fabric.mod.json/mcmod.info
+  - 提取：modid/loader/mc_version/version/作者/描述
+  - 产生 `FIELD_PATCH` 事件
+
+- [ ] **LANG Worker**
+  - 解析语言文件：.json/.lang/.properties
+  - 提取键值对和统计信息
+  - 产生 `LANG_UPSERT` 事件
+
+- [ ] **VERIFY Worker**
+  - 处理去重/冲突检测/统计/墓碑标记
+  - 产生 `CONFLICT`/`TOMB_STONE` 事件
+
+#### 4.2 事件处理系统
+- [ ] **实现Event类型定义**
+  - `LIST_UPSERT`：列表行上屏/更新
+  - `FIELD_PATCH`：版本/作者/loader/语言数
+  - `LANG_UPSERT`：language_file与entries增量
+  - `COUNT_PATCH`：计数/统计
+  - `TOMB_STONE`：删除/移动墓碑
+  - `CONFLICT`：冲突标记
+  - `PROGRESS`：会话/行内进度
+  - `ERROR`：错误徽章与重试
+
+- [ ] **实现事件幂等机制**
+  - 幂等键：`session_id + event_type + entity_ref + stage + artifact_hash`
+  - 支持事件重放和会话回滚
+
+### Phase 5: 新扫描API设计（2天）
+
+#### 5.1 实现分层异步扫描API
+- [ ] `POST /api/v6/scan/async-start`：启动异步扫描，立即返回session_id
+- [ ] `GET /api/v6/scan/session/{session_id}`：获取扫描进度和结果
+- [ ] `POST /api/v6/scan/session/{session_id}/cancel`：取消扫描
+- [ ] `GET /api/v6/scan/snapshots`：获取历史快照
+
+#### 5.2 WebSocket推送
+- [ ] **实现实时事件推送**
+  - 扫描进度推送
+  - 渐进式结果更新
+  - 错误和冲突通知
+
+### Phase 6: 验收测试（1-2天）
+
+#### 6.1 性能验收
+- [ ] **A-01 首屏**：100-300 MOD，点击后≤2s出列表
+- [ ] **A-02 渐进补全**：10秒内≥30%行补完关键字段  
+- [ ] **A-03 中断恢复**：异常退出后≤1s恢复进度
+- [ ] **A-04 版本增量**：仅10/300 MOD变化，总耗时≤首次20%
+- [ ] **A-05 移动/重命名**：不触发解析，仅路径更新
+- [ ] **A-06 一致性**：事件重放后DB与UI一致
+
+#### 6.2 功能验收  
+- [ ] **B-01 失败隔离**：单文件失败不拖累总进度
+- [ ] **B-02 资源约束**：扫描期CPU≤60%，峰值内存≤1.5GB
+
+## 🚧 技术风险与注意事项
+
+1. **数据库迁移**：新增表结构需要平滑迁移，避免影响现有功能
+2. **并发控制**：Worker和EventApplier的并发协调
+3. **内存管理**：快照和缓存的内存使用控制
+4. **向下兼容**：保持现有API的向下兼容性
+5. **测试覆盖**：关键路径需要充分的单元测试和集成测试
+
+## 📅 时间预估
+
+- **Phase 1-2**：核心架构 - 4天
+- **Phase 3-4**：Worker系统 - 5天  
+- **Phase 5-6**：API和验收 - 3天
+
+**总计：约2周工作量**
+
+## 🎯 立即开始
+
+建议从 **Phase 1.1 数据库表结构设计** 开始，这是整个架构的基础。完成数据库设计后，可以并行开发快照引擎和任务队列系统。
 
 ## 📚 相关文档引用
 
-- **集成分析报告**: [docs/optimization/01-integration-analysis.md](docs/optimization/01-integration-analysis.md)
-- **数据库结构优化**: [docs/optimization/02-database-optimization.md](docs/optimization/02-database-optimization.md) ⭐
-- **SDK 集成改进**: [docs/optimization/03-sdk-integration.md](docs/optimization/03-sdk-integration.md)
-- **数据映射策略**: [docs/optimization/04-data-mapping.md](docs/optimization/04-data-mapping.md) ⭐
-- **实施路线图**: [docs/optimization/05-implementation-roadmap.md](docs/optimization/05-implementation-roadmap.md)
+- **扫描规则原文**: [/home/saken/project/TH-Suite/扫描规则.md](/home/saken/project/TH-Suite/扫描规则.md) ⭐
+- **V5 数据库设计**: [docs/architecture/database/v5-ssot-database-design.md](docs/architecture/database/v5-ssot-database-design.md)
+- **扫描架构文档**: [docs/scanning/](docs/scanning/) ⭐
 
-## 📝 重构进度跟踪
+## ✅ 已完成工作
 
-**最后更新**: 2025-09-12  
-**当前阶段**: 第一阶段完成，进入第二阶段（数据库重构）  
-**关键成就**: 完成优化文档分析、代码库现状评估、完整备份和分支创建
+### 📚 扫描系统文档完善 (2025-09-16)
+
+基于三层扫描架构的实际实现，完成了完整的技术文档编写：
+
+#### 已创建文档
+- ✅ **[三层扫描架构概览](docs/scanning/scanning-architecture-overview.md)** (新建)
+  - 详细描述标准/优化/低内存三种扫描器的设计理念
+  - 包含性能对比数据和实时进度系统说明
+  - 统一API接口规范和错误处理机制
+
+- ✅ **[扫描器对比使用指南](docs/scanning/scanner-comparison-guide.md)** (已存在且完善)
+  - 智能选择决策树和详细性能对比表
+  - 系统配置推荐和配置参数矩阵
+  - 实际测试数据 (DeceasedCraft 628MOD基准)
+
+- ✅ **[低内存优化配置指南](docs/scanning/low-memory-optimization-guide.md)** (已存在且完善)
+  - 内存优化核心技术：流式处理、自动GC、分批处理
+  - 4GB/8GB/16GB不同硬件配置推荐方案
+  - 实时配置调优API和监控告警系统
+
+- ✅ **[API使用示例](docs/scanning/api-usage-examples.md)** (已存在且完善)
+  - 三种扫描器完整API调用示例和响应格式
+  - 批量自动化脚本和实时监控工具
+  - 配置文件驱动扫描和错误处理最佳实践
+
+- ✅ **[性能测试与故障排除](docs/scanning/performance-testing-troubleshooting.md)** (已存在且完善)
+  - 综合基准测试框架和自定义性能测试脚本
+  - 系统诊断工具和常见问题解决方案
+  - 自动化故障排除和性能优化建议
+
+- ✅ **[扫描系统主README](docs/scanning/README.md)** (更新完成)
+  - 增强了对三层架构的整体说明
+  - 添加了更详细的文档结构描述和快速开始指南
+
+#### 文档特色
+- **实用性强**: 包含大量实际代码示例、配置模板和API调用样例
+- **分层明确**: 针对不同硬件配置 (4GB/8GB/16GB+) 提供精准推荐
+- **全面覆盖**: 从架构设计、性能优化到故障排除的完整指南
+- **可操作性**: 详细的故障诊断步骤和自动化脚本
+
+#### 解决的问题
+- 为用户提供了完整的三层扫描架构使用指南
+- 帮助用户根据硬件配置选择最适合的扫描方案
+- 提供了详细的性能调优和问题排查方法
+- 建立了统一的API使用标准和最佳实践
 
 ---
 
-## 🔍 关键问题识别 (根据优化文档)
-
-### P0 优先级 (立即执行)
-1. **SDK 集成不完整**: 自实现 HTTP 客户端，未使用 Trans-Hub 官方 SDK
-2. **数据库设计缺陷**: 项目表固化版本相关统计数据，不支持多版本管理
-3. **数据分层缺失**: 本地构建数据与同步业务数据混合
-
-### P1 优先级 (短期优化)
-1. **测试覆盖率过低**: 仅 6.4% (19/297 文件)
-2. **依赖版本不一致**: Python、FastAPI 版本与 Trans-Hub 不匹配
-3. **文档体系不完整**: 缺少 API 文档和开发指南
+**最后更新**: 2025-09-16  
+**当前状态**: 分层异步增量扫描架构规划完成，相关文档已完善
+**当前问题**: UNIQUE约束冲突、扫描卡顿、用户体验差  
+**解决方案**: 快照-Δ模型 + 检查点化任务DAG + 内容寻址缓存  
+**下一步**: 开始实施 Phase 1.1 数据库表结构设计

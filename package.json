@@ -49,7 +49,18 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "claude-flow:install": "npm install -g claude-flow@alpha",
+    "claude-flow:init": "./scripts/claude-flow-helpers.sh init",
+    "claude-flow:check": "./scripts/claude-flow-helpers.sh check-deps",
+    "claude-flow:review": "./scripts/claude-flow-helpers.sh review",
+    "claude-flow:security": "./scripts/claude-flow-helpers.sh security-scan",
+    "claude-flow:perf": "./scripts/claude-flow-helpers.sh perf-analysis",
+    "claude-flow:test-gen": "./scripts/claude-flow-helpers.sh gen-tests unit 85",
+    "claude-flow:autofix": "./scripts/claude-flow-helpers.sh autofix",
+    "claude-flow:game-workflow": "./scripts/claude-flow-helpers.sh game-workflow full",
+    "claude-flow:report": "./scripts/claude-flow-helpers.sh report",
+    "claude-flow:help": "./scripts/claude-flow-helpers.sh help"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -57,6 +68,59 @@
     "cross-env": "^7.0.3",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.2"
+  },
+  "claudeFlow": {
+    "enabled": true,
+    "version": "alpha",
+    "features": {
+      "autoTopologySelection": true,
+      "parallelExecution": true,
+      "neuralTraining": true,
+      "bottleneckAnalysis": true,
+      "smartAutoSpawning": true,
+      "selfHealingWorkflows": true,
+      "crossSessionMemory": true,
+      "githubIntegration": true
+    },
+    "gameLocalization": {
+      "supportedGames": ["minecraft", "rusted-warfare"],
+      "modLoaders": ["forge", "fabric", "quilt", "neoforge"],
+      "fileProcessing": {
+        "jarProcessing": true,
+        "securitySandbox": true,
+        "backupEnabled": true
+      },
+      "transHubIntegration": {
+        "uidaProtocol": "2.1",
+        "syncEnabled": true,
+        "batchSize": 1000
+      }
+    },
+    "hooks": {
+      "preTask": {
+        "enabled": true,
+        "gameContextDetection": true,
+        "autoAgentSpawning": true,
+        "memoryLoading": true
+      },
+      "postTask": {
+        "enabled": true,
+        "performanceAnalysis": true,
+        "securityValidation": true,
+        "outputVerification": true
+      }
+    },
+    "agents": {
+      "specialized": [
+        "jar-processor",
+        "mod-detector",
+        "trans-hub-integrator",
+        "security-scanner",
+        "architecture-validator"
+      ],
+      "maxConcurrent": 8,
+      "defaultTopology": "hierarchical"
+    }
   },
   "engines": {
     "node": ">=18.0.0",
