@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
+  Card,
+  Button,
+  Input,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
+  Tabs,
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+  Badge,
+} from 'antd'
+import type { TableColumnsType } from 'antd'
 import {
   RefreshCw,
   Download,
@@ -270,9 +260,8 @@ const LocalDataPage: React.FC = () => {
               <div className='flex items-center space-x-3'>
                 <Button
                   onClick={refreshAllData}
-                  disabled={loading}
-                  variant='outline'
-                  className='flex items-center space-x-2 bg-white/50 hover:bg-white/80 border-gray-200 shadow-sm transition-all duration-200'
+                  loading={loading}
+                  className='flex items-center space-x-2'
                 >
                   <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                   <span>刷新数据</span>
@@ -337,8 +326,9 @@ const LocalDataPage: React.FC = () => {
             <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
               <div className='flex items-center space-x-4'>
                 <Button
+                  type='primary'
                   onClick={handleImportData}
-                  className='flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200'
+                  className='flex items-center space-x-2'
                 >
                   <Download className='h-4 w-4' />
                   <span>导入数据</span>
@@ -351,7 +341,7 @@ const LocalDataPage: React.FC = () => {
           </div>
 
           {/* Navigation Tabs */}
-          <Tabs defaultValue='entries' className='space-y-6'>
+          <Tabs defaultActiveKey='entries' className='space-y-6'>
             <TabsList className='grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-2 shadow-lg'>
               <TabsTrigger
                 value='entries'

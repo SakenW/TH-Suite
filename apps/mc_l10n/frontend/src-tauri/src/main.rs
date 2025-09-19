@@ -2,6 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod config;
+mod crypto;
+mod database;
+mod plugins;
+
+#[cfg(test)]
+mod tests;
 
 use tauri::{Manager, Emitter};
 use tauri_plugin_dialog::DialogExt;
@@ -12,6 +18,8 @@ use std::fs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use config::AppConfig;
+use crypto::{SecurityConfig, DeviceFingerprint};
+use database::{EncryptedDatabaseManager, DatabaseConfig, DatabaseStats};
 
 const BACKEND_URL: &str = "http://localhost:8000/api/v1";
 
@@ -119,6 +127,9 @@ struct ModInfo {
 
 // 全局扫描状态
 type ScanState = Arc<Mutex<HashMap<String, ScanResult>>>;
+
+// 数据库管理器状态
+type DatabaseManagerState = Arc<EncryptedDatabaseManager>;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -1122,9 +1133,290 @@ async fn delete_file(file_path: String) -> Result<(), String> {
     }
 }
 
+// ==================== 加密数据库命令 ====================
+
+#[tauri::command]
+async fn initialize_secure_database(
+    database_name: String,
+    user_passphrase: Option<String>,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<String, String> {
+    let connection = db_manager
+        .get_connection(&database_name, user_passphrase.as_deref())
+        .await
+        .map_err(|e| format!("Failed to create database connection: {}", e))?;
+    
+    // 初始化基本表结构
+    let schema_sql = r#"
+        -- 应用程序配置表
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- 项目信息表
+        CREATE TABLE IF NOT EXISTS projects (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            project_type TEXT NOT NULL,
+            mc_version TEXT,
+            loader TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- 扫描历史表
+        CREATE TABLE IF NOT EXISTS scan_history (
+            scan_id TEXT PRIMARY KEY,
+            project_id TEXT,
+            scan_type TEXT NOT NULL,
+            status TEXT NOT NULL,
+            results TEXT, -- JSON格式的扫描结果
+            error_message TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            completed_at DATETIME,
+            FOREIGN KEY (project_id) REFERENCES projects(id)
+        );
+        
+        -- 缓存表
+        CREATE TABLE IF NOT EXISTS cache_entries (
+            key TEXT PRIMARY KEY,
+            value BLOB NOT NULL,
+            expires_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- 索引
+        CREATE INDEX IF NOT EXISTS idx_projects_type ON projects(project_type);
+        CREATE INDEX IF NOT EXISTS idx_scan_history_project ON scan_history(project_id);
+        CREATE INDEX IF NOT EXISTS idx_scan_history_status ON scan_history(status);
+        CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache_entries(expires_at);
+        
+        -- 触发器：自动更新updated_at
+        CREATE TRIGGER IF NOT EXISTS update_projects_timestamp 
+            AFTER UPDATE ON projects
+            BEGIN
+                UPDATE projects SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            END;
+    "#;
+    
+    db_manager
+        .initialize_schema(&database_name, schema_sql)
+        .await
+        .map_err(|e| format!("Failed to initialize database schema: {}", e))?;
+    
+    Ok(format!("Database '{}' initialized successfully", database_name))
+}
+
+#[tauri::command]
+async fn get_database_stats(
+    database_name: String,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<DatabaseStats, String> {
+    let connection = db_manager
+        .get_connection(&database_name, None)
+        .await
+        .map_err(|e| format!("Failed to get database connection: {}", e))?;
+    
+    let conn = connection
+        .lock()
+        .map_err(|_| "Failed to acquire database lock")?;
+    
+    conn.get_stats()
+        .map_err(|e| format!("Failed to get database stats: {}", e))
+}
+
+#[tauri::command]
+async fn execute_secure_query(
+    database_name: String,
+    query: String,
+    params: Vec<serde_json::Value>,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<Vec<HashMap<String, serde_json::Value>>, String> {
+    let connection = db_manager
+        .get_connection(&database_name, None)
+        .await
+        .map_err(|e| format!("Failed to get database connection: {}", e))?;
+    
+    let conn = connection
+        .lock()
+        .map_err(|_| "Failed to acquire database lock")?;
+    
+    // 准备参数
+    let mut stmt = conn
+        .connection()
+        .prepare(&query)
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    
+    // 转换参数
+    let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params
+        .iter()
+        .map(|v| v as &dyn rusqlite::ToSql)
+        .collect();
+    
+    // 执行查询
+    let mut rows = stmt
+        .query(&rusqlite_params[..])
+        .map_err(|e| format!("Failed to execute query: {}", e))?;
+    
+    let mut results = Vec::new();
+    let column_count = stmt.column_count();
+    
+    while let Some(row) = rows.next().map_err(|e| format!("Failed to fetch row: {}", e))? {
+        let mut row_map = HashMap::new();
+        
+        for i in 0..column_count {
+            let column_name = stmt.column_name(i).unwrap_or(&format!("col_{}", i));
+            
+            // 根据类型转换值
+            let value = match row.get_ref(i).map_err(|e| format!("Failed to get column {}: {}", i, e))? {
+                rusqlite::types::ValueRef::Null => serde_json::Value::Null,
+                rusqlite::types::ValueRef::Integer(i) => serde_json::Value::Number((*i).into()),
+                rusqlite::types::ValueRef::Real(f) => serde_json::Value::Number(
+                    serde_json::Number::from_f64(*f).unwrap_or_else(|| 0.into())
+                ),
+                rusqlite::types::ValueRef::Text(s) => serde_json::Value::String(
+                    String::from_utf8_lossy(s).to_string()
+                ),
+                rusqlite::types::ValueRef::Blob(b) => serde_json::Value::String(
+                    base64::engine::general_purpose::STANDARD.encode(b)
+                ),
+            };
+            
+            row_map.insert(column_name.to_string(), value);
+        }
+        
+        results.push(row_map);
+    }
+    
+    Ok(results)
+}
+
+#[tauri::command]
+async fn execute_secure_update(
+    database_name: String,
+    query: String,
+    params: Vec<serde_json::Value>,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<usize, String> {
+    let connection = db_manager
+        .get_connection(&database_name, None)
+        .await
+        .map_err(|e| format!("Failed to get database connection: {}", e))?;
+    
+    let mut conn = connection
+        .lock()
+        .map_err(|_| "Failed to acquire database lock")?;
+    
+    // 在事务中执行更新
+    conn.transaction(|tx| {
+        let mut stmt = tx
+            .prepare(&query)
+            .map_err(|e| anyhow::anyhow!("Failed to prepare update: {}", e))?;
+        
+        // 转换参数
+        let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params
+            .iter()
+            .map(|v| v as &dyn rusqlite::ToSql)
+            .collect();
+        
+        let affected_rows = stmt
+            .execute(&rusqlite_params[..])
+            .map_err(|e| anyhow::anyhow!("Failed to execute update: {}", e))?;
+        
+        Ok(affected_rows)
+    })
+    .map_err(|e| format!("Transaction failed: {}", e))
+}
+
+#[tauri::command]
+async fn backup_secure_database(
+    database_name: String,
+    backup_path: String,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<String, String> {
+    db_manager
+        .backup_database(&database_name, &backup_path)
+        .await
+        .map_err(|e| format!("Failed to backup database: {}", e))?;
+    
+    Ok(format!("Database backed up to: {}", backup_path))
+}
+
+#[tauri::command]
+async fn optimize_secure_database(
+    database_name: String,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<String, String> {
+    let connection = db_manager
+        .get_connection(&database_name, None)
+        .await
+        .map_err(|e| format!("Failed to get database connection: {}", e))?;
+    
+    let conn = connection
+        .lock()
+        .map_err(|_| "Failed to acquire database lock")?;
+    
+    conn.optimize()
+        .map_err(|e| format!("Failed to optimize database: {}", e))?;
+    
+    Ok("Database optimization completed".to_string())
+}
+
+#[tauri::command]
+async fn check_database_integrity(
+    database_name: String,
+    db_manager: tauri::State<'_, DatabaseManagerState>,
+) -> Result<bool, String> {
+    let connection = db_manager
+        .get_connection(&database_name, None)
+        .await
+        .map_err(|e| format!("Failed to get database connection: {}", e))?;
+    
+    let conn = connection
+        .lock()
+        .map_err(|_| "Failed to acquire database lock")?;
+    
+    conn.integrity_check()
+        .map_err(|e| format!("Failed to check database integrity: {}", e))
+}
+
+#[tauri::command]
+fn get_device_fingerprint() -> Result<String, String> {
+    DeviceFingerprint::generate()
+        .map_err(|e| format!("Failed to generate device fingerprint: {}", e))
+}
+
+#[tauri::command]
+fn initialize_security_config() -> Result<serde_json::Value, String> {
+    let config = SecurityConfig::initialize()
+        .map_err(|e| format!("Failed to initialize security config: {}", e))?;
+    
+    // 只返回非敏感信息
+    let safe_config = serde_json::json!({
+        "device_fingerprint_hash": {
+            let hash = ring::digest::digest(&ring::digest::SHA256, config.device_fingerprint.as_bytes());
+            hex::encode(hash.as_ref())[..16].to_string() // 只返回前16位作为标识
+        },
+        "user_passphrase_enabled": config.user_passphrase_enabled,
+        "has_verification_hash": config.key_verification_hash.is_some()
+    });
+    
+    Ok(safe_config)
+}
+
 fn main() {
     // 初始化扫描状态
     let scan_state: ScanState = Arc::new(Mutex::new(HashMap::new()));
+    
+    // 初始化数据库管理器
+    let db_config = DatabaseConfig::default();
+    let security_config = SecurityConfig::initialize()
+        .expect("Failed to initialize security configuration");
+    let db_manager = Arc::new(EncryptedDatabaseManager::new(db_config, security_config));
     
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -1134,7 +1426,9 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .manage(scan_state)
+        .manage(db_manager)
         .setup(|app| {
             // 应用启动时的初始化逻辑
             let window = app.get_webview_window("main").unwrap();
@@ -1186,7 +1480,17 @@ fn main() {
             list_directory,
             create_directory,
             copy_file,
-            delete_file
+            delete_file,
+            // 加密数据库命令
+            initialize_secure_database,
+            get_database_stats,
+            execute_secure_query,
+            execute_secure_update,
+            backup_secure_database,
+            optimize_secure_database,
+            check_database_integrity,
+            get_device_fingerprint,
+            initialize_security_config
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

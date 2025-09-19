@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
+import {
+  Card,
+  Button,
+  Progress,
+  Badge,
+  Tabs,
+  Alert,
+  Divider,
+} from 'antd'
+import type { TabsProps } from 'antd'
 import {
   FolderOpen,
   Scan,

@@ -36,6 +36,42 @@ uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 urlencoding = "2.1"
 tauri-plugin-log = { version = "2.0.0", features = ["colored"] }
+# SQLCipher 加密数据库支持
+tauri-plugin-sql = { version = "2.0.0", features = ["sqlite", "sqlcipher"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+rusqlite = { version = "0.31", features = ["bundled-sqlcipher", "chrono", "uuid"] }
+# 加密和安全功能
+ring = "0.16"
+hmac = "0.12"
+pbkdf2 = "0.12"
+sha2 = "0.10"
+base64 = "0.21"
+rand = "0.8"
+hex = "0.4"
+zeroize = { version = "1.7", features = ["zeroize_derive"] }
+# 系统指纹生成
+sysinfo = "0.29"
+machine-uid = "0.3"
+# 插件系统依赖
+async-trait = "0.1"
+libloading = "0.8"
+zip = "0.6"
+toml = "0.8"
+regex = "1.10"
+tempfile = "3.8"
+
+[dev-dependencies]
+# 测试框架
+tokio-test = "0.4"
+mockall = "0.12"
+proptest = "1.4"
+# 基准测试
+criterion = { version = "0.5", features = ["html_reports"] }
+# 测试覆盖率
+tarpaulin = "0.27"
+# 模糊测试
+honggfuzz = "0.5"
+arbitrary = { version = "1.3", features = ["derive"] }
 
 [features]
 # by default Tauri runs in production mode

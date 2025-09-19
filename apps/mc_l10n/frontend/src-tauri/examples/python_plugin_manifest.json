@@ -1,0 +1,117 @@
+{
+  "plugin": {
+    "id": "advanced_datapack_extractor",
+    "name": "Advanced Datapack Extractor",
+    "version": "1.0.0",
+    "author": "TH-Suite Python Team",
+    "description": "高级Minecraft数据包提取器，支持进度、配方、函数等的本地化提取",
+    "plugin_type": "Python",
+    "supported_formats": ["zip", "jar", "mcpack"],
+    "uida_protocol_version": "2.0",
+    "minimum_rust_version": null,
+    "dependencies": [],
+    "capabilities": [
+      "extract",
+      "file_read",
+      "json_parsing",
+      "datapack_analysis"
+    ]
+  },
+  "python": {
+    "version_requirement": ">=3.8",
+    "main_file": "python_plugin_example.py",
+    "virtual_env": false,
+    "dependencies": [],
+    "environment_variables": {
+      "TH_PLUGIN_TYPE": "python",
+      "TH_PLUGIN_SANDBOX": "1"
+    }
+  },
+  "build": {
+    "target": "python",
+    "features": ["asyncio", "json-rpc"],
+    "build_time": "2024-01-15T10:30:00Z",
+    "git_commit": "def456abc789",
+    "python_version": "3.11.0"
+  },
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "max_file_size_mb": {
+        "type": "integer",
+        "default": 200,
+        "minimum": 1,
+        "maximum": 1024
+      },
+      "extract_advancements": {
+        "type": "boolean",
+        "default": true
+      },
+      "extract_recipes": {
+        "type": "boolean",
+        "default": true
+      },
+      "extract_loot_tables": {
+        "type": "boolean",
+        "default": false
+      },
+      "extract_functions": {
+        "type": "boolean",
+        "default": false
+      },
+      "supported_pack_formats": {
+        "type": "array",
+        "items": {"type": "integer"},
+        "default": [6, 7, 8, 9, 10, 11, 12, 13, 14]
+      },
+      "timeout_seconds": {
+        "type": "integer",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    },
+    "required": []
+  },
+  "security": {
+    "sandbox_required": true,
+    "network_access": false,
+    "file_write_access": false,
+    "system_commands": false,
+    "allowed_paths": [
+      "plugins/",
+      "data/",
+      "temp/"
+    ],
+    "signature_required": false,
+    "python_restrictions": {
+      "disable_subprocess": true,
+      "disable_os_system": true,
+      "disable_eval": true,
+      "disable_exec": true,
+      "allowed_modules": [
+        "json",
+        "zipfile",
+        "pathlib",
+        "hashlib",
+        "datetime",
+        "logging",
+        "asyncio",
+        "sys",
+        "os.path"
+      ]
+    }
+  },
+  "performance": {
+    "memory_limit_mb": 128,
+    "cpu_time_limit_seconds": 20,
+    "subprocess_timeout": 30,
+    "max_file_handles": 50
+  },
+  "compatibility": {
+    "minecraft_versions": ["1.17+"],
+    "pack_formats": [7, 8, 9, 10, 11, 12, 13, 14],
+    "platforms": ["windows", "linux", "macos"],
+    "python_versions": ["3.8", "3.9", "3.10", "3.11", "3.12"]
+  }
+}

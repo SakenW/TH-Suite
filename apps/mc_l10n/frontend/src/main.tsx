@@ -6,25 +6,31 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import '@ant-design/v5-patch-for-react-19'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import App from './App'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { createQueryClient } from './config/reactQuery'
+import { errorHandler, queryErrorHandler, mutationErrorHandler } from './utils/errorHandling'
+import { cacheOptimizer } from './utils/cacheOptimization'
 import './index.css'
 
-// 创建 React Query 客户端
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 分钟
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
+// 创建优化的 React Query 客户端
+const queryClient = createQueryClient()
+
+// 设置全局错误处理
+queryClient.setQueryDefaults(['*'], {
+  onError: queryErrorHandler,
 })
+
+queryClient.setMutationDefaults({
+  onError: mutationErrorHandler,
+})
+
+// 初始化错误处理器和缓存优化器
+errorHandler.setQueryClient(queryClient)
+cacheOptimizer.setQueryClient(queryClient)
 
 // 开发环境配置
 const isDevelopment = import.meta.env.DEV
@@ -60,6 +66,7 @@ const AppContent = () => (
   >
     <QueryClientProvider client={queryClient}>
       <App onReady={removeLoadingSpinner} />
+      {isDevelopment && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </ErrorBoundary>
 )

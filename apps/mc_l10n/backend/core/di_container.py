@@ -391,3 +391,105 @@ def get_database_manager():
     # 使用统一的数据库路径
     db_path = str(Path(__file__).parent.parent / "data" / "mc_l10n.db")
     return PackRepository(db_path)
+
+
+# 翻译状态管理服务获取函数
+def get_dependency(service_type: type[T]) -> T | None:
+    """
+    通用依赖获取函数，支持翻译状态管理相关服务
+    
+    Args:
+        service_type: 服务类型
+        
+    Returns:
+        服务实例或None
+    """
+    container = get_container()
+    
+    # 首先尝试从容器获取
+    service = container.get(service_type)
+    if service:
+        return service
+    
+    # 如果容器中没有，尝试创建翻译状态管理相关的服务
+    from pathlib import Path
+    db_path = str(Path(__file__).parent.parent / "data" / "mc_l10n.db")
+    
+    try:
+        # 翻译状态管理相关服务的延迟创建
+        if service_type.__name__ == "TranslationStateApplicationService":
+            from ..application.services.translation_state_application_service import TranslationStateApplicationService
+            from ..infrastructure.repositories.translation_state_repository import (
+                TranslationStateRepository, StateTransitionRepository, 
+                StateHistoryRepository, WorkflowRuleRepository
+            )
+            from ..infrastructure.repositories.core_translation_entry_repository import CoreTranslationEntryRepository
+            
+            # 创建Repository实例
+            state_repo = TranslationStateRepository(db_path)
+            transition_repo = StateTransitionRepository(db_path)
+            history_repo = StateHistoryRepository(db_path)
+            workflow_repo = WorkflowRuleRepository(db_path)
+            entry_repo = CoreTranslationEntryRepository(db_path)
+            
+            # 创建服务实例
+            service = TranslationStateApplicationService(
+                state_repo, transition_repo, history_repo, workflow_repo, entry_repo
+            )
+            
+            # 注册为单例
+            container.register_singleton(service_type, service)
+            return service
+            
+        elif service_type.__name__ == "TranslationStateStatisticsService":
+            from ..application.services.translation_state_statistics_service import TranslationStateStatisticsService
+            from ..infrastructure.repositories.translation_state_repository import (
+                StateHistoryRepository, TranslationStateRepository
+            )
+            from ..infrastructure.repositories.core_translation_entry_repository import CoreTranslationEntryRepository
+            
+            history_repo = StateHistoryRepository(db_path)
+            state_repo = TranslationStateRepository(db_path)
+            entry_repo = CoreTranslationEntryRepository(db_path)
+            
+            service = TranslationStateStatisticsService(history_repo, state_repo, entry_repo)
+            container.register_singleton(service_type, service)
+            return service
+            
+        elif service_type.__name__ == "TranslationBatchOperationService":
+            from ..application.services.translation_batch_operation_service import TranslationBatchOperationService
+            from ..infrastructure.repositories.translation_state_repository import StateHistoryRepository
+            from ..infrastructure.repositories.core_translation_entry_repository import CoreTranslationEntryRepository
+            
+            entry_repo = CoreTranslationEntryRepository(db_path)
+            history_repo = StateHistoryRepository(db_path)
+            
+            # 获取状态应用服务
+            state_service = get_dependency(service_type.__module__.split('.')[-1].replace('translation_batch_operation_service', 'translation_state_application_service'))
+            if not state_service:
+                # 如果获取不到，先创建状态应用服务
+                from ..application.services.translation_state_application_service import TranslationStateApplicationService
+                state_service = get_dependency(TranslationStateApplicationService)
+            
+            service = TranslationBatchOperationService(entry_repo, history_repo, state_service)
+            container.register_singleton(service_type, service)
+            return service
+            
+        elif service_type.__name__ == "TranslationEventService":
+            from ..infrastructure.services.translation_event_service import TranslationEventService
+            
+            service = TranslationEventService()
+            container.register_singleton(service_type, service)
+            return service
+            
+        elif service_type.__name__ == "TranslationPermissionService":
+            from ..infrastructure.services.translation_permission_service import TranslationPermissionService
+            
+            service = TranslationPermissionService()
+            container.register_singleton(service_type, service)
+            return service
+            
+    except Exception as e:
+        logger.error(f"创建服务失败: {service_type.__name__}, 错误: {e}")
+    
+    return None

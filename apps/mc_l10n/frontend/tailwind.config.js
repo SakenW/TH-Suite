@@ -9,38 +9,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        // Ant Design 主题兼容色彩
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          50: '#e6f4ff',
+          100: '#bae0ff', 
+          500: '#1677ff',
+          600: '#0958d9',
+          700: '#003eb3',
         },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+        gray: {
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#f0f0f0',
+          300: '#d9d9d9',
+          400: '#bfbfbf',
+          500: '#8c8c8c',
+          600: '#595959',
+          700: '#434343',
+          800: '#262626',
+          900: '#1f1f1f',
         },
         // Minecraft 主题色彩
         mc: {
@@ -79,9 +66,14 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        'none': '0px',
+        'sm': '2px',
+        'DEFAULT': '6px',  // Ant Design 默认圆角
+        'md': '6px',
+        'lg': '8px',
+        'xl': '12px',
+        '2xl': '16px',
+        'full': '9999px',
         'pixel': '2px',  // 像素化圆角
         'block': '4px',  // 方块圆角
       },

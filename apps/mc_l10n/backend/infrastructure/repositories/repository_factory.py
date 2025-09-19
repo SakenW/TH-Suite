@@ -9,6 +9,8 @@ import structlog
 from .core_project_repository import CoreProjectRepository
 from .core_pack_repository import CorePackRepository
 from .core_mod_repository import CoreModRepository
+from .core_language_file_repository import CoreLanguageFileRepository
+from .core_translation_entry_repository import CoreTranslationEntryRepository
 from .ops_work_queue_repository_v2 import OpsWorkQueueRepository
 
 logger = structlog.get_logger(__name__)
@@ -35,6 +37,8 @@ class RepositoryFactory:
         self._repositories['core_project'] = CoreProjectRepository(self.db_path)
         self._repositories['core_pack'] = CorePackRepository(self.db_path)
         self._repositories['core_mod'] = CoreModRepository(self.db_path)
+        self._repositories['core_language_file'] = CoreLanguageFileRepository(self.db_path)
+        self._repositories['core_translation_entry'] = CoreTranslationEntryRepository(self.db_path)
         
         # Ops repositories
         self._repositories['ops_work_queue'] = OpsWorkQueueRepository(self.db_path)
@@ -68,6 +72,16 @@ class RepositoryFactory:
         """获取工作队列Repository"""
         self._ensure_initialized()
         return self._repositories['ops_work_queue']
+    
+    def get_core_language_file_repo(self) -> CoreLanguageFileRepository:
+        """获取语言文件Repository"""
+        self._ensure_initialized()
+        return self._repositories['core_language_file']
+    
+    def get_core_translation_entry_repo(self) -> CoreTranslationEntryRepository:
+        """获取翻译条目Repository"""
+        self._ensure_initialized()
+        return self._repositories['core_translation_entry']
     
     def get_repository(self, repo_name: str) -> Any:
         """通用Repository获取方法"""

@@ -49,14 +49,13 @@ import {
   EyeOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { syncApiService } from '../services/api/SyncApiService'
+import { translationSyncApiService } from '../services/api/TranslationSyncApiService'
 import type {
-  SyncTask,
-  SyncRequest,
-  SyncRequestOptions,
-  SyncHistory,
-  SyncStatistics
-} from '../services/api/SyncApiService'
+  SyncProgressResponse,
+  SyncAnalysisResponse,
+  SyncPrepareRequest,
+  SyncExecuteRequest
+} from '../services/api/TranslationSyncApiService'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
@@ -68,13 +67,17 @@ const { Option } = Select
 const { TextArea } = Input
 
 interface SyncPageState {
-  // 任务管理
-  activeTasks: SyncTask[]
-  selectedTask: SyncTask | null
-  taskLoading: boolean
+  // 同步会话管理
+  activeSessions: SyncProgressResponse[]
+  selectedSession: SyncProgressResponse | null
+  sessionsLoading: boolean
   
-  // 历史记录
-  syncHistory: SyncHistory[]
+  // 同步分析
+  currentAnalysis: SyncAnalysisResponse | null
+  analysisLoading: boolean
+  
+  // 历史记录  
+  syncHistory: SyncProgressResponse[]
   historyLoading: boolean
   historyPagination: {
     current: number
@@ -83,23 +86,15 @@ interface SyncPageState {
   }
   
   // 统计信息
-  statistics: SyncStatistics | null
-  statisticsLoading: boolean
-  
-  // 服务状态
-  serviceStatus: {
-    status: 'healthy' | 'degraded' | 'unavailable'
-    active_tasks: number
-    queue_size: number
-    worker_status: Record<string, string>
-    last_heartbeat: string
-  } | null
+  optimizationStats: any
+  statsLoading: boolean
   
   // UI状态
   activeTab: string
-  newSyncModalVisible: boolean
-  taskDetailModalVisible: boolean
+  prepareSyncModalVisible: boolean
+  sessionDetailModalVisible: boolean
   autoRefresh: boolean
+  isLoading: boolean
 }
 
 export const SyncPage: React.FC = () => {
@@ -107,9 +102,11 @@ export const SyncPage: React.FC = () => {
   const [form] = Form.useForm()
   
   const [state, setState] = useState<SyncPageState>({
-    activeTasks: [],
-    selectedTask: null,
-    taskLoading: false,
+    activeSessions: [],
+    selectedSession: null,
+    sessionsLoading: false,
+    currentAnalysis: null,
+    analysisLoading: false,
     syncHistory: [],
     historyLoading: false,
     historyPagination: {
@@ -117,13 +114,13 @@ export const SyncPage: React.FC = () => {
       pageSize: 10,
       total: 0
     },
-    statistics: null,
-    statisticsLoading: false,
-    serviceStatus: null,
-    activeTab: 'tasks',
-    newSyncModalVisible: false,
-    taskDetailModalVisible: false,
-    autoRefresh: true
+    optimizationStats: null,
+    statsLoading: false,
+    activeTab: 'sessions',
+    prepareSyncModalVisible: false,
+    sessionDetailModalVisible: false,
+    autoRefresh: true,
+    isLoading: false
   })
 
   // 加载活跃任务

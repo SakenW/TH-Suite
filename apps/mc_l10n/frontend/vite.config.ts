@@ -90,7 +90,7 @@ export default defineConfig(async () => ({
           'state-management': ['@tanstack/react-query', 'zustand'],
           // 动画和工具
           animation: ['framer-motion'],
-          utils: ['clsx', 'class-variance-authority', 'tailwind-merge'],
+          // utils 已移除，直接使用内置函数
         },
         // 为外部模块提供全局变量
         globals: {

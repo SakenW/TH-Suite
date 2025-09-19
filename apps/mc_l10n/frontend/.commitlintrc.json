@@ -1,0 +1,123 @@
+{
+  "extends": ["@commitlint/config-conventional"],
+  "rules": {
+    "type-enum": [
+      2,
+      "always",
+      [
+        "build",
+        "chore",
+        "ci",
+        "docs",
+        "feat",
+        "fix",
+        "perf",
+        "refactor",
+        "revert",
+        "style",
+        "test"
+      ]
+    ],
+    "type-case": [2, "always", "lower-case"],
+    "type-empty": [2, "never"],
+    "subject-empty": [2, "never"],
+    "subject-full-stop": [2, "never", "."],
+    "subject-case": [2, "always", "lower-case"],
+    "header-max-length": [2, "always", 100],
+    "body-leading-blank": [1, "always"],
+    "body-max-line-length": [2, "always", 100],
+    "footer-leading-blank": [1, "always"],
+    "footer-max-line-length": [2, "always", 100]
+  },
+  "prompt": {
+    "questions": {
+      "type": {
+        "description": "选择你要提交的更改类型",
+        "enum": {
+          "feat": {
+            "description": "新功能",
+            "title": "Features",
+            "emoji": "✨"
+          },
+          "fix": {
+            "description": "修复bug",
+            "title": "Bug Fixes",
+            "emoji": "🐛"
+          },
+          "docs": {
+            "description": "仅修改文档",
+            "title": "Documentation",
+            "emoji": "📚"
+          },
+          "style": {
+            "description": "代码格式修改（不影响代码运行的变动）",
+            "title": "Styles",
+            "emoji": "💎"
+          },
+          "refactor": {
+            "description": "代码重构（既不是新增功能，也不是修改bug的代码变动）",
+            "title": "Code Refactoring",
+            "emoji": "📦"
+          },
+          "perf": {
+            "description": "提高性能的代码更改",
+            "title": "Performance Improvements",
+            "emoji": "🚀"
+          },
+          "test": {
+            "description": "添加缺失的测试或更正现有的测试",
+            "title": "Tests",
+            "emoji": "🚨"
+          },
+          "build": {
+            "description": "影响构建系统或外部依赖项的更改",
+            "title": "Builds",
+            "emoji": "🛠"
+          },
+          "ci": {
+            "description": "对CI配置文件和脚本的更改",
+            "title": "Continuous Integrations",
+            "emoji": "⚙️"
+          },
+          "chore": {
+            "description": "其他不修改src或测试文件的更改",
+            "title": "Chores",
+            "emoji": "♻️"
+          },
+          "revert": {
+            "description": "回退之前的提交",
+            "title": "Reverts",
+            "emoji": "🗑"
+          }
+        }
+      },
+      "scope": {
+        "description": "此更改的影响范围是什么"
+      },
+      "subject": {
+        "description": "写一个简短的变化描述"
+      },
+      "body": {
+        "description": "提供更详细的变更描述"
+      },
+      "isBreaking": {
+        "description": "是否有破坏性变更?"
+      },
+      "breakingBody": {
+        "description": "破坏性变更提交需要一个主体。请输入对提交本身的详细描述"
+      },
+      "breaking": {
+        "description": "描述破坏性变更"
+      },
+      "isIssueAffected": {
+        "description": "此更改是否影响任何未解决的issue?"
+      },
+      "issuesBody": {
+        "description": "如果问题已"关闭"，则提交需要一个主体。请输入对提交本身的详细描述"
+      },
+      "issues": {
+        "description": "添加issue引用（例如 \"fix #123\", \"re #123\".）"
+      }
+    }
+  }
+}

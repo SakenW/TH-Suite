@@ -1,19 +1,37 @@
-// UI组件统一导出文件
-export { Alert, AlertDescription, AlertTitle } from './alert'
-export { Badge, badgeVariants } from './badge'
-export { Button, buttonVariants } from './button'
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card'
-export { Progress } from './progress'
-export { ScrollArea, ScrollBar } from './scroll-area'
-export { Separator } from './separator'
-export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs'
+/**
+ * Ant Design 统一UI组件导出
+ * 
+ * 基于 Ant Design 5.x 的组件系统，统一项目UI风格
+ * 所有组件都基于 Ant Design 原生组件，避免重复造轮子
+ */
 
-// 导出所有类型
-export type { AlertProps } from './alert'
-export type { BadgeProps } from './badge'
-export type { ButtonProps } from './button'
-export type { CardProps } from './card'
-export type { ProgressProps } from './progress'
-export type { ScrollAreaProps } from './scroll-area'
-export type { SeparatorProps } from './separator'
-export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './tabs'
+// 直接导出 Ant Design 核心组件
+export {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Progress,
+  Tabs,
+  Divider as Separator,
+  Input,
+  Select,
+  Table,
+} from 'antd'
+
+// 导出 Ant Design 类型
+export type {
+  AlertProps,
+  BadgeProps,
+  ButtonProps,
+  CardProps,
+  ProgressProps,
+  TabsProps,
+  DividerProps as SeparatorProps,
+  InputProps,
+  SelectProps,
+  TableProps,
+} from 'antd'
+
+// 自定义组件（如果需要特殊包装）
+// 目前直接使用 Ant Design 原生组件

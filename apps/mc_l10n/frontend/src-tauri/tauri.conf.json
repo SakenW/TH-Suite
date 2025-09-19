@@ -44,7 +44,9 @@
         "fs-remove-file",
         "shell-execute",
         "notification-show",
-        "window-state-manage"
+        "window-state-manage",
+        "sql-execute",
+        "sql-select"
       ]
     },
     "trayIcon": {
@@ -107,6 +109,11 @@
     },
     "window-state": {
       "filename": "window-state.json"
+    },
+    "sql": {
+      "preload": ["sqlite:data/app.db"],
+      "pool": true,
+      "migrations": ["migrations"]
     }
   }
 }

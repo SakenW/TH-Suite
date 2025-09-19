@@ -1,0 +1,143 @@
+# Semgrep 安全扫描配置
+
+rules:
+  # React 安全规则
+  - id: react-dangerous-setinnerhtml
+    pattern: dangerouslySetInnerHTML={{__html: $X}}
+    message: 使用 dangerouslySetInnerHTML 可能导致 XSS 攻击
+    severity: WARNING
+    languages: [typescript, javascript]
+    
+  - id: react-missing-key-prop
+    pattern-either:
+      - pattern: $ITEMS.map(($ITEM) => <$TAG ... />)
+      - pattern: $ITEMS.map(($ITEM, $INDEX) => <$TAG ... />)
+    pattern-not: $ITEMS.map(($ITEM) => <$TAG key={...} ... />)
+    message: 缺少 key 属性可能影响性能
+    severity: INFO
+    languages: [typescript, javascript]
+
+  # TypeScript/JavaScript 安全规则
+  - id: eval-usage
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: Function($X)
+      - pattern: new Function($X)
+    message: 使用 eval() 或 Function() 可能导致代码注入漏洞
+    severity: ERROR
+    languages: [typescript, javascript]
+    
+  - id: console-log-in-production
+    pattern: console.log($X)
+    message: 生产环境中不应包含 console.log
+    severity: WARNING
+    languages: [typescript, javascript]
+    paths:
+      include:
+        - "src/**"
+      exclude:
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/test/**"
+        
+  - id: hardcoded-credentials
+    pattern-either:
+      - pattern: password = "$X"
+      - pattern: apiKey = "$X"
+      - pattern: secret = "$X"
+      - pattern: token = "$X"
+    pattern-not-either:
+      - pattern: password = ""
+      - pattern: password = "test"
+      - pattern: password = "mock"
+    message: 硬编码的凭据可能泄露敏感信息
+    severity: ERROR
+    languages: [typescript, javascript]
+    
+  # API 安全规则
+  - id: unsafe-http-methods
+    pattern-either:
+      - pattern: fetch($URL, {method: "DELETE", ...})
+      - pattern: axios.delete($URL, ...)
+    message: 确保 DELETE 请求有适当的权限检查
+    severity: INFO
+    languages: [typescript, javascript]
+    
+  - id: missing-input-validation
+    pattern: |
+      function $FUNC($PARAM) {
+        ...
+        $DB.query($PARAM)
+        ...
+      }
+    message: 缺少输入验证可能导致注入攻击
+    severity: WARNING
+    languages: [typescript, javascript]
+
+  # Tauri 特定规则
+  - id: tauri-unsafe-commands
+    pattern-either:
+      - pattern: invoke("shell", ...)
+      - pattern: invoke("execute", ...)
+      - pattern: invoke("run_command", ...)
+    message: Tauri shell 命令需要仔细验证输入
+    severity: WARNING
+    languages: [typescript, javascript]
+    
+  - id: tauri-file-access
+    pattern-either:
+      - pattern: invoke("read_file", $PATH)
+      - pattern: invoke("write_file", $PATH, ...)
+    message: 文件操作需要路径验证防止目录遍历
+    severity: INFO
+    languages: [typescript, javascript]
+
+  # 性能相关规则
+  - id: inefficient-regex
+    pattern-either:
+      - pattern: /.*\*.*\*.*/.test($X)
+      - pattern: /.*\+.*\+.*/.test($X)
+    message: 可能存在性能问题的正则表达式
+    severity: INFO
+    languages: [typescript, javascript]
+    
+  - id: large-array-operations
+    pattern: Array($X).fill(...)
+    message: 大数组操作可能影响性能
+    severity: INFO
+    languages: [typescript, javascript]
+
+  # 代码质量规则
+  - id: unused-imports
+    pattern: import { ... } from "$MODULE"
+    message: 检查是否有未使用的导入
+    severity: INFO
+    languages: [typescript, javascript]
+    
+  - id: missing-error-handling
+    pattern: |
+      try {
+        ...
+      } catch ($E) {
+        console.log($E)
+      }
+    message: 错误处理不应只是打印日志
+    severity: WARNING
+    languages: [typescript, javascript]
+
+# 扫描路径配置
+paths:
+  include:
+    - "src/"
+    - "src-tauri/src/"
+  exclude:
+    - "node_modules/"
+    - "dist/"
+    - "target/"
+    - "coverage/"
+    - "test-results/"
+    - "archived/"
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "**/test/**"
+    - "**/tests/**"

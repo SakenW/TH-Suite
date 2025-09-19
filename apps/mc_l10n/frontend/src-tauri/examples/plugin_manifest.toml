@@ -1,0 +1,72 @@
+# 插件清单文件示例
+# 用于描述插件的元数据和配置
+
+[plugin]
+id = "enhanced_minecraft_extractor"
+name = "Enhanced Minecraft Extractor"
+version = "2.0.0"
+author = "TH-Suite Team"
+description = "增强版Minecraft MOD和数据包提取器，支持更多格式和高级功能"
+plugin_type = "Native"  # Native, Python, Wasm
+supported_formats = ["jar", "zip", "mrpack", "ccip", "mcpack"]
+uida_protocol_version = "2.0"
+minimum_rust_version = "1.70.0"
+dependencies = []
+capabilities = [
+    "extract",
+    "file_read",
+    "smart_detection",
+    "batch_processing"
+]
+
+[build]
+target = "x86_64-unknown-linux-gnu"
+features = ["default"]
+build_time = "2024-01-15T10:30:00Z"
+git_commit = "abc123def456"
+compiler_version = "rustc 1.75.0"
+
+[config_schema]
+# 插件配置架构 (JSON Schema)
+type = "object"
+properties = {
+    max_file_size_mb = { type = "integer", default = 500, minimum = 1, maximum = 2048 },
+    enable_smart_detection = { type = "boolean", default = true },
+    supported_languages = { 
+        type = "array", 
+        items = { type = "string" },
+        default = ["en_us", "zh_cn", "ja_jp", "ko_kr", "fr_fr", "de_de", "es_es", "ru_ru"]
+    },
+    cache_enabled = { type = "boolean", default = true },
+    parallel_processing = { type = "boolean", default = true },
+    max_concurrent_extractions = { type = "integer", default = 4, minimum = 1, maximum = 16 }
+}
+required = []
+
+[security]
+# 安全配置
+sandbox_required = true
+network_access = false
+file_write_access = false
+system_commands = false
+allowed_paths = [
+    "plugins/",
+    "data/",
+    "cache/",
+    "temp/"
+]
+signature_required = false  # 开发模式下为false
+
+[performance]
+# 性能配置
+memory_limit_mb = 256
+cpu_time_limit_seconds = 30
+max_file_handles = 100
+io_buffer_size_kb = 64
+
+[compatibility]
+# 兼容性信息
+minecraft_versions = ["1.16.5", "1.17.1", "1.18.2", "1.19.4", "1.20.1", "1.21"]
+mod_loaders = ["forge", "fabric", "quilt", "neoforge"]
+platforms = ["windows", "linux", "macos"]
+architectures = ["x86_64", "aarch64"]

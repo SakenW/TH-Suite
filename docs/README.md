@@ -44,6 +44,7 @@ docs/
 | [开发者指南](./developer/DEVELOPER_GUIDE.md) | **完整的开发环境设置和最佳实践** |
 | [故障排除指南](./developer/TROUBLESHOOTING.md) | 常见问题解决方案 |
 | [贡献指南](./developer/CONTRIBUTING.md) | 代码贡献规范和流程 |
+| [开发者贡献指南](./development/contributing-guide.md) | **v2.0 详细开发贡献指南** |
 
 ### 📊 新增历史报告 (Reports/Archived) - **2025-09-17 归档**
 
@@ -78,18 +79,21 @@ docs/
 | 文档 | 描述 |
 |------|------|
 | [API文档](./technical/api-documentation.md) | 通用REST API接口规范 |
+| [系统架构文档](./architecture/system-architecture.md) | **v2.0 完整系统架构设计** |
 
 ### 📘 用户指南 (User)
 
 | 文档 | 描述 |
 |------|------|
 | [使用指南](./user/usage-guide.md) | 用户操作手册 |
+| [用户操作手册](./user/user-manual.md) | **v2.0 完整用户操作指南** |
 
 ### 🚀 部署指南 (Deployment)
 
 | 文档 | 描述 |
 |------|------|
 | [Tauri构建指南](./deployment/build-guide-tauri.md) | Tauri桌面应用构建说明 |
+| [部署运维指南](./deployment/deployment-guide.md) | **v2.0 完整部署和运维指南** |
 
 ### 🔨 运维管理 (Operations)
 
@@ -99,6 +103,16 @@ docs/
 | [错误日志](./operations/error-logs.md) | 系统错误日志记录 |
 | [开发笔记](./operations/development-notes.md) | 开发过程记录 |
 | [待办事项](./operations/todo.md) | 项目待办列表 |
+
+### 🧪 新增测试文档 (Testing) - **v2.0 完善**
+
+| 文档 | 描述 |
+|------|------|
+| [端到端测试](../tests/integration/test_end_to_end_workflow.py) | **完整的端到端集成测试套件** |
+| [性能基准测试](../tests/performance/test_performance_benchmarks.py) | **性能测试和基准验证** |
+| [API接口测试](../tests/api/test_comprehensive_api.py) | **全面的API接口测试覆盖** |
+| [数据一致性测试](../tests/data_consistency/test_data_integrity.py) | **数据完整性和一致性验证** |
+| [测试配置](../tests/conftest.py) | 全局测试配置和工具 |
 
 ---
 

@@ -25,9 +25,11 @@ from api.routes.translation_routes import router as translation_router
 from api.routes.pack_routes import router as pack_router
 from api.routes.queue_routes import router as queue_router
 from api.routes.sync_routes import router as sync_router
+from api.routes.translation_sync_routes import router as translation_sync_router
 from api.routes.cache_routes import router as cache_router
 from api.routes.optimized_scan_routes import router as optimized_scan_router
 from api.routes.low_memory_scan_routes import router as low_memory_scan_router
+from api.routes.translation_state_routes import router as translation_state_router
 # from api.v6.router import v6_router  # V6 API路由 - 暂时禁用
 # from api.v6.middleware.middleware import setup_v6_middlewares, V6MiddlewareConfig  # V6中间件 - 暂时禁用
 from core.di_container import (
@@ -49,6 +51,13 @@ from utils.simple_logging import StructLogFactory
 
 # 导入多层缓存服务
 from infrastructure.services.multi_layer_cache_service import initialize_cache_service, cleanup_cache_service
+
+# 导入版本管理系统
+from infrastructure.services.version_integration_config import (
+    get_version_integration, 
+    register_version_management_routes,
+    initialize_version_management_for_app
+)
 
 # 加载环境变量
 load_dotenv()
@@ -100,6 +109,14 @@ async def lifespan(app: FastAPI):
         await initialize_cache_service()
         logger.info("多层缓存服务已启动")
 
+        # 初始化版本管理系统
+        logger.info("初始化版本管理系统...")
+        version_init_result = await initialize_version_management_for_app()
+        if version_init_result["success"]:
+            logger.info("版本管理系统已启动")
+        else:
+            logger.warning(f"版本管理系统启动失败: {version_init_result['message']}")
+
         logger.info("MC L10n API服务启动完成")
 
         yield  # 应用运行期间
@@ -120,6 +137,17 @@ async def lifespan(app: FastAPI):
             logger.info("多层缓存服务已停止")
         except Exception as e:
             logger.warning(f"停止多层缓存服务时出错: {e}")
+
+        # 停止版本管理系统
+        try:
+            version_integration = get_version_integration()
+            shutdown_result = await version_integration.shutdown()
+            if shutdown_result["success"]:
+                logger.info("版本管理系统已停止")
+            else:
+                logger.warning(f"停止版本管理系统时出错: {shutdown_result['message']}")
+        except Exception as e:
+            logger.warning(f"停止版本管理系统时出错: {e}")
 
         # 通过容器清理资源
         infra_service = get_infrastructure_service()
@@ -197,9 +225,14 @@ def create_app() -> FastAPI:
     app.include_router(pack_router)      # 整合包管理
     app.include_router(queue_router)     # 工作队列管理
     app.include_router(sync_router)      # 同步协议管理
+    app.include_router(translation_sync_router)  # 翻译数据同步引擎
     app.include_router(cache_router)     # 多层缓存管理
     app.include_router(optimized_scan_router)  # 优化扫描功能
     app.include_router(low_memory_scan_router)  # 低内存扫描功能
+    app.include_router(translation_state_router)  # 翻译状态管理
+
+    # 注册版本管理路由
+    register_version_management_routes(app)  # 版本管理系统
 
     # 注册本地数据管理路由 (已移除，待迁移到新结构)
 

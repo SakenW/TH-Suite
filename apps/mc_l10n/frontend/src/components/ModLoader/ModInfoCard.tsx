@@ -26,6 +26,7 @@ export interface ModInfo {
   license?: string
   supported_sides?: Set<string>
   dependencies?: string[]
+  language_files?: string[] // 新增：语言文件列表
   loader_info?: {
     loader_type: string
     version: string
@@ -39,6 +40,9 @@ interface ModInfoCardProps {
   mod: ModInfo
   className?: string
   compact?: boolean
+  listMode?: boolean // 新增：列表模式
+  onClick?: () => void // 新增：点击事件
+  onDoubleClick?: () => void // 新增：双击事件
 }
 
 const getLoaderConfig = (loaderType: string) => {
@@ -113,7 +117,10 @@ const formatFileSize = (bytes?: number): string => {
 export const ModInfoCard: React.FC<ModInfoCardProps> = ({ 
   mod, 
   className = '', 
-  compact = false 
+  compact = false,
+  listMode = false,
+  onClick,
+  onDoubleClick
 }) => {
   const loaderConfig = getLoaderConfig(mod.loader_type)
   const sideConfig = getSideConfig(mod.supported_sides)
@@ -167,13 +174,58 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
     </Space>
   )
 
+  // 列表模式 - 最紧凑的单行显示
+  if (listMode) {
+    return (
+      <div 
+        className={`mod-info-list-item ${className}`}
+        style={{ 
+          padding: '8px 12px',
+          borderBottom: '1px solid #f0f0f0',
+          cursor: onClick ? 'pointer' : 'default',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 48,
+        }}
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+          <span style={{ fontSize: 16 }}>{loaderConfig.icon}</span>
+          <div style={{ flex: 1 }}>
+            <Text strong style={{ fontSize: 14 }}>{mod.name}</Text>
+            <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+              v{mod.version}
+            </Text>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <Tag color={loaderConfig.color}>
+            {loaderConfig.displayName}
+          </Tag>
+          {mod.minecraft_version && (
+            <Tag color="blue">
+              {mod.minecraft_version}
+            </Tag>
+          )}
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {formatFileSize(mod.file_size)}
+          </Text>
+        </div>
+      </div>
+    )
+  }
+
+  // 紧凑模式
   if (compact) {
     return (
       <Card 
         className={`mod-info-card-compact ${className}`}
-       
         hoverable
         style={{ marginBottom: 8 }}
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -195,12 +247,16 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
                 MC {mod.minecraft_version}
               </Tag>
             )}
+            <Text type="secondary" className="text-xs">
+              {formatFileSize(mod.file_size)}
+            </Text>
           </div>
         </div>
       </Card>
     )
   }
 
+  // 完整卡片模式
   return (
     <Card
       className={`mod-info-card ${className}`}
@@ -211,6 +267,8 @@ export const ModInfoCard: React.FC<ModInfoCardProps> = ({
         marginBottom: 16,
         borderLeft: `4px solid ${loaderConfig.color}`
       }}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       <div className="space-y-4">
         {/* 基本信息 */}

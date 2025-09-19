@@ -1,0 +1,67 @@
+# Cargo 配置文件
+
+[build]
+# 默认目标配置
+rustflags = [
+  # 启用更多的 lint
+  "-W", "clippy::all",
+  "-W", "clippy::pedantic",
+  "-W", "clippy::nursery",
+  "-W", "clippy::cargo",
+  # 性能相关的 lint
+  "-W", "clippy::perf",
+  # 安全相关的 lint
+  "-W", "clippy::suspicious",
+]
+
+[env]
+# 环境变量设置
+RUST_BACKTRACE = "1"
+RUST_LOG = "debug"
+
+# 测试配置
+[alias]
+# 自定义命令别名
+test-all = "test --all-features --all-targets"
+test-coverage = "tarpaulin --out Html --output-dir target/coverage"
+test-unit = "test --lib"
+test-integration = "test --test integration"
+bench-all = "bench --all-features"
+clippy-all = "clippy --all-features --all-targets -- -D warnings"
+fmt-check = "fmt --all -- --check"
+
+# 开发环境优化
+[profile.dev]
+# 开发环境快速编译
+opt-level = 0
+debug = true
+split-debuginfo = "unpacked"
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = "unwind"
+incremental = true
+codegen-units = 256
+rpath = false
+
+# 测试优化
+[profile.test]
+opt-level = 1
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = "unwind"
+incremental = true
+codegen-units = 256
+
+# 基准测试优化
+[profile.bench]
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = true
+panic = "abort"
+incremental = false
+codegen-units = 1

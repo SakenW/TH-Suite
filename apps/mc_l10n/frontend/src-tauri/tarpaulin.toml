@@ -1,0 +1,86 @@
+# Tarpaulin 配置文件 - Rust 代码覆盖率工具
+
+[tarpaulin]
+# 基本配置
+name = "th-suite-mc-l10n-coverage"
+version = "0.1.0"
+
+# 目标配置
+target-dir = "target/tarpaulin"
+root-dir = "."
+
+# 输出配置
+out = ["Html", "Xml", "Json", "Lcov"]
+output-dir = "target/coverage"
+
+# 覆盖率阈值
+fail-under = 70.0
+
+# 包含的文件
+include-files = [
+  "src/**/*.rs",
+]
+
+# 排除的文件
+exclude-files = [
+  "src/main.rs",
+  "build.rs",
+  "benches/**",
+  "tests/**",
+  "examples/**",
+]
+
+# 运行配置
+features = "default"
+all-features = false
+no-default-features = false
+workspace = false
+verbose = true
+color = "Auto"
+debug = false
+dump-traces = false
+
+# 测试配置
+test = true
+tests = false
+benches = false
+examples = false
+bins = false
+lib = true
+
+# 输出格式配置
+coveralls = ""
+ciserver = "github"
+report-uri = ""
+
+# 性能配置
+timeout = 300
+release = false
+count = false
+ignored = false
+line = false
+branch = false
+no-run = false
+no-clean = false
+locked = false
+frozen = false
+offline = false
+
+# 跟踪配置
+follow-exec = false
+post-test-delay = 0
+
+# 日志配置
+exclude-patterns = [
+  "/*",
+  "*/cargo/registry/*",
+  "*/build.rs",
+  "*/.cargo/*",
+]
+
+# 自定义命令
+run-types = ["Tests"]
+command = "test"
+
+# 引擎配置
+engine = "Llvm"

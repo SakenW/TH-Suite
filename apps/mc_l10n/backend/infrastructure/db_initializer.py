@@ -26,7 +26,9 @@ class DatabaseInitializer:
             self.migrations_dir / "006_create_indexes_and_constraints.sql",
             self.migrations_dir / "007_create_views.sql",
             self.migrations_dir / "008_create_triggers.sql",
-            self.migrations_dir / "009_insert_default_data.sql"
+            self.migrations_dir / "009_insert_default_data.sql",
+            self.migrations_dir / "010_create_translation_state_management.sql",
+            self.migrations_dir / "011_insert_default_translation_states.sql"
         ]
     
     def ensure_database_exists(self) -> bool:

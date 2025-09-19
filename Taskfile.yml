@@ -74,6 +74,40 @@ tasks:
       - task: test:scenario:mc-l10n-basic
       # - task: test:scenario:rw-l10n-basic  # TODO: Implement RW Studio scenario
 
+  # 新增：完善的测试套件
+  test:integration:
+    desc: Run integration tests
+    cmds:
+      - "{{.PYTEST}} tests/integration/ -v"
+
+  test:performance:
+    desc: Run performance tests
+    cmds:
+      - "{{.PYTEST}} tests/performance/ -v -s"
+
+  test:api:
+    desc: Run API tests
+    cmds:
+      - "{{.PYTEST}} tests/api/ -v"
+
+  test:data-consistency:
+    desc: Run data consistency tests
+    cmds:
+      - "{{.PYTEST}} tests/data_consistency/ -v"
+
+  test:comprehensive:
+    desc: Run comprehensive test suite
+    cmds:
+      - task: test:integration
+      - task: test:performance
+      - task: test:api
+      - task: test:data-consistency
+
+  test:coverage:
+    desc: Run tests with detailed coverage report
+    cmds:
+      - "{{.PYTEST}} tests/ --cov=apps --cov=packages --cov-report=html --cov-report=term-missing"
+
   test:mc:
     desc: Run TH Suite MC L10n golden tests
     cmds:

@@ -1,0 +1,102 @@
+# Codecov 配置文件
+
+coverage:
+  # 覆盖率报告精度
+  precision: 2
+  # 四舍五入规则
+  round: down
+  # 状态变化范围
+  range: "70...100"
+  
+  # 覆盖率状态配置
+  status:
+    project:
+      default:
+        # 目标覆盖率
+        target: 70%
+        # 阈值允许下降范围
+        threshold: 2%
+        # 覆盖率必须上升
+        if_no_uploads: error
+        # 仅在有变更的文件上计算
+        if_not_found: success
+        # 忽略覆盖率下降的提交
+        only_pulls: false
+        
+    patch:
+      default:
+        # 新代码的覆盖率要求更高
+        target: 80%
+        threshold: 5%
+        if_no_uploads: error
+        if_not_found: success
+        only_pulls: true
+        
+  # 不同模块的覆盖率要求
+  flags:
+    # 前端代码覆盖率
+    frontend:
+      target: 75%
+      threshold: 3%
+      paths:
+        - "apps/*/frontend/src/"
+      carryforward: true
+      
+    # Rust代码覆盖率
+    rust:
+      target: 70%
+      threshold: 2%
+      paths:
+        - "apps/*/frontend/src-tauri/src/"
+      carryforward: true
+      
+    # Python后端覆盖率
+    python:
+      target: 80%
+      threshold: 2%
+      paths:
+        - "apps/*/backend/"
+        - "packages/"
+      carryforward: true
+
+# 忽略的文件和目录
+ignore:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/coverage/**"
+  - "**/node_modules/**"
+  - "**/target/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/*.d.ts"
+  - "**/archived/**"
+  - "**/*.config.*"
+  - "**/setup.*"
+  - "**/benches/**"
+  - "**/examples/**"
+
+# 评论配置
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  branches:
+    - main
+    - develop
+
+# Pull Request 行为
+github_checks:
+  annotations: true
+
+# 补丁覆盖率检查
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
