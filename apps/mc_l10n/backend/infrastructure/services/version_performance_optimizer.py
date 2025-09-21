@@ -17,7 +17,7 @@ from pathlib import Path
 import pickle
 
 from infrastructure.repositories.repository_factory import get_repository_factory
-from infrastructure.services.multi_layer_cache_service import get_cache_service
+from infrastructure.services.multi_layer_cache_service import get_multi_layer_cache_service
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class VersionPerformanceOptimizer:
     
     def __init__(self):
         self.factory = get_repository_factory()
-        self.cache_service = get_cache_service()
+        self.cache_service = get_multi_layer_cache_service()
         
         self.config = {
             # 压缩配置

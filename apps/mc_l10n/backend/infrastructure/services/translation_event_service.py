@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 
 import structlog
 
-from ...domain.models.translation_state import StateHistory, NotificationChannel
+from domain.models.translation_state import StateHistory, NotificationChannel
 
 logger = structlog.get_logger(__name__)
 

@@ -1,0 +1,470 @@
+/**
+ * Component Tokens (组件令牌)
+ * 为具体组件定义专用的设计令牌，如Button、Card、Input等
+ */
+
+:root {
+  /* ===== Button Component Tokens ===== */
+  
+  /* Button Default */
+  --component-button-default-bg: var(--semantic-bg-container-primary);
+  --component-button-default-border: var(--semantic-border-primary);
+  --component-button-default-text: var(--semantic-text-primary);
+  --component-button-default-shadow: var(--semantic-shadow-elevation-low);
+  --component-button-default-radius: var(--semantic-radius-button);
+  --component-button-default-padding-x: var(--semantic-spacing-component-lg);
+  --component-button-default-padding-y: var(--semantic-spacing-component-sm);
+  --component-button-default-height: var(--semantic-size-control-md);
+  --component-button-default-font-size: var(--core-font-size-sm);
+  --component-button-default-font-weight: var(--core-font-weight-medium);
+
+  /* Button Default States */
+  --component-button-default-hover-bg: var(--semantic-bg-hover);
+  --component-button-default-hover-border: var(--semantic-border-hover);
+  --component-button-default-hover-shadow: var(--semantic-shadow-hover);
+  --component-button-default-hover-transform: translateY(-1px);
+
+  --component-button-default-active-bg: var(--semantic-bg-pressed);
+  --component-button-default-active-border: var(--semantic-border-active);
+  --component-button-default-active-shadow: var(--semantic-shadow-active);
+  --component-button-default-active-transform: translateY(0);
+
+  --component-button-default-focus-shadow: var(--semantic-shadow-focus);
+  --component-button-default-focus-outline: 2px solid var(--semantic-border-focus);
+  --component-button-default-focus-outline-offset: 2px;
+
+  --component-button-default-disabled-bg: var(--semantic-bg-disabled);
+  --component-button-default-disabled-border: var(--semantic-border-disabled);
+  --component-button-default-disabled-text: var(--semantic-text-disabled);
+  --component-button-default-disabled-opacity: 0.6;
+
+  /* Button Primary */
+  --component-button-primary-bg: var(--semantic-color-brand-primary);
+  --component-button-primary-border: var(--semantic-color-brand-primary);
+  --component-button-primary-text: var(--semantic-text-inverse-primary);
+  --component-button-primary-shadow: 0 2px 8px rgba(79, 184, 79, 0.3);
+
+  --component-button-primary-hover-bg: var(--semantic-color-brand-primary-hover);
+  --component-button-primary-hover-border: var(--semantic-color-brand-primary-hover);
+  --component-button-primary-hover-shadow: 0 4px 16px rgba(79, 184, 79, 0.4);
+  --component-button-primary-hover-transform: translateY(-1px);
+
+  --component-button-primary-active-bg: var(--semantic-color-brand-primary-active);
+  --component-button-primary-active-border: var(--semantic-color-brand-primary-active);
+  --component-button-primary-active-shadow: 0 2px 8px rgba(79, 184, 79, 0.3);
+  --component-button-primary-active-transform: translateY(0);
+
+  /* Button Secondary */
+  --component-button-secondary-bg: var(--semantic-color-brand-secondary);
+  --component-button-secondary-border: var(--semantic-color-brand-secondary);
+  --component-button-secondary-text: var(--semantic-text-inverse-primary);
+  --component-button-secondary-shadow: 0 2px 8px rgba(212, 172, 13, 0.3);
+
+  --component-button-secondary-hover-bg: var(--semantic-color-brand-secondary-hover);
+  --component-button-secondary-hover-border: var(--semantic-color-brand-secondary-hover);
+  --component-button-secondary-hover-shadow: 0 4px 16px rgba(212, 172, 13, 0.4);
+
+  /* Button Ghost */
+  --component-button-ghost-bg: transparent;
+  --component-button-ghost-border: var(--semantic-border-primary);
+  --component-button-ghost-text: var(--semantic-text-primary);
+  --component-button-ghost-shadow: none;
+
+  --component-button-ghost-hover-bg: var(--semantic-bg-hover);
+  --component-button-ghost-hover-border: var(--semantic-color-brand-primary);
+  --component-button-ghost-hover-text: var(--semantic-color-brand-primary);
+  --component-button-ghost-hover-transform: scale(1.02);
+
+  /* Button Text */
+  --component-button-text-bg: transparent;
+  --component-button-text-border: transparent;
+  --component-button-text-text: var(--semantic-color-brand-primary);
+  --component-button-text-shadow: none;
+
+  --component-button-text-hover-bg: var(--semantic-bg-hover);
+  --component-button-text-hover-text: var(--semantic-color-brand-primary-hover);
+
+  /* Button Sizes */
+  --component-button-sm-height: var(--semantic-size-control-sm);
+  --component-button-sm-padding-x: var(--semantic-spacing-component-md);
+  --component-button-sm-padding-y: var(--semantic-spacing-component-xs);
+  --component-button-sm-font-size: var(--core-font-size-xs);
+
+  --component-button-lg-height: var(--semantic-size-control-lg);
+  --component-button-lg-padding-x: var(--semantic-spacing-component-xl);
+  --component-button-lg-padding-y: var(--semantic-spacing-component-md);
+  --component-button-lg-font-size: var(--core-font-size-base);
+
+  --component-button-xl-height: var(--semantic-size-control-xl);
+  --component-button-xl-padding-x: var(--semantic-spacing-layout-sm);
+  --component-button-xl-padding-y: var(--semantic-spacing-component-lg);
+  --component-button-xl-font-size: var(--core-font-size-lg);
+
+  /* ===== Card Component Tokens ===== */
+  
+  /* Card Base */
+  --component-card-bg: var(--semantic-bg-surface-primary);
+  --component-card-border: var(--semantic-border-secondary);
+  --component-card-border-width: var(--core-border-1);
+  --component-card-radius: var(--semantic-radius-card);
+  --component-card-shadow: var(--semantic-shadow-card);
+  --component-card-padding: var(--semantic-spacing-layout-md);
+
+  /* Card States */
+  --component-card-hover-bg: var(--semantic-bg-surface-primary);
+  --component-card-hover-border: var(--semantic-border-hover);
+  --component-card-hover-shadow: var(--semantic-shadow-card-hover);
+  --component-card-hover-transform: translateY(-2px);
+
+  --component-card-active-bg: var(--semantic-bg-selected);
+  --component-card-active-border: var(--semantic-color-brand-primary);
+  --component-card-active-shadow: var(--semantic-shadow-focus);
+
+  /* Card Header */
+  --component-card-header-bg: var(--semantic-bg-surface-secondary);
+  --component-card-header-border: var(--semantic-border-secondary);
+  --component-card-header-padding: var(--semantic-spacing-layout-sm);
+  --component-card-header-text: var(--semantic-text-primary);
+  --component-card-header-font-size: var(--core-font-size-lg);
+  --component-card-header-font-weight: var(--core-font-weight-semibold);
+
+  /* Card Footer */
+  --component-card-footer-bg: var(--semantic-bg-surface-secondary);
+  --component-card-footer-border: var(--semantic-border-secondary);
+  --component-card-footer-padding: var(--semantic-spacing-layout-sm);
+
+  /* Card Variants */
+  --component-card-elevated-shadow: var(--semantic-shadow-elevation-medium);
+  --component-card-outlined-border: var(--semantic-border-primary);
+  --component-card-filled-bg: var(--semantic-bg-surface-tertiary);
+
+  /* ===== Input Component Tokens ===== */
+  
+  /* Input Base */
+  --component-input-bg: var(--semantic-bg-container-primary);
+  --component-input-border: var(--semantic-border-primary);
+  --component-input-border-width: var(--core-border-1);
+  --component-input-radius: var(--semantic-radius-input);
+  --component-input-padding-x: var(--semantic-spacing-component-lg);
+  --component-input-padding-y: var(--semantic-spacing-component-sm);
+  --component-input-height: var(--semantic-size-control-md);
+  --component-input-font-size: var(--core-font-size-sm);
+  --component-input-text: var(--semantic-text-primary);
+  --component-input-placeholder: var(--semantic-text-tertiary);
+
+  /* Input States */
+  --component-input-hover-border: var(--semantic-border-hover);
+  --component-input-hover-bg: var(--semantic-bg-hover);
+
+  --component-input-focus-border: var(--semantic-border-focus);
+  --component-input-focus-shadow: 0 0 0 2px rgba(79, 184, 79, 0.2);
+  --component-input-focus-outline: none;
+
+  --component-input-active-border: var(--semantic-border-active);
+  --component-input-active-bg: var(--semantic-bg-container-primary);
+
+  --component-input-disabled-bg: var(--semantic-bg-disabled);
+  --component-input-disabled-border: var(--semantic-border-disabled);
+  --component-input-disabled-text: var(--semantic-text-disabled);
+  --component-input-disabled-opacity: 0.6;
+
+  /* Input Status States */
+  --component-input-error-border: var(--semantic-border-error);
+  --component-input-error-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+  --component-input-error-bg: rgba(255, 77, 79, 0.02);
+
+  --component-input-success-border: var(--semantic-border-success);
+  --component-input-success-shadow: 0 0 0 2px rgba(82, 196, 26, 0.15);
+  --component-input-success-bg: rgba(82, 196, 26, 0.02);
+
+  --component-input-warning-border: var(--semantic-border-warning);
+  --component-input-warning-shadow: 0 0 0 2px rgba(250, 219, 20, 0.15);
+  --component-input-warning-bg: rgba(250, 219, 20, 0.02);
+
+  /* Input Sizes */
+  --component-input-sm-height: var(--semantic-size-control-sm);
+  --component-input-sm-padding-x: var(--semantic-spacing-component-md);
+  --component-input-sm-padding-y: var(--semantic-spacing-component-xs);
+  --component-input-sm-font-size: var(--core-font-size-xs);
+
+  --component-input-lg-height: var(--semantic-size-control-lg);
+  --component-input-lg-padding-x: var(--semantic-spacing-component-xl);
+  --component-input-lg-padding-y: var(--semantic-spacing-component-md);
+  --component-input-lg-font-size: var(--core-font-size-base);
+
+  /* ===== Table Component Tokens ===== */
+  
+  /* Table Base */
+  --component-table-bg: var(--semantic-bg-surface-primary);
+  --component-table-border: var(--semantic-border-secondary);
+  --component-table-border-width: var(--core-border-1);
+  --component-table-radius: var(--semantic-radius-card);
+
+  /* Table Header */
+  --component-table-header-bg: var(--semantic-bg-surface-secondary);
+  --component-table-header-border: var(--semantic-border-primary);
+  --component-table-header-text: var(--semantic-text-primary);
+  --component-table-header-font-weight: var(--core-font-weight-semibold);
+  --component-table-header-padding-x: var(--semantic-spacing-component-lg);
+  --component-table-header-padding-y: var(--semantic-spacing-component-md);
+
+  /* Table Cell */
+  --component-table-cell-padding-x: var(--semantic-spacing-component-lg);
+  --component-table-cell-padding-y: var(--semantic-spacing-component-md);
+  --component-table-cell-text: var(--semantic-text-primary);
+  --component-table-cell-border: var(--semantic-border-tertiary);
+
+  /* Table Row */
+  --component-table-row-hover-bg: var(--semantic-bg-hover);
+  --component-table-row-selected-bg: var(--semantic-bg-selected);
+  --component-table-row-selected-border: var(--semantic-color-brand-primary);
+
+  /* ===== Modal Component Tokens ===== */
+  
+  /* Modal Base */
+  --component-modal-bg: var(--semantic-bg-surface-primary);
+  --component-modal-border: var(--semantic-border-secondary);
+  --component-modal-radius: var(--semantic-radius-modal);
+  --component-modal-shadow: var(--semantic-shadow-modal);
+  --component-modal-max-width: 520px;
+  --component-modal-max-height: 80vh;
+
+  /* Modal Overlay */
+  --component-modal-overlay-bg: var(--semantic-bg-scrim-medium);
+  --component-modal-overlay-backdrop-filter: blur(4px);
+
+  /* Modal Header */
+  --component-modal-header-bg: var(--semantic-bg-surface-secondary);
+  --component-modal-header-border: var(--semantic-border-secondary);
+  --component-modal-header-padding: var(--semantic-spacing-layout-md);
+  --component-modal-header-text: var(--semantic-text-primary);
+  --component-modal-header-font-size: var(--core-font-size-xl);
+  --component-modal-header-font-weight: var(--core-font-weight-semibold);
+
+  /* Modal Body */
+  --component-modal-body-padding: var(--semantic-spacing-layout-md);
+  --component-modal-body-text: var(--semantic-text-primary);
+
+  /* Modal Footer */
+  --component-modal-footer-bg: var(--semantic-bg-surface-secondary);
+  --component-modal-footer-border: var(--semantic-border-secondary);
+  --component-modal-footer-padding: var(--semantic-spacing-layout-md);
+
+  /* ===== Badge/Tag Component Tokens ===== */
+  
+  /* Badge Base */
+  --component-badge-bg: var(--semantic-color-brand-primary);
+  --component-badge-text: var(--semantic-text-inverse-primary);
+  --component-badge-radius: var(--semantic-radius-tag);
+  --component-badge-padding-x: var(--semantic-spacing-component-sm);
+  --component-badge-padding-y: var(--semantic-spacing-component-xs);
+  --component-badge-font-size: var(--core-font-size-xs);
+  --component-badge-font-weight: var(--core-font-weight-medium);
+
+  /* Badge Variants */
+  --component-badge-success-bg: var(--semantic-color-status-success);
+  --component-badge-warning-bg: var(--semantic-color-status-warning);
+  --component-badge-error-bg: var(--semantic-color-status-error);
+  --component-badge-info-bg: var(--semantic-color-status-info);
+  --component-badge-processing-bg: var(--semantic-color-status-processing);
+
+  /* Badge Ghost Variants */
+  --component-badge-ghost-bg: var(--semantic-color-status-success-subtle);
+  --component-badge-ghost-text: var(--semantic-color-status-success);
+  --component-badge-ghost-border: var(--semantic-border-success);
+
+  /* ===== Progress Component Tokens ===== */
+  
+  /* Progress Base */
+  --component-progress-bg: var(--semantic-bg-surface-tertiary);
+  --component-progress-radius: var(--semantic-radius-full);
+  --component-progress-height: 8px;
+
+  /* Progress Bar */
+  --component-progress-bar-bg: var(--semantic-color-brand-primary);
+  --component-progress-bar-radius: var(--semantic-radius-full);
+  --component-progress-bar-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  /* Progress Status Variants */
+  --component-progress-success-bg: var(--semantic-color-status-success);
+  --component-progress-warning-bg: var(--semantic-color-status-warning);
+  --component-progress-error-bg: var(--semantic-color-status-error);
+
+  /* Progress Text */
+  --component-progress-text: var(--semantic-text-secondary);
+  --component-progress-text-size: var(--core-font-size-xs);
+
+  /* ===== Toast/Notification Component Tokens ===== */
+  
+  /* Toast Base */
+  --component-toast-bg: var(--semantic-bg-surface-primary);
+  --component-toast-border: var(--semantic-border-secondary);
+  --component-toast-radius: var(--semantic-radius-lg);
+  --component-toast-shadow: var(--semantic-shadow-popover);
+  --component-toast-padding: var(--semantic-spacing-layout-sm);
+  --component-toast-max-width: 420px;
+
+  /* Toast Variants */
+  --component-toast-success-bg: var(--semantic-color-status-success-subtle);
+  --component-toast-success-border: var(--semantic-border-success);
+  --component-toast-success-text: var(--semantic-text-success);
+
+  --component-toast-warning-bg: var(--semantic-color-status-warning-subtle);
+  --component-toast-warning-border: var(--semantic-border-warning);
+  --component-toast-warning-text: var(--semantic-text-warning);
+
+  --component-toast-error-bg: var(--semantic-color-status-error-subtle);
+  --component-toast-error-border: var(--semantic-border-error);
+  --component-toast-error-text: var(--semantic-text-error);
+
+  --component-toast-info-bg: var(--semantic-color-status-info-subtle);
+  --component-toast-info-border: var(--semantic-border-info);
+  --component-toast-info-text: var(--semantic-text-info);
+
+  /* ===== Tooltip Component Tokens ===== */
+  
+  /* Tooltip Base */
+  --component-tooltip-bg: var(--semantic-bg-surface-inverse);
+  --component-tooltip-text: var(--semantic-text-inverse-primary);
+  --component-tooltip-radius: var(--semantic-radius-md);
+  --component-tooltip-shadow: var(--semantic-shadow-tooltip);
+  --component-tooltip-padding-x: var(--semantic-spacing-component-md);
+  --component-tooltip-padding-y: var(--semantic-spacing-component-sm);
+  --component-tooltip-font-size: var(--core-font-size-xs);
+  --component-tooltip-max-width: 250px;
+
+  /* ===== Switch Component Tokens ===== */
+  
+  /* Switch Base */
+  --component-switch-bg: var(--semantic-bg-surface-tertiary);
+  --component-switch-border: var(--semantic-border-primary);
+  --component-switch-radius: var(--semantic-radius-full);
+  --component-switch-width: 44px;
+  --component-switch-height: 22px;
+
+  /* Switch Handle */
+  --component-switch-handle-bg: var(--semantic-bg-surface-primary);
+  --component-switch-handle-shadow: var(--semantic-shadow-elevation-low);
+  --component-switch-handle-size: 18px;
+  --component-switch-handle-offset: 2px;
+
+  /* Switch Active */
+  --component-switch-active-bg: var(--semantic-color-brand-primary);
+  --component-switch-active-handle-bg: var(--semantic-bg-surface-primary);
+
+  /* ===== Avatar Component Tokens ===== */
+  
+  /* Avatar Base */
+  --component-avatar-bg: var(--semantic-bg-surface-tertiary);
+  --component-avatar-text: var(--semantic-text-secondary);
+  --component-avatar-radius: var(--semantic-radius-avatar);
+  --component-avatar-border: var(--semantic-border-secondary);
+
+  /* Avatar Sizes */
+  --component-avatar-xs-size: var(--semantic-size-avatar-xs);
+  --component-avatar-sm-size: var(--semantic-size-avatar-sm);
+  --component-avatar-md-size: var(--semantic-size-avatar-md);
+  --component-avatar-lg-size: var(--semantic-size-avatar-lg);
+  --component-avatar-xl-size: var(--semantic-size-avatar-xl);
+
+  /* ===== Loading/Spinner Component Tokens ===== */
+  
+  /* Spinner Base */
+  --component-spinner-color: var(--semantic-color-brand-primary);
+  --component-spinner-size: var(--semantic-size-icon-md);
+  --component-spinner-border-width: 2px;
+
+  /* Spinner Sizes */
+  --component-spinner-sm-size: var(--semantic-size-icon-sm);
+  --component-spinner-lg-size: var(--semantic-size-icon-lg);
+  --component-spinner-xl-size: var(--semantic-size-icon-xl);
+
+  /* ===== Minecraft Style Component Tokens ===== */
+  
+  /* Minecraft Button */
+  --component-minecraft-button-shadow: var(--semantic-shadow-minecraft-pixel);
+  --component-minecraft-button-border-width: 2px;
+  --component-minecraft-button-border-style: solid;
+  --component-minecraft-button-font: var(--core-font-minecraft);
+
+  /* Minecraft Card */
+  --component-minecraft-card-shadow: var(--semantic-shadow-minecraft-block);
+  --component-minecraft-card-border-width: 2px;
+  --component-minecraft-card-glow: var(--semantic-shadow-minecraft-glow);
+
+  /* Minecraft Input */
+  --component-minecraft-input-border-width: 2px;
+  --component-minecraft-input-border-style: inset;
+  --component-minecraft-input-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+
+  /* ===== Component Transitions ===== */
+  
+  /* Standard Transitions */
+  --component-transition-fast: all var(--semantic-duration-fast) var(--core-ease-out);
+  --component-transition-normal: all var(--semantic-duration-normal) var(--core-ease-out);
+  --component-transition-slow: all var(--semantic-duration-slow) var(--core-ease-out);
+
+  /* Specific Property Transitions */
+  --component-transition-bg: background-color var(--semantic-duration-fast) var(--core-ease-out);
+  --component-transition-border: border-color var(--semantic-duration-fast) var(--core-ease-out);
+  --component-transition-shadow: box-shadow var(--semantic-duration-normal) var(--core-ease-out);
+  --component-transition-transform: transform var(--semantic-duration-fast) var(--core-ease-back);
+  --component-transition-opacity: opacity var(--semantic-duration-fast) var(--core-ease-out);
+
+  /* Component Specific Transitions */
+  --component-button-transition: var(--component-transition-bg), var(--component-transition-border), var(--component-transition-shadow), var(--component-transition-transform);
+  --component-card-transition: var(--component-transition-shadow), var(--component-transition-transform);
+  --component-input-transition: var(--component-transition-border), var(--component-transition-shadow);
+  --component-modal-transition: var(--component-transition-opacity), var(--component-transition-transform);
+}
+
+/* ===== 暗色主题组件令牌覆盖 ===== */
+[data-theme="dark"] {
+  /* Button adjustments for dark theme */
+  --component-button-default-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --component-button-primary-shadow: 0 2px 8px rgba(79, 184, 79, 0.5);
+  --component-button-secondary-shadow: 0 2px 8px rgba(212, 172, 13, 0.5);
+
+  /* Card adjustments for dark theme */
+  --component-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --component-card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* Modal adjustments for dark theme */
+  --component-modal-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --component-modal-overlay-bg: rgba(0, 0, 0, 0.7);
+
+  /* Toast adjustments for dark theme */
+  --component-toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* Tooltip adjustments for dark theme */
+  --component-tooltip-bg: rgba(0, 0, 0, 0.9);
+  --component-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== 高对比度主题支持 ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --component-button-default-border: var(--core-color-neutral-black);
+    --component-input-border: var(--core-color-neutral-black);
+    --component-card-border: var(--core-color-neutral-black);
+  }
+  
+  [data-theme="dark"] {
+    --component-button-default-border: var(--core-color-neutral-white);
+    --component-input-border: var(--core-color-neutral-white);
+    --component-card-border: var(--core-color-neutral-white);
+  }
+}
+
+/* ===== 减少动画偏好支持 ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --component-transition-fast: none;
+    --component-transition-normal: none;
+    --component-transition-slow: none;
+    --component-button-transition: none;
+    --component-card-transition: none;
+    --component-input-transition: none;
+    --component-modal-transition: none;
+  }
+}

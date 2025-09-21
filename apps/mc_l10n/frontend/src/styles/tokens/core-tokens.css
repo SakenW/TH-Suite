@@ -1,0 +1,276 @@
+/**
+ * Core Tokens (基础设计令牌)
+ * 定义最基础的设计原子，如颜色、尺寸、动画等原始值
+ */
+
+:root {
+  /* ===== 颜色系统 ===== */
+  
+  /* Primary Colors (主色系) */
+  --core-color-primary-50: #f0f9f0;
+  --core-color-primary-100: #dcf2dc;
+  --core-color-primary-200: #bde5bd;
+  --core-color-primary-300: #91d091;
+  --core-color-primary-400: #4fb84f;
+  --core-color-primary-500: #389e38;
+  --core-color-primary-600: #2d7d2d;
+  --core-color-primary-700: #266226;
+  --core-color-primary-800: #1f4f1f;
+  --core-color-primary-900: #1a421a;
+
+  /* Secondary Colors (辅助色系) */
+  --core-color-secondary-50: #fdf6e3;
+  --core-color-secondary-100: #f9edc7;
+  --core-color-secondary-200: #f3db91;
+  --core-color-secondary-300: #edc555;
+  --core-color-secondary-400: #d4ac0d;
+  --core-color-secondary-500: #b8860b;
+  --core-color-secondary-600: #9a6a0a;
+  --core-color-secondary-700: #7d5309;
+  --core-color-secondary-800: #664208;
+  --core-color-secondary-900: #543608;
+
+  /* Accent Colors (强调色系) */
+  --core-color-accent-emerald: #4CAF50;
+  --core-color-accent-grass: #8BC34A;
+  --core-color-accent-gold: #FFC107;
+  --core-color-accent-redstone: #F44336;
+  --core-color-accent-lapis: #2196F3;
+  --core-color-accent-diamond: #B3E5FC;
+
+  /* Neutral Colors (中性色系) */
+  --core-color-neutral-white: #ffffff;
+  --core-color-neutral-50: #fafafa;
+  --core-color-neutral-100: #f5f5f5;
+  --core-color-neutral-200: #f0f0f0;
+  --core-color-neutral-300: #d9d9d9;
+  --core-color-neutral-400: #bfbfbf;
+  --core-color-neutral-500: #8c8c8c;
+  --core-color-neutral-600: #595959;
+  --core-color-neutral-700: #434343;
+  --core-color-neutral-800: #262626;
+  --core-color-neutral-900: #1f1f1f;
+  --core-color-neutral-black: #000000;
+
+  /* State Colors (状态色) */
+  --core-color-success: #52c41a;
+  --core-color-warning: #fadb14;
+  --core-color-error: #ff4d4f;
+  --core-color-info: #1890ff;
+  --core-color-processing: #722ed1;
+
+  /* ===== 尺寸系统 ===== */
+  
+  /* Spacing Scale (间距尺度) */
+  --core-spacing-0: 0;
+  --core-spacing-1: 0.25rem;   /* 4px */
+  --core-spacing-2: 0.5rem;    /* 8px */
+  --core-spacing-3: 0.75rem;   /* 12px */
+  --core-spacing-4: 1rem;      /* 16px */
+  --core-spacing-5: 1.25rem;   /* 20px */
+  --core-spacing-6: 1.5rem;    /* 24px */
+  --core-spacing-8: 2rem;      /* 32px */
+  --core-spacing-10: 2.5rem;   /* 40px */
+  --core-spacing-12: 3rem;     /* 48px */
+  --core-spacing-16: 4rem;     /* 64px */
+  --core-spacing-20: 5rem;     /* 80px */
+  --core-spacing-24: 6rem;     /* 96px */
+  --core-spacing-32: 8rem;     /* 128px */
+  --core-spacing-40: 10rem;    /* 160px */
+  --core-spacing-48: 12rem;    /* 192px */
+  --core-spacing-56: 14rem;    /* 224px */
+  --core-spacing-64: 16rem;    /* 256px */
+
+  /* Sizing Scale (尺寸尺度) */
+  --core-size-0: 0;
+  --core-size-px: 1px;
+  --core-size-1: 0.25rem;
+  --core-size-2: 0.5rem;
+  --core-size-3: 0.75rem;
+  --core-size-4: 1rem;
+  --core-size-5: 1.25rem;
+  --core-size-6: 1.5rem;
+  --core-size-7: 1.75rem;
+  --core-size-8: 2rem;
+  --core-size-9: 2.25rem;
+  --core-size-10: 2.5rem;
+  --core-size-11: 2.75rem;
+  --core-size-12: 3rem;
+  --core-size-14: 3.5rem;
+  --core-size-16: 4rem;
+  --core-size-20: 5rem;
+  --core-size-24: 6rem;
+  --core-size-28: 7rem;
+  --core-size-32: 8rem;
+  --core-size-36: 9rem;
+  --core-size-40: 10rem;
+  --core-size-44: 11rem;
+  --core-size-48: 12rem;
+  --core-size-52: 13rem;
+  --core-size-56: 14rem;
+  --core-size-60: 15rem;
+  --core-size-64: 16rem;
+  --core-size-72: 18rem;
+  --core-size-80: 20rem;
+  --core-size-96: 24rem;
+
+  /* Border Radius (圆角) */
+  --core-radius-none: 0;
+  --core-radius-sm: 0.125rem;   /* 2px */
+  --core-radius-base: 0.25rem;  /* 4px */
+  --core-radius-md: 0.375rem;   /* 6px */
+  --core-radius-lg: 0.5rem;     /* 8px */
+  --core-radius-xl: 0.75rem;    /* 12px */
+  --core-radius-2xl: 1rem;      /* 16px */
+  --core-radius-3xl: 1.5rem;    /* 24px */
+  --core-radius-full: 9999px;
+
+  /* Border Width (边框宽度) */
+  --core-border-0: 0;
+  --core-border-1: 1px;
+  --core-border-2: 2px;
+  --core-border-4: 4px;
+  --core-border-8: 8px;
+
+  /* ===== 排版系统 ===== */
+  
+  /* Font Family (字体族) */
+  --core-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --core-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --core-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  --core-font-minecraft: "Minecraft", monospace;
+
+  /* Font Size (字体大小) */
+  --core-font-size-xs: 0.75rem;    /* 12px */
+  --core-font-size-sm: 0.875rem;   /* 14px */
+  --core-font-size-base: 1rem;     /* 16px */
+  --core-font-size-lg: 1.125rem;   /* 18px */
+  --core-font-size-xl: 1.25rem;    /* 20px */
+  --core-font-size-2xl: 1.5rem;    /* 24px */
+  --core-font-size-3xl: 1.875rem;  /* 30px */
+  --core-font-size-4xl: 2.25rem;   /* 36px */
+  --core-font-size-5xl: 3rem;      /* 48px */
+  --core-font-size-6xl: 3.75rem;   /* 60px */
+  --core-font-size-7xl: 4.5rem;    /* 72px */
+  --core-font-size-8xl: 6rem;      /* 96px */
+  --core-font-size-9xl: 8rem;      /* 128px */
+
+  /* Font Weight (字重) */
+  --core-font-weight-thin: 100;
+  --core-font-weight-extralight: 200;
+  --core-font-weight-light: 300;
+  --core-font-weight-normal: 400;
+  --core-font-weight-medium: 500;
+  --core-font-weight-semibold: 600;
+  --core-font-weight-bold: 700;
+  --core-font-weight-extrabold: 800;
+  --core-font-weight-black: 900;
+
+  /* Line Height (行高) */
+  --core-line-height-none: 1;
+  --core-line-height-tight: 1.25;
+  --core-line-height-snug: 1.375;
+  --core-line-height-normal: 1.5;
+  --core-line-height-relaxed: 1.625;
+  --core-line-height-loose: 2;
+
+  /* ===== 动画系统 ===== */
+  
+  /* Animation Duration (动画时长) */
+  --core-duration-75: 75ms;
+  --core-duration-100: 100ms;
+  --core-duration-150: 150ms;
+  --core-duration-200: 200ms;
+  --core-duration-300: 300ms;
+  --core-duration-500: 500ms;
+  --core-duration-700: 700ms;
+  --core-duration-1000: 1000ms;
+
+  /* Easing Functions (缓动函数) */
+  --core-ease-linear: linear;
+  --core-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --core-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --core-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --core-ease-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --core-ease-bounce: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --core-ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Transition Presets (过渡预设) */
+  --core-transition-all: all var(--core-duration-150) var(--core-ease-in-out);
+  --core-transition-colors: color var(--core-duration-150) var(--core-ease-in-out), background-color var(--core-duration-150) var(--core-ease-in-out), border-color var(--core-duration-150) var(--core-ease-in-out);
+  --core-transition-opacity: opacity var(--core-duration-150) var(--core-ease-in-out);
+  --core-transition-shadow: box-shadow var(--core-duration-150) var(--core-ease-in-out);
+  --core-transition-transform: transform var(--core-duration-150) var(--core-ease-in-out);
+
+  /* ===== Z-Index 层级 ===== */
+  --core-z-index-hide: -1;
+  --core-z-index-auto: auto;
+  --core-z-index-base: 0;
+  --core-z-index-docked: 10;
+  --core-z-index-dropdown: 1000;
+  --core-z-index-sticky: 1100;
+  --core-z-index-banner: 1200;
+  --core-z-index-overlay: 1300;
+  --core-z-index-modal: 1400;
+  --core-z-index-popover: 1500;
+  --core-z-index-skiplink: 1600;
+  --core-z-index-toast: 1700;
+  --core-z-index-tooltip: 1800;
+
+  /* ===== 阴影系统 ===== */
+  --core-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --core-shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --core-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --core-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --core-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --core-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --core-shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --core-shadow-none: 0 0 #0000;
+
+  /* Minecraft Style Shadows */
+  --core-shadow-pixel: 2px 2px 0 rgba(0, 0, 0, 0.3);
+  --core-shadow-block: 4px 4px 0 rgba(0, 0, 0, 0.2), 8px 8px 0 rgba(0, 0, 0, 0.1);
+  --core-shadow-glow-emerald: 0 0 20px rgba(76, 175, 80, 0.3);
+  --core-shadow-glow-gold: 0 0 20px rgba(255, 193, 7, 0.3);
+  --core-shadow-glow-redstone: 0 0 20px rgba(244, 67, 54, 0.3);
+
+  /* ===== 断点系统 ===== */
+  --core-breakpoint-xs: 0px;
+  --core-breakpoint-sm: 576px;
+  --core-breakpoint-md: 768px;
+  --core-breakpoint-lg: 992px;
+  --core-breakpoint-xl: 1200px;
+  --core-breakpoint-2xl: 1600px;
+
+  /* ===== 容器最大宽度 ===== */
+  --core-container-sm: 540px;
+  --core-container-md: 720px;
+  --core-container-lg: 960px;
+  --core-container-xl: 1140px;
+  --core-container-2xl: 1320px;
+}
+
+/* ===== 暗色主题核心令牌 ===== */
+[data-theme="dark"] {
+  /* 重新定义中性色系用于暗色主题 */
+  --core-color-neutral-white: #000000;
+  --core-color-neutral-50: #1f1f1f;
+  --core-color-neutral-100: #262626;
+  --core-color-neutral-200: #303030;
+  --core-color-neutral-300: #434343;
+  --core-color-neutral-400: #595959;
+  --core-color-neutral-500: #8c8c8c;
+  --core-color-neutral-600: #bfbfbf;
+  --core-color-neutral-700: #d9d9d9;
+  --core-color-neutral-800: #f0f0f0;
+  --core-color-neutral-900: #f5f5f5;
+  --core-color-neutral-black: #ffffff;
+
+  /* 调整阴影以适应暗色主题 */
+  --core-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.8);
+  --core-shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.8), 0 1px 2px -1px rgb(0 0 0 / 0.8);
+  --core-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.8), 0 2px 4px -2px rgb(0 0 0 / 0.8);
+  --core-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.8), 0 4px 6px -4px rgb(0 0 0 / 0.8);
+  --core-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.8), 0 8px 10px -6px rgb(0 0 0 / 0.8);
+  --core-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.9);
+}

@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any, Set
 
 from .base_repository import BaseRepository
-from ...domain.models.translation_state import (
+from domain.models.translation_state import (
     TranslationState, StateTransition, WorkflowRule, StateHistory,
     StateCategory, TransitionTriggerType, NotificationChannel
 )

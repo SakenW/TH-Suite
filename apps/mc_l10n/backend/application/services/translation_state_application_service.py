@@ -10,16 +10,16 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import structlog
 
-from ...domain.models.translation_state import (
+from domain.models.translation_state import (
     TranslationState, StateTransition, WorkflowRule, StateHistory,
     TranslationStateMachine, create_default_state_machine
 )
-from ...domain.services.translation_state_service import TranslationStateService
-from ...infrastructure.repositories.translation_state_repository import (
+from domain.services.translation_state_service import TranslationStateService
+from infrastructure.repositories.translation_state_repository import (
     TranslationStateRepository, StateTransitionRepository,
     StateHistoryRepository, WorkflowRuleRepository
 )
-from ...infrastructure.repositories.core_translation_entry_repository import (
+from infrastructure.repositories.core_translation_entry_repository import (
     CoreTranslationEntryRepository, CoreTranslationEntry
 )
 

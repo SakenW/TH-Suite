@@ -8,10 +8,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import structlog
 
-from ...infrastructure.repositories.translation_state_repository import (
+from infrastructure.repositories.translation_state_repository import (
     StateHistoryRepository, TranslationStateRepository
 )
-from ...infrastructure.repositories.core_translation_entry_repository import (
+from infrastructure.repositories.core_translation_entry_repository import (
     CoreTranslationEntryRepository
 )
 

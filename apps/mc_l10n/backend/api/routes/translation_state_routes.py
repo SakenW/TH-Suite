@@ -10,14 +10,14 @@ from pydantic import BaseModel, Field
 
 import structlog
 
-from ...core.di_container import get_dependency
-from ...application.services.translation_state_application_service import (
+from core.di_container import get_dependency
+from application.services.translation_state_application_service import (
     TranslationStateApplicationService
 )
-from ...application.services.translation_state_statistics_service import (
+from application.services.translation_state_statistics_service import (
     TranslationStateStatisticsService
 )
-from ...application.services.translation_batch_operation_service import (
+from application.services.translation_batch_operation_service import (
     TranslationBatchOperationService, BatchOperationConfig, BatchOperationType
 )
 

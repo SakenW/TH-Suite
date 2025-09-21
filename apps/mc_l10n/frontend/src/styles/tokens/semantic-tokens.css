@@ -1,0 +1,391 @@
+/**
+ * Semantic Tokens (语义化令牌)
+ * 将Core Tokens映射到具体的语义用途，如状态颜色、交互颜色、界面区域等
+ */
+
+:root {
+  /* ===== 语义化颜色映射 ===== */
+  
+  /* Brand Colors (品牌色) */
+  --semantic-color-brand-primary: var(--core-color-primary-400);
+  --semantic-color-brand-primary-hover: var(--core-color-primary-500);
+  --semantic-color-brand-primary-active: var(--core-color-primary-600);
+  --semantic-color-brand-primary-subtle: var(--core-color-primary-50);
+  
+  --semantic-color-brand-secondary: var(--core-color-secondary-400);
+  --semantic-color-brand-secondary-hover: var(--core-color-secondary-500);
+  --semantic-color-brand-secondary-active: var(--core-color-secondary-600);
+  --semantic-color-brand-secondary-subtle: var(--core-color-secondary-50);
+
+  /* Status Colors (状态色) */
+  --semantic-color-status-success: var(--core-color-success);
+  --semantic-color-status-success-hover: #73d13d;
+  --semantic-color-status-success-active: #389e0d;
+  --semantic-color-status-success-subtle: #f6ffed;
+  --semantic-color-status-success-border: #b7eb8f;
+
+  --semantic-color-status-warning: var(--core-color-warning);
+  --semantic-color-status-warning-hover: #ffec3d;
+  --semantic-color-status-warning-active: #d4b106;
+  --semantic-color-status-warning-subtle: #fffbe6;
+  --semantic-color-status-warning-border: #ffe58f;
+
+  --semantic-color-status-error: var(--core-color-error);
+  --semantic-color-status-error-hover: #ff7875;
+  --semantic-color-status-error-active: #d9363e;
+  --semantic-color-status-error-subtle: #fff2f0;
+  --semantic-color-status-error-border: #ffadd2;
+
+  --semantic-color-status-info: var(--core-color-info);
+  --semantic-color-status-info-hover: #40a9ff;
+  --semantic-color-status-info-active: #096dd9;
+  --semantic-color-status-info-subtle: #f0f5ff;
+  --semantic-color-status-info-border: #91d5ff;
+
+  --semantic-color-status-processing: var(--core-color-processing);
+  --semantic-color-status-processing-hover: #9254de;
+  --semantic-color-status-processing-active: #531dab;
+  --semantic-color-status-processing-subtle: #f9f0ff;
+  --semantic-color-status-processing-border: #d3adf7;
+
+  /* Interaction Colors (交互色) */
+  --semantic-color-interaction-default: var(--core-color-neutral-white);
+  --semantic-color-interaction-hover: var(--core-color-neutral-50);
+  --semantic-color-interaction-active: var(--core-color-neutral-100);
+  --semantic-color-interaction-focus: var(--core-color-primary-400);
+  --semantic-color-interaction-disabled: var(--core-color-neutral-300);
+  --semantic-color-interaction-disabled-text: var(--core-color-neutral-400);
+
+  /* Link Colors (链接色) */
+  --semantic-color-link-default: var(--core-color-primary-400);
+  --semantic-color-link-hover: var(--core-color-primary-500);
+  --semantic-color-link-active: var(--core-color-primary-600);
+  --semantic-color-link-visited: var(--core-color-processing);
+
+  /* ===== 背景色系统 ===== */
+  
+  /* Primary Backgrounds (主要背景) */
+  --semantic-bg-base: var(--core-color-neutral-white);
+  --semantic-bg-elevated: var(--core-color-neutral-white);
+  --semantic-bg-sunken: var(--core-color-neutral-50);
+
+  /* Surface Backgrounds (表面背景) */
+  --semantic-bg-surface-primary: var(--core-color-neutral-white);
+  --semantic-bg-surface-secondary: var(--core-color-neutral-50);
+  --semantic-bg-surface-tertiary: var(--core-color-neutral-100);
+  --semantic-bg-surface-inverse: var(--core-color-neutral-900);
+
+  /* Container Backgrounds (容器背景) */
+  --semantic-bg-container-primary: var(--core-color-neutral-white);
+  --semantic-bg-container-secondary: var(--core-color-neutral-50);
+  --semantic-bg-container-tertiary: var(--core-color-neutral-100);
+  --semantic-bg-container-emphasis: var(--core-color-primary-50);
+
+  /* State Backgrounds (状态背景) */
+  --semantic-bg-hover: rgba(79, 184, 79, 0.04);
+  --semantic-bg-pressed: rgba(79, 184, 79, 0.08);
+  --semantic-bg-selected: rgba(79, 184, 79, 0.12);
+  --semantic-bg-focus: rgba(79, 184, 79, 0.16);
+  --semantic-bg-disabled: var(--core-color-neutral-100);
+
+  /* Overlay Backgrounds (遮罩背景) */
+  --semantic-bg-overlay-light: rgba(255, 255, 255, 0.8);
+  --semantic-bg-overlay-medium: rgba(255, 255, 255, 0.9);
+  --semantic-bg-overlay-heavy: rgba(255, 255, 255, 0.95);
+  --semantic-bg-scrim-light: rgba(0, 0, 0, 0.2);
+  --semantic-bg-scrim-medium: rgba(0, 0, 0, 0.4);
+  --semantic-bg-scrim-heavy: rgba(0, 0, 0, 0.6);
+
+  /* ===== 文本色系统 ===== */
+  
+  /* Primary Text (主要文本) */
+  --semantic-text-primary: rgba(0, 0, 0, 0.88);
+  --semantic-text-secondary: rgba(0, 0, 0, 0.65);
+  --semantic-text-tertiary: rgba(0, 0, 0, 0.45);
+  --semantic-text-quaternary: rgba(0, 0, 0, 0.25);
+  --semantic-text-disabled: rgba(0, 0, 0, 0.25);
+
+  /* Inverse Text (反向文本) */
+  --semantic-text-inverse-primary: rgba(255, 255, 255, 0.95);
+  --semantic-text-inverse-secondary: rgba(255, 255, 255, 0.75);
+  --semantic-text-inverse-tertiary: rgba(255, 255, 255, 0.55);
+  --semantic-text-inverse-disabled: rgba(255, 255, 255, 0.35);
+
+  /* Interactive Text (交互文本) */
+  --semantic-text-link: var(--semantic-color-link-default);
+  --semantic-text-link-hover: var(--semantic-color-link-hover);
+  --semantic-text-link-active: var(--semantic-color-link-active);
+  --semantic-text-link-visited: var(--semantic-color-link-visited);
+
+  /* Status Text (状态文本) */
+  --semantic-text-success: var(--core-color-success);
+  --semantic-text-warning: #d46b08;
+  --semantic-text-error: var(--core-color-error);
+  --semantic-text-info: var(--core-color-info);
+
+  /* ===== 边框色系统 ===== */
+  
+  /* Default Borders (默认边框) */
+  --semantic-border-primary: var(--core-color-neutral-300);
+  --semantic-border-secondary: var(--core-color-neutral-200);
+  --semantic-border-tertiary: var(--core-color-neutral-100);
+  --semantic-border-inverse: var(--core-color-neutral-600);
+
+  /* Interactive Borders (交互边框) */
+  --semantic-border-hover: var(--core-color-neutral-400);
+  --semantic-border-focus: var(--core-color-primary-400);
+  --semantic-border-active: var(--core-color-primary-500);
+  --semantic-border-selected: var(--core-color-primary-400);
+  --semantic-border-disabled: var(--core-color-neutral-200);
+
+  /* Status Borders (状态边框) */
+  --semantic-border-success: var(--semantic-color-status-success-border);
+  --semantic-border-warning: var(--semantic-color-status-warning-border);
+  --semantic-border-error: var(--semantic-color-status-error-border);
+  --semantic-border-info: var(--semantic-color-status-info-border);
+
+  /* ===== 图标色系统 ===== */
+  
+  /* Default Icons (默认图标) */
+  --semantic-icon-primary: rgba(0, 0, 0, 0.65);
+  --semantic-icon-secondary: rgba(0, 0, 0, 0.45);
+  --semantic-icon-tertiary: rgba(0, 0, 0, 0.25);
+  --semantic-icon-inverse: rgba(255, 255, 255, 0.85);
+  --semantic-icon-disabled: rgba(0, 0, 0, 0.15);
+
+  /* Interactive Icons (交互图标) */
+  --semantic-icon-hover: rgba(0, 0, 0, 0.75);
+  --semantic-icon-active: rgba(0, 0, 0, 0.85);
+  --semantic-icon-focus: var(--core-color-primary-400);
+
+  /* Status Icons (状态图标) */
+  --semantic-icon-success: var(--core-color-success);
+  --semantic-icon-warning: var(--core-color-warning);
+  --semantic-icon-error: var(--core-color-error);
+  --semantic-icon-info: var(--core-color-info);
+
+  /* ===== 阴影语义化 ===== */
+  
+  /* Elevation Shadows (高度阴影) */
+  --semantic-shadow-elevation-low: var(--core-shadow-sm);
+  --semantic-shadow-elevation-medium: var(--core-shadow-base);
+  --semantic-shadow-elevation-high: var(--core-shadow-lg);
+  --semantic-shadow-elevation-highest: var(--core-shadow-2xl);
+
+  /* Interactive Shadows (交互阴影) */
+  --semantic-shadow-hover: var(--core-shadow-md);
+  --semantic-shadow-active: var(--core-shadow-sm);
+  --semantic-shadow-focus: 0 0 0 3px rgba(79, 184, 79, 0.2);
+
+  /* Component Shadows (组件阴影) */
+  --semantic-shadow-card: var(--core-shadow-base);
+  --semantic-shadow-card-hover: var(--core-shadow-lg);
+  --semantic-shadow-modal: var(--core-shadow-2xl);
+  --semantic-shadow-dropdown: var(--core-shadow-lg);
+  --semantic-shadow-tooltip: var(--core-shadow-md);
+  --semantic-shadow-popover: var(--core-shadow-lg);
+
+  /* Minecraft Style Shadows */
+  --semantic-shadow-minecraft-pixel: var(--core-shadow-pixel);
+  --semantic-shadow-minecraft-block: var(--core-shadow-block);
+  --semantic-shadow-minecraft-glow: var(--core-shadow-glow-emerald);
+
+  /* ===== 尺寸语义化 ===== */
+  
+  /* Component Sizes (组件尺寸) */
+  --semantic-size-control-sm: var(--core-size-6);
+  --semantic-size-control-md: var(--core-size-8);
+  --semantic-size-control-lg: var(--core-size-10);
+  --semantic-size-control-xl: var(--core-size-12);
+
+  /* Icon Sizes (图标尺寸) */
+  --semantic-size-icon-xs: var(--core-size-3);
+  --semantic-size-icon-sm: var(--core-size-4);
+  --semantic-size-icon-md: var(--core-size-5);
+  --semantic-size-icon-lg: var(--core-size-6);
+  --semantic-size-icon-xl: var(--core-size-8);
+
+  /* Avatar Sizes (头像尺寸) */
+  --semantic-size-avatar-xs: var(--core-size-6);
+  --semantic-size-avatar-sm: var(--core-size-8);
+  --semantic-size-avatar-md: var(--core-size-10);
+  --semantic-size-avatar-lg: var(--core-size-12);
+  --semantic-size-avatar-xl: var(--core-size-16);
+
+  /* ===== 间距语义化 ===== */
+  
+  /* Layout Spacing (布局间距) */
+  --semantic-spacing-layout-xs: var(--core-spacing-2);
+  --semantic-spacing-layout-sm: var(--core-spacing-4);
+  --semantic-spacing-layout-md: var(--core-spacing-6);
+  --semantic-spacing-layout-lg: var(--core-spacing-8);
+  --semantic-spacing-layout-xl: var(--core-spacing-12);
+
+  /* Component Spacing (组件间距) */
+  --semantic-spacing-component-xs: var(--core-spacing-1);
+  --semantic-spacing-component-sm: var(--core-spacing-2);
+  --semantic-spacing-component-md: var(--core-spacing-3);
+  --semantic-spacing-component-lg: var(--core-spacing-4);
+  --semantic-spacing-component-xl: var(--core-spacing-6);
+
+  /* Content Spacing (内容间距) */
+  --semantic-spacing-content-xs: var(--core-spacing-1);
+  --semantic-spacing-content-sm: var(--core-spacing-2);
+  --semantic-spacing-content-md: var(--core-spacing-3);
+  --semantic-spacing-content-lg: var(--core-spacing-4);
+  --semantic-spacing-content-xl: var(--core-spacing-5);
+
+  /* ===== 圆角语义化 ===== */
+  
+  /* Component Radius (组件圆角) */
+  --semantic-radius-none: var(--core-radius-none);
+  --semantic-radius-sm: var(--core-radius-sm);
+  --semantic-radius-md: var(--core-radius-md);
+  --semantic-radius-lg: var(--core-radius-lg);
+  --semantic-radius-xl: var(--core-radius-xl);
+  --semantic-radius-full: var(--core-radius-full);
+
+  /* Element Radius (元素圆角) */
+  --semantic-radius-button: var(--core-radius-md);
+  --semantic-radius-input: var(--core-radius-md);
+  --semantic-radius-card: var(--core-radius-lg);
+  --semantic-radius-modal: var(--core-radius-xl);
+  --semantic-radius-avatar: var(--core-radius-full);
+  --semantic-radius-tag: var(--core-radius-base);
+
+  /* ===== 动画语义化 ===== */
+  
+  /* Transition Durations (过渡时长) */
+  --semantic-duration-instant: var(--core-duration-75);
+  --semantic-duration-fast: var(--core-duration-150);
+  --semantic-duration-normal: var(--core-duration-200);
+  --semantic-duration-slow: var(--core-duration-300);
+  --semantic-duration-slower: var(--core-duration-500);
+
+  /* Common Transitions (常用过渡) */
+  --semantic-transition-fast: var(--core-transition-all);
+  --semantic-transition-colors: var(--core-transition-colors);
+  --semantic-transition-opacity: var(--core-transition-opacity);
+  --semantic-transition-shadow: var(--core-transition-shadow);
+  --semantic-transition-transform: var(--core-transition-transform);
+
+  /* ===== 层级语义化 ===== */
+  
+  /* UI Layer Z-Index */
+  --semantic-z-index-base: var(--core-z-index-base);
+  --semantic-z-index-dropdown: var(--core-z-index-dropdown);
+  --semantic-z-index-sticky: var(--core-z-index-sticky);
+  --semantic-z-index-modal: var(--core-z-index-modal);
+  --semantic-z-index-popover: var(--core-z-index-popover);
+  --semantic-z-index-tooltip: var(--core-z-index-tooltip);
+  --semantic-z-index-toast: var(--core-z-index-toast);
+
+  /* ===== 断点语义化 ===== */
+  --semantic-breakpoint-mobile: var(--core-breakpoint-sm);
+  --semantic-breakpoint-tablet: var(--core-breakpoint-md);
+  --semantic-breakpoint-desktop: var(--core-breakpoint-lg);
+  --semantic-breakpoint-wide: var(--core-breakpoint-xl);
+  --semantic-breakpoint-ultrawide: var(--core-breakpoint-2xl);
+}
+
+/* ===== 暗色主题语义化令牌 ===== */
+[data-theme="dark"] {
+  /* 背景色系统 - 暗色主题 */
+  --semantic-bg-base: var(--core-color-neutral-900);
+  --semantic-bg-elevated: var(--core-color-neutral-800);
+  --semantic-bg-sunken: var(--core-color-neutral-black);
+
+  --semantic-bg-surface-primary: var(--core-color-neutral-900);
+  --semantic-bg-surface-secondary: var(--core-color-neutral-800);
+  --semantic-bg-surface-tertiary: var(--core-color-neutral-700);
+  --semantic-bg-surface-inverse: var(--core-color-neutral-50);
+
+  --semantic-bg-container-primary: var(--core-color-neutral-900);
+  --semantic-bg-container-secondary: var(--core-color-neutral-800);
+  --semantic-bg-container-tertiary: var(--core-color-neutral-700);
+  --semantic-bg-container-emphasis: rgba(79, 184, 79, 0.1);
+
+  --semantic-bg-hover: rgba(79, 184, 79, 0.08);
+  --semantic-bg-pressed: rgba(79, 184, 79, 0.12);
+  --semantic-bg-selected: rgba(79, 184, 79, 0.16);
+  --semantic-bg-focus: rgba(79, 184, 79, 0.20);
+  --semantic-bg-disabled: var(--core-color-neutral-800);
+
+  --semantic-bg-overlay-light: rgba(0, 0, 0, 0.4);
+  --semantic-bg-overlay-medium: rgba(0, 0, 0, 0.6);
+  --semantic-bg-overlay-heavy: rgba(0, 0, 0, 0.8);
+  --semantic-bg-scrim-light: rgba(0, 0, 0, 0.6);
+  --semantic-bg-scrim-medium: rgba(0, 0, 0, 0.7);
+  --semantic-bg-scrim-heavy: rgba(0, 0, 0, 0.8);
+
+  /* 文本色系统 - 暗色主题 */
+  --semantic-text-primary: rgba(255, 255, 255, 0.88);
+  --semantic-text-secondary: rgba(255, 255, 255, 0.65);
+  --semantic-text-tertiary: rgba(255, 255, 255, 0.45);
+  --semantic-text-quaternary: rgba(255, 255, 255, 0.25);
+  --semantic-text-disabled: rgba(255, 255, 255, 0.25);
+
+  --semantic-text-inverse-primary: rgba(0, 0, 0, 0.88);
+  --semantic-text-inverse-secondary: rgba(0, 0, 0, 0.65);
+  --semantic-text-inverse-tertiary: rgba(0, 0, 0, 0.45);
+  --semantic-text-inverse-disabled: rgba(0, 0, 0, 0.25);
+
+  /* 边框色系统 - 暗色主题 */
+  --semantic-border-primary: var(--core-color-neutral-600);
+  --semantic-border-secondary: var(--core-color-neutral-700);
+  --semantic-border-tertiary: var(--core-color-neutral-800);
+  --semantic-border-inverse: var(--core-color-neutral-300);
+
+  --semantic-border-hover: var(--core-color-neutral-500);
+  --semantic-border-disabled: var(--core-color-neutral-700);
+
+  /* 图标色系统 - 暗色主题 */
+  --semantic-icon-primary: rgba(255, 255, 255, 0.65);
+  --semantic-icon-secondary: rgba(255, 255, 255, 0.45);
+  --semantic-icon-tertiary: rgba(255, 255, 255, 0.25);
+  --semantic-icon-inverse: rgba(0, 0, 0, 0.65);
+  --semantic-icon-disabled: rgba(255, 255, 255, 0.15);
+
+  --semantic-icon-hover: rgba(255, 255, 255, 0.85);
+  --semantic-icon-active: rgba(255, 255, 255, 0.95);
+
+  /* 状态色调整 - 暗色主题 */
+  --semantic-color-status-success-subtle: rgba(82, 196, 26, 0.1);
+  --semantic-color-status-warning-subtle: rgba(250, 219, 20, 0.1);
+  --semantic-color-status-error-subtle: rgba(255, 77, 79, 0.1);
+  --semantic-color-status-info-subtle: rgba(24, 144, 255, 0.1);
+  --semantic-color-status-processing-subtle: rgba(114, 46, 209, 0.1);
+
+  /* 交互色调整 - 暗色主题 */
+  --semantic-color-interaction-default: var(--core-color-neutral-800);
+  --semantic-color-interaction-hover: var(--core-color-neutral-700);
+  --semantic-color-interaction-active: var(--core-color-neutral-600);
+  --semantic-color-interaction-disabled: var(--core-color-neutral-800);
+  --semantic-color-interaction-disabled-text: var(--core-color-neutral-600);
+}
+
+/* ===== 高对比度主题支持 ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --semantic-border-primary: var(--core-color-neutral-black);
+    --semantic-text-primary: var(--core-color-neutral-black);
+    --semantic-text-secondary: var(--core-color-neutral-800);
+  }
+  
+  [data-theme="dark"] {
+    --semantic-border-primary: var(--core-color-neutral-white);
+    --semantic-text-primary: var(--core-color-neutral-white);
+    --semantic-text-secondary: var(--core-color-neutral-200);
+  }
+}
+
+/* ===== 减少动画偏好支持 ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --semantic-duration-instant: 0ms;
+    --semantic-duration-fast: 0ms;
+    --semantic-duration-normal: 0ms;
+    --semantic-duration-slow: 0ms;
+    --semantic-duration-slower: 0ms;
+  }
+}

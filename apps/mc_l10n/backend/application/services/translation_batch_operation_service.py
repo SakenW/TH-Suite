@@ -14,11 +14,11 @@ import asyncio
 
 import structlog
 
-from ...domain.models.translation_state import StateHistory
-from ...infrastructure.repositories.core_translation_entry_repository import (
+from domain.models.translation_state import StateHistory
+from infrastructure.repositories.core_translation_entry_repository import (
     CoreTranslationEntryRepository, CoreTranslationEntry
 )
-from ...infrastructure.repositories.translation_state_repository import StateHistoryRepository
+from infrastructure.repositories.translation_state_repository import StateHistoryRepository
 from .translation_state_application_service import TranslationStateApplicationService
 
 logger = structlog.get_logger(__name__)
