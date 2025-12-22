@@ -1,0 +1,9 @@
+Starting Pure Node.js Upload Test...
+鉁?Registered
+鉁?Logged in
+鉂?Error: {
+  status: 500,
+  body: {
+    detail: "鍒涘缓椤圭洰澶辫触: 'ProjectUseCase' object has no attribute 'create_project'"
+  }
+}

@@ -1,0 +1,16 @@
+Starting Pure Node.js Upload Test...
+鉁?Registered
+鉁?Logged in
+鉂?Error: {
+  status: 500,
+  body: {
+    detail: `鍒涘缓椤圭洰澶辫触: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.NotNullViolationError'>: null value in column "slug" of relation "projects" violates not-null constraint\n` +
+      'DETAIL:  Failing row contains (c17471f6-8606-4713-9b90-276dc4893aec, 019b46fa-f611-7869-b84b-410534d858cd, null, Test Pj 2039, null, null, null, null, draft, null, en, ["zh-CN"], {}, translation, null, intermediate, {}, 0, 0, 0, 0, 0, 0, null, null, null, null, null, null, null, null, USD, null, {}, {}, {}, null, 2025-12-22 16:53:30.831181+00, 2025-12-22 16:53:30.831181+00, null).\n' +
+      '[SQL: \n' +
+      '                INSERT INTO th.projects (id, tenant_id, name, description, status, source_lang, target_langs, created_at, updated_at)\n' +
+      '                VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())\n' +
+      '            ]\n' +
+      `[parameters: ('c17471f6-8606-4713-9b90-276dc4893aec', '019b46fa-f611-7869-b84b-410534d858cd', 'Test Pj 2039', None, 'draft', 'en', '["zh-CN"]')]\n` +
+      '(Background on this error at: https://sqlalche.me/e/20/gkpj)'
+  }
+}

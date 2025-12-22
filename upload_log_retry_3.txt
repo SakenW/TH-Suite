@@ -1,0 +1,10 @@
+Starting Pure Node.js Upload Test...
+鉁?Registered
+鉁?Logged in
+鉁?Project: fd583b7b-542d-4203-8d58-382113a01a60
+鉂?Error: {
+  status: 500,
+  body: {
+    detail: "鍒涘缓浠诲姟澶辫触: 'Project' object has no attribute '_validate_invariants'"
+  }
+}

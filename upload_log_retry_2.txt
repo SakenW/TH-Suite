@@ -1,0 +1,10 @@
+Starting Pure Node.js Upload Test...
+鉁?Registered
+鉁?Logged in
+鉁?Project: 9f9dd2d8-ccb1-4790-b0f9-3bb2438d0e13
+鉂?Error: {
+  status: 500,
+  body: {
+    detail: "鍒涘缓浠诲姟澶辫触: 'Project' object has no attribute '_AggregateRoot__init__'"
+  }
+}
