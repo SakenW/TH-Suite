@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-pub fn scan_and_cache<F>(root_path: &str, cache_root: &Path, on_progress: F) -> ScanResult 
-where F: Fn(usize, usize, String) {
+pub fn scan_and_cache<F>(root_path: &str, cache_root: &Path, mut on_progress: F) -> ScanResult 
+where F: FnMut(usize, usize, String) {
     println!("--- STARTED SCANNING (Adapter): {} ---", root_path);
     let mut assets = Vec::new();
     let root = Path::new(root_path);
@@ -123,4 +123,64 @@ fn process_archive(root: &Path, archive_path: &Path, cache_root: &Path) -> anyho
     }
 
     Ok(assets)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs; // Import fs
+    use std::fs::File;
+    use std::io::Write;
+    use zip::write::FileOptions;
+    
+    // ... rest of test
+
+
+    #[test]
+    fn test_scan_and_cache_zip() -> anyhow::Result<()> {
+        let temp_dir = std::env::temp_dir().join(format!("th_test_scan_{}", uuid::Uuid::new_v4()));
+        let root = temp_dir.join("root");
+        let cache = temp_dir.join("cache");
+        
+        fs::create_dir_all(&root)?;
+        
+        // Create a Mock Jar
+        let jar_path = root.join("test_mod.jar");
+        let file = File::create(&jar_path)?;
+        let mut zip = zip::ZipWriter::new(file);
+        
+        let options = FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+        
+        // Add valid asset
+        zip.start_file("assets/testmod/lang/en_us.json", options)?;
+        zip.write_all(b"{ \"key\": \"value\" }")?;
+        
+        // Add invalid asset
+        zip.start_file("assets/testmod/textures/test.png", options)?;
+        zip.write_all(b"fake image")?;
+        
+        zip.finish()?;
+        
+        // Run Scan
+        let mut progress_count = 0;
+        let result = scan_and_cache(root.to_str().unwrap(), &cache, |curr, total, name| {
+            println!("Progress: {}/{} - {}", curr, total, name);
+            if name == "test_mod.jar" {
+                progress_count += 1;
+            }
+        });
+        
+        // Verify
+        assert_eq!(result.total_files, 1);
+        assert_eq!(result.assets.len(), 1);
+        let asset = &result.assets[0];
+        assert_eq!(asset.mod_id, "testmod");
+        assert_eq!(asset.name, "en_us.json");
+        assert_eq!(asset.entry_count, 1);
+        
+        // Cleanup
+        let _ = fs::remove_dir_all(&temp_dir);
+        
+        Ok(())
+    }
 }
