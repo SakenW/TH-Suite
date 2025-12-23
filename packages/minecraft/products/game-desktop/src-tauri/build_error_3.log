@@ -1,0 +1,28 @@
+   Compiling syn v1.0.109
+   Compiling serde_derive v1.0.228
+   Compiling synstructure v0.13.2
+   Compiling zerovec-derive v0.11.2
+   Compiling displaydoc v0.2.5
+   Compiling thiserror-impl v1.0.69
+   Compiling cssparser-macros v0.6.1
+   Compiling markup5ever v0.11.0
+   Compiling darling_core v0.21.3
+   Compiling derive_more v0.99.20
+   Compiling selectors v0.22.0
+   Compiling phf_macros v0.11.3
+   Compiling regex-automata v0.4.13
+   Compiling ctor v0.2.9
+    Checking itoa v1.0.16
+   Compiling typenum v1.19.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling alloc-no-stdlib v2.0.4
+error: failed to remove D:\Saken\Code\TH-Suite\packages\minecraft\products\game-desktop\src-tauri\target\debug\deps\ctor-d08a7d0c912f7118.ctor.32ced6a89ed98a89-cgu.0.rcgu.o: 另一个程序正在使用此文件，进程无法访问。 (os error 32)
+
+error: could not compile `ctor` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: failed to remove D:\Saken\Code\TH-Suite\packages\minecraft\products\game-desktop\src-tauri\target\debug\build\typenum-1ee6afc9f8e45c6a\build_script_build-1ee6afc9f8e45c6a.esxins070iar9foygl232f0my.rcgu.o: 另一个程序正在使用此文件，进程无法访问。 (os error 32)
+
+error: could not compile `typenum` (build script) due to 1 previous error
+error: failed to remove D:\Saken\Code\TH-Suite\packages\minecraft\products\game-desktop\src-tauri\target\debug\deps\derive_more-1922f60f025c72fb.derive_more.d6296b074daa42c0-cgu.11.rcgu.o: 另一个程序正在使用此文件，进程无法访问。 (os error 32)
+
+error: could not compile `derive_more` (lib) due to 1 previous error

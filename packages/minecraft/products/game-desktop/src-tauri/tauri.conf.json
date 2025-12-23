@@ -1,6 +1,6 @@
 {
     "build": {
-        "beforeDevCommand": "pnpm dev",
+        "beforeDevCommand": "pnpm --filter minecraft-game-desktop-ui dev",
         "beforeBuildCommand": "pnpm build",
         "devPath": "http://localhost:1420",
         "distDir": "../ui/dist"
@@ -24,6 +24,9 @@
                     "$DOWNLOAD/*",
                     "**"
                 ]
+            },
+            "dialog": {
+                "all": true
             }
         },
         "windows": [

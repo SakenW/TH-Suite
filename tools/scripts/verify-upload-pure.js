@@ -1,7 +1,6 @@
 
 const http = require('http');
 const zlib = require('zlib');
-const { Transform, Readable } = require('stream');
 
 async function main() {
     console.log('Starting Pure Node.js Upload Test...');
@@ -58,8 +57,9 @@ async function main() {
         console.log('✅ Project:', project.id);
 
         const job = await post(`/v1/jobs/projects/${project.id}/jobs`, {
-            name: 'Upload Job', source_language: 'en', target_language: 'zh-CN', job_type: 'translation'
+            name: 'Upload Job', source_language: 'en', target_language: 'zh-CN', job_type: 'translation', status: 'created'
         }, token);
+        console.log('✅ Job Response:', JSON.stringify(job, null, 2));
         console.log('✅ Job:', job.id);
 
         // 3. Streaming Upload
@@ -91,7 +91,7 @@ async function main() {
             // Stream data
             let i = 0;
             function push() {
-                if (i >= 100) {
+                if (i >= 50) {
                     gzip.end();
                     return;
                 }

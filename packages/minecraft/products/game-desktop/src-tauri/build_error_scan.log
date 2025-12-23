@@ -1,0 +1,36 @@
+    Checking minecraft-game-desktop v0.1.0 (D:\Saken\Code\TH-Suite\packages\minecraft\products\game-desktop\src-tauri)
+warning: unused import: `PathBuf`
+ --> src\scanner.rs:3:23
+  |
+3 | use std::path::{Path, PathBuf};
+  |                       ^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0599]: no method named `to_slash_lossy` found for reference `&std::path::Path` in the current scope
+  --> src\scanner.rs:64:33
+   |
+64 |     let rel_path_str = rel_path.to_slash_lossy().into_owned(); // Custom helper or simply display
+   |                                 ^^^^^^^^^^^^^^ method not found in `&std::path::Path`
+
+error[E0062]: field `path` specified more than once
+   --> src\scanner.rs:103:9
+    |
+ 95 |         path: path.to_string_lossy().to_string(), // Absolute path for now, or relative? Using absolute as per unique ID usually.
+    |         ---------------------------------------- first use of `path`
+...
+103 |         path: rel_path.to_string_lossy().replace("\\", "/"),
+    |         ^^^^ used more than once
+
+warning: unused variable: `app`
+ --> src\main.rs:8:21
+  |
+8 | fn get_portable_dir(app: &App<Wry>, name: &str) -> PathBuf {
+  |                     ^^^ help: if this is intentional, prefix it with an underscore: `_app`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0062, E0599.
+For more information about an error, try `rustc --explain E0062`.
+warning: `minecraft-game-desktop` (bin "minecraft-game-desktop") generated 2 warnings
+error: could not compile `minecraft-game-desktop` (bin "minecraft-game-desktop") due to 2 previous errors; 2 warnings emitted
